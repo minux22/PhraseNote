@@ -82,9 +82,14 @@ h1::before{content:'♪'; display:inline-flex; align-items:center; justify-conte
 .pair select{padding:0 2px 0 7px}
 #tsSel{width:58px; flex:none}
 #snapSel,#lenSel{width:46px; flex:none; padding:0 2px 0 7px}
-#rollCtl .opts{flex-wrap:nowrap; gap:8px}
-#rollCtl .field{gap:4px; flex:none}
-#rollCtl .field .lbl{font-size:10px; letter-spacing:.04em}
+#rollCtl .opts{flex-wrap:nowrap; gap:6px}
+#rollCtl .field{gap:3px; flex:none}
+#rollCtl .field .lbl{font-size:9px; letter-spacing:.02em}
+/* four tools (Pen, Move, Select, Pan) must fit beside Len and Snap */
+#rollCtl #toolSeg button{padding:0 5px}
+#rollCtl #toolSeg button svg{width:18px; height:18px}
+#rollCtl #snapSel,#rollCtl #lenSel{width:44px}
+@media (max-width:355px){#rollCtl .field .lbl{display:none}}
 .tgrp{flex:1; min-width:0}
 .seg.big{display:flex; width:100%}
 .seg.big button{flex:1; height:32px; padding:0}
@@ -452,6 +457,11 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 .slot.play{box-shadow:0 0 0 2px var(--amber)}
 .slot.add{border-style:dashed; color:var(--dim); font-size:20px; font-weight:400; background:transparent}
 .slot.add.ghost{opacity:.5}
+.slot{-webkit-touch-callout:none; user-select:none; -webkit-user-select:none; touch-action:pan-x}
+.slot.drag{position:relative; z-index:3; transform-origin:center; box-shadow:0 8px 18px rgba(0,0,0,.45),0 0 0 2px var(--chord); opacity:.95; transition:none}
+.formrow.dragging .slot:not(.drag){transition:box-shadow .1s}
+.slot.before{box-shadow:-4px 0 0 0 var(--amber)}
+.slot.after{box-shadow:4px 0 0 0 var(--amber)}
 .slot small{max-width:100%; overflow:hidden; text-overflow:ellipsis}
 #formPanel{gap:8px}
 #formPanel .msw.cm{width:112px; height:30px; font-size:12.5px; font-weight:700; border-radius:8px; border-color:color-mix(in srgb,var(--chord) 55%,var(--line))}
@@ -716,7 +726,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.10.2</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.10.3</p>
   </div>
 </section>
 
@@ -4236,6 +4246,48 @@ function selectSlot(i){
   K.cur=slotRange().t0;sel=sel===7?7:sel;
   renderAll();showCursor();if(playing)seekPlay();
 }
+/* long press a slot, then drag it to a new place */
+(function(){
+  const row=$('#formRow');let lp=null, dg=null, swallow=false;
+  function slots(){return Array.prototype.slice.call(row.querySelectorAll('.slot[data-i]'));}
+  /* the new index = how many of the other slots lie left of the finger */
+  function target(x,skip){let j=0;slots().forEach(function(s,k){if(k===skip)return;const r=s.getBoundingClientRect();if(x>r.left+r.width/2)j++;});return j;}
+  function clear(){if(lp){clearTimeout(lp.t);lp=null;}}
+  row.addEventListener('pointerdown',function(e){
+    const b=e.target.closest?e.target.closest('.slot[data-i]'):null;if(!b||P.form.length<2)return;
+    clear();
+    lp={b:b,i:+b.dataset.i,x:e.clientX,y:e.clientY,id:e.pointerId,t:setTimeout(function(){
+      const r=b.getBoundingClientRect();
+      dg={b:b,i:lp.i,j:lp.i,x0:lp.x,id:lp.id};lp=null;
+      b.classList.add('drag');row.classList.add('dragging');
+      try{b.setPointerCapture(dg.id);}catch(x){}
+      try{if(navigator.vibrate)navigator.vibrate(12);}catch(x){}
+    },380)};
+  });
+  row.addEventListener('pointermove',function(e){
+    if(lp&&(Math.abs(e.clientX-lp.x)>8||Math.abs(e.clientY-lp.y)>8))clear();
+    if(!dg||e.pointerId!==dg.id)return;
+    dg.b.style.transform='translateX('+(e.clientX-dg.x0)+'px)';
+    const h=row.getBoundingClientRect();
+    if(e.clientX<h.left+28)row.scrollLeft-=8;else if(e.clientX>h.right-28)row.scrollLeft+=8;
+    const j=target(e.clientX,dg.i);
+    if(j!==dg.j){dg.j=j;const others=slots().filter(function(s,k){return k!==dg.i;});
+      others.forEach(function(s,k){s.classList.toggle('before',k===j);s.classList.toggle('after',j===others.length&&k===others.length-1);});}
+  });
+  function end(e){
+    clear();
+    if(!dg||(e&&e.pointerId!==dg.id))return;
+    const d=dg;dg=null;swallow=true;setTimeout(function(){swallow=false;},60);
+    row.classList.remove('dragging');d.b.classList.remove('drag');d.b.style.transform='';
+    slots().forEach(function(s){s.classList.remove('before','after');});
+    if(d.j!==d.i){moveSlotTo(d.i,d.j);toast('Slot moved.');}
+  }
+  row.addEventListener('pointerup',end);row.addEventListener('pointercancel',end);
+  /* while dragging the row must not scroll, and a long press must not open the browser menu */
+  row.addEventListener('touchmove',function(e){if(dg)e.preventDefault();},{passive:false});
+  row.addEventListener('contextmenu',function(e){if(e.target.closest&&e.target.closest('.slot'))e.preventDefault();});
+  row.addEventListener('click',function(e){if(swallow){e.stopImmediatePropagation();e.preventDefault();}},true);
+})();
 $('#formRow').addEventListener('click',function(e){
   const b=e.target.closest?e.target.closest('.slot'):null;if(!b)return;
   if(b.dataset.add){openAdd();return;}
@@ -4285,13 +4337,19 @@ function delSlot(){
 }
 function moveSlot(d){
   const j=P.slot+d;if(j<0||j>=P.form.length)return;
+  moveSlotTo(P.slot,j);openSlotMenu();
+}
+/* move slot i to position j (its melody goes with it) */
+function moveSlotTo(i,j){
+  if(i===j||j<0||j>=P.form.length)return;
+  if(P.slot!==i){Core.storeCur(P);P.slot=i;Core.loadCur(P);}
   edit(function(){
     const r=slotRange(), notes=Core.melSlice(P.mel,r.t0,r.t1), id=Core.curId(P);
     P.mel=Core.melDelete(P.mel,r.t0,r.t1);
     Core.storeCur(P);P.form.splice(P.slot,1);P.form.splice(j,0,id);P.slot=j;Core.loadCur(P);
     const r2=slotRange();P.mel=Core.melInsert(P.mel,r2.t0,r2.t1-r2.t0);P.mel=Core.melPaste(P.mel,notes,r2.t0);
   });
-  K.cur=slotRange().t0;openSlotMenu();
+  K.cur=slotRange().t0;showCursor();
 }
 function setSlotSec(id){
   if(id===Core.curId(P))return;
