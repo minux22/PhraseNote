@@ -456,7 +456,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 .dlgback{position:fixed; inset:0; z-index:40; background:rgba(0,0,0,.45); display:grid; place-items:center; padding:16px}
 .dlgback[hidden]{display:none}
 .dlg{width:100%; max-width:320px; background:var(--panel); color:var(--text); border:1px solid var(--line); border-top:2px solid var(--mint); border-radius:14px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; box-shadow:0 10px 30px rgba(0,0,0,.35)}
-.formrow{display:flex; gap:6px; overflow-x:auto; padding:2px 1px 4px; scrollbar-width:none; -webkit-overflow-scrolling:touch}
+.formrow{display:flex; gap:6px; overflow-x:auto; padding:6px 1px 7px; margin:-4px 0 -3px; scrollbar-width:none; -webkit-overflow-scrolling:touch}
 .formrow::-webkit-scrollbar{display:none}
 .slot{flex:0 0 calc((100% - 24px)/5); min-width:0; height:44px; padding:0 4px; border-radius:12px; border:1px solid var(--line); background:var(--panel-2); color:var(--text); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1px}
 .slot b{font-size:17px; font-weight:800; line-height:1}
@@ -469,8 +469,11 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 .slot{-webkit-touch-callout:none; user-select:none; -webkit-user-select:none; touch-action:pan-x}
 .slot.drag{position:relative; z-index:3; transform-origin:center; box-shadow:0 8px 18px rgba(0,0,0,.45),0 0 0 2px var(--chord); opacity:.95; transition:none}
 .formrow.dragging .slot:not(.drag){transition:box-shadow .1s}
-.slot.before{box-shadow:-4px 0 0 0 var(--amber)}
-.slot.after{box-shadow:4px 0 0 0 var(--amber)}
+.formrow{position:relative}
+.slot.shift{transition:transform .2s cubic-bezier(.2,.8,.2,1)}
+.fbeam{position:absolute; width:4px; border-radius:2px; background:#ffd27a; pointer-events:none; z-index:2;
+  box-shadow:0 0 4px 1px var(--amber),0 0 12px 3px color-mix(in srgb,var(--amber) 70%,transparent),0 0 22px 6px color-mix(in srgb,var(--amber) 35%,transparent);
+  transition:left .2s cubic-bezier(.2,.8,.2,1)}
 .slot small{max-width:100%; overflow:hidden; text-overflow:ellipsis}
 #formPanel{gap:8px}
 #formPanel .msw.cm{width:112px; height:30px; font-size:12.5px; font-weight:700; border-radius:8px; border-color:color-mix(in srgb,var(--chord) 55%,var(--line))}
@@ -735,7 +738,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.10.5</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.10.6</p>
   </div>
 </section>
 
@@ -4333,40 +4336,50 @@ function selectSlot(i){
   K.cur=slotRange().t0;sel=sel===7?7:sel;
   renderAll();showCursor();if(playing)seekPlay();
 }
-/* long press a slot, then drag it to a new place */
+/* long press a slot, then drag it: the other slots slide aside to open the gap, and a glowing beam marks the drop */
 (function(){
   const row=$('#formRow');let lp=null, dg=null, swallow=false;
   function slots(){return Array.prototype.slice.call(row.querySelectorAll('.slot[data-i]'));}
-  /* the new index = how many of the other slots lie left of the finger */
-  function target(x,skip){let j=0;slots().forEach(function(s,k){if(k===skip)return;const r=s.getBoundingClientRect();if(x>r.left+r.width/2)j++;});return j;}
   function clear(){if(lp){clearTimeout(lp.t);lp=null;}}
+  function lift(){
+    const b=lp.b, ss=slots(), L=ss.map(function(s){return {el:s,left:s.offsetLeft,w:s.offsetWidth};});
+    const step=L.length>1?L[1].left-L[0].left:L[0].w+6;
+    /* sl0: the scroll at the lift, so the dragged box stays under the finger while the row scrolls */
+    dg={b:b,i:lp.i,j:lp.i,x0:lp.x,id:lp.id,L:L,step:step,sl0:row.scrollLeft,beam:document.createElement('div')};lp=null;
+    dg.beam.className='fbeam';dg.beam.style.top=b.offsetTop+'px';dg.beam.style.height=b.offsetHeight+'px';row.appendChild(dg.beam);
+    L.forEach(function(o,k){if(k!==dg.i)o.el.classList.add('shift');});
+    b.classList.add('drag');row.classList.add('dragging');
+    try{b.setPointerCapture(dg.id);}catch(x){}
+    try{if(navigator.vibrate)navigator.vibrate(12);}catch(x){}
+    place(dg.i);
+  }
+  /* j = the new index: how many of the other slots lie left of the finger (their places before the drag) */
+  function place(j){
+    dg.j=j;const i=dg.i;
+    dg.L.forEach(function(o,k){if(k===i)return;const kk=k<i?k:k-1, fin=kk<j?kk:kk+1;o.el.style.transform=fin===k?'':'translateX('+((fin-k)*dg.step)+'px)';});
+    dg.beam.style.left=(dg.L[0].left+j*dg.step+dg.L[0].w/2-2)+'px';
+  }
   row.addEventListener('pointerdown',function(e){
     const b=e.target.closest?e.target.closest('.slot[data-i]'):null;if(!b||P.form.length<2)return;
     clear();
-    lp={b:b,i:+b.dataset.i,x:e.clientX,y:e.clientY,id:e.pointerId,t:setTimeout(function(){
-      const r=b.getBoundingClientRect();
-      dg={b:b,i:lp.i,j:lp.i,x0:lp.x,id:lp.id};lp=null;
-      b.classList.add('drag');row.classList.add('dragging');
-      try{b.setPointerCapture(dg.id);}catch(x){}
-      try{if(navigator.vibrate)navigator.vibrate(12);}catch(x){}
-    },380)};
+    lp={b:b,i:+b.dataset.i,x:e.clientX,y:e.clientY,id:e.pointerId,t:setTimeout(lift,380)};
   });
   row.addEventListener('pointermove',function(e){
     if(lp&&(Math.abs(e.clientX-lp.x)>8||Math.abs(e.clientY-lp.y)>8))clear();
     if(!dg||e.pointerId!==dg.id)return;
-    dg.b.style.transform='translateX('+(e.clientX-dg.x0)+'px)';
     const h=row.getBoundingClientRect();
     if(e.clientX<h.left+28)row.scrollLeft-=8;else if(e.clientX>h.right-28)row.scrollLeft+=8;
-    const j=target(e.clientX,dg.i);
-    if(j!==dg.j){dg.j=j;const others=slots().filter(function(s,k){return k!==dg.i;});
-      others.forEach(function(s,k){s.classList.toggle('before',k===j);s.classList.toggle('after',j===others.length&&k===others.length-1);});}
+    const x=e.clientX-h.left+row.scrollLeft;
+    dg.b.style.transform='translateX('+(x-(dg.x0-h.left+dg.sl0))+'px)';
+    let j=0;dg.L.forEach(function(o,k){if(k!==dg.i&&x>o.left+o.w/2)j++;});
+    if(j!==dg.j)place(j);
   });
   function end(e){
     clear();
     if(!dg||(e&&e.pointerId!==dg.id))return;
     const d=dg;dg=null;swallow=true;setTimeout(function(){swallow=false;},60);
-    row.classList.remove('dragging');d.b.classList.remove('drag');d.b.style.transform='';
-    slots().forEach(function(s){s.classList.remove('before','after');});
+    row.classList.remove('dragging');d.beam.remove();
+    d.L.forEach(function(o){o.el.classList.remove('shift','drag');o.el.style.transform='';});
     if(d.j!==d.i){moveSlotTo(d.i,d.j);toast('Slot moved.');}
   }
   row.addEventListener('pointerup',end);row.addEventListener('pointercancel',end);
