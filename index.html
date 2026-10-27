@@ -311,6 +311,7 @@ body.kbd-open{padding-bottom:calc(92px + var(--kbdh,150px) + env(safe-area-inset
 .crow{display:grid; grid-template-columns:54px minmax(0,1fr); align-items:center; gap:6px}
 .crow .seg.cs{display:inline-flex; flex:none; justify-self:start}
 .crow .seg.cs button{height:30px; width:40px; flex:none; padding:0; font-size:10.5px; white-space:nowrap}
+.crow .seg.su button{width:34px}
 .crow .pill.smt{height:30px; flex:none; width:68px; white-space:nowrap; padding:0; font-size:11px}
 .cr{display:flex; align-items:center; gap:6px; min-width:0}
 .cv{flex:none; width:48px; text-align:right; font-size:12px; font-weight:700; color:var(--dim)}
@@ -591,7 +592,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       <div class="crow"><button class="lbl tipb" type="button" data-tip="bpat">Bass</button><div class="seg cs" id="bpatSeg"></div></div>
       <div class="crow"><button class="lbl tipb" type="button" data-tip="strum">Strum</button><div class="cr"><input class="sq" id="strumR" type="range" min="0" max="60" step="1" aria-label="Strum spread"><span class="cv" id="strumV"></span></div></div>
       <div class="crow"><button class="lbl tipb" type="button" data-tip="lay">Late</button><div class="cr"><input class="sq" id="layR" type="range" min="0" max="60" step="1" aria-label="Lay back chords"><span class="cv" id="layV"></span></div></div>
-      <div class="crow"><button class="lbl tipb" type="button" data-tip="swing">Swing</button><div class="cr"><input class="sq" id="swingR" type="range" min="0" max="100" step="1" aria-label="Swing amount"><span class="cv" id="swingV"></span></div></div>
+      <div class="crow"><button class="lbl tipb" type="button" data-tip="swing">Swing</button><div class="cr"><div class="seg cs su" id="swuSeg" role="group" aria-label="Swing unit"></div><input class="sq" id="swingR" type="range" min="0" max="100" step="1" aria-label="Swing amount"><span class="cv" id="swingV"></span></div></div>
       <div class="crow"><button class="lbl tipb" type="button" data-tip="loose">Loose</button><div class="cr"><input class="sq" id="looseR" type="range" min="0" max="30" step="1" aria-label="Timing looseness"><span class="cv" id="looseV"></span></div></div>
       </div>
     </div>
@@ -724,7 +725,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.10.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.10.2</p>
   </div>
 </section>
 
@@ -988,15 +989,15 @@ const Core=(function(){
   const ARP={ballad:[0,1,2,3,4,3,2,1],arpup:[0,1,2,3,0,1,2,3],arpud:[0,1,2,3,2,1,0,1],alberti:[0,2,1,2,0,2,1,2],finger:[0,2,3,2,1,2,3,2]};
   const ARPD={ballad:1.8,arpup:1,arpud:1,alberti:0.5,finger:1.2};
   /* Choosing a style also sets the options that make it sound right; anything not listed goes back to neutral. */
-  const NEUTRAL={voic:'close',inv:false,color:'off',bpat:'root',strum:0,lay:0,swing:0,loose:0};
+  const NEUTRAL={voic:'close',inv:false,color:'off',bpat:'root',strum:0,lay:0,swing:0,swu:'8',loose:0};
   const RECIPES={
     pad:{voic:'open',color:'add9'},
     kballad:{color:'nine',voic:'open',inv:true,bpat:'r5',loose:4},
     antic:{color:'add9',inv:true,loose:3},
     citypop:{color:'nine',voic:'open',inv:true,bpat:'kick',loose:3},
-    rnbstab:{color:'nine',voic:'open',inv:true,bpat:'kick',lay:15,swing:15,loose:5},
-    hiphop:{color:'nine',lay:20,swing:20,bpat:'kick',loose:6},
-    lofi:{color:'nine',voic:'open',lay:30,swing:30,strum:20,loose:12},
+    rnbstab:{color:'nine',voic:'open',inv:true,bpat:'kick',lay:15,swing:15,swu:'16',loose:5},
+    hiphop:{color:'nine',lay:20,swing:20,swu:'16',bpat:'kick',loose:6},
+    lofi:{color:'nine',voic:'open',lay:30,swing:30,swu:'16',strum:20,loose:12},
     pluck16:{color:'add9',bpat:'kick'},
     housep:{color:'add9',bpat:'oct'},
     gate:{color:'sus',bpat:'oct'},
@@ -1006,7 +1007,7 @@ const Core=(function(){
     charleston:{color:'nine',voic:'open',inv:true,swing:55,bpat:'r5',loose:6},
     freddie:{color:'nine',voic:'open',swing:55,bpat:'r5',loose:5},
     jazzcomp:{color:'nine',voic:'open',inv:true,swing:55,lay:10,bpat:'r5',loose:6},
-    neosoul:{color:'nine',voic:'open',inv:true,lay:25,swing:20,strum:30,loose:8},
+    neosoul:{color:'nine',voic:'open',inv:true,lay:25,swing:20,swu:'16',strum:30,loose:8},
     rhodes:{color:'nine',voic:'open',inv:true,lay:15,loose:6},
     shell:{color:'nine',swing:55,bpat:'r5',loose:5},
     finger:{voic:'open',inv:true,loose:5}
@@ -1025,7 +1026,10 @@ const Core=(function(){
   }
   const COMP_IDS=COMPS.map(function(c){return c[0];});
   const BPATS=['root','r5','oct','kick'];
-  function swingOff(p,step){const M=meter(p);return (p.swing>0&&!M.compound&&step%2===1)?p.swing/100/6:0;}
+  /* Swing: with the 8th unit the off-beat 8ths move late (100% = triplet feel, 1/6 beat); with the 16th unit the
+     off-beat 16ths do instead (100% = 1/12 beat) and the 8ths stay put */
+  function swingOff(p,step){const M=meter(p);return (p.swing>0&&!M.compound&&p.swu!=='16'&&step%2===1)?p.swing/100/6:0;}
+  function swing16(p){const M=meter(p);return (p.swing>0&&!M.compound&&p.swu==='16')?p.swing/100/12:0;}
   function clampV(v){return Math.max(1,Math.min(127,Math.round(v)));}
 
   /* 8th-note step -> note events (off = quarter notes after the step start, dur in quarter notes). dpat: the drum pattern, for Bass "kick". */
@@ -1067,15 +1071,23 @@ const Core=(function(){
     }else if(STY[style]){
       let grid=STY[style];
       if(Array.isArray(grid[0][0]))grid=grid[Math.floor(step/S)%grid.length];
+      /* a pushed chord ('>' on 4&) is held through the next downbeat instead of being struck again there */
+      const pushOf=function(k){for(let i=0;i<grid.length;i++)if(grid[i][1]==='>'+k&&grid[i][0]>=12)return grid[i];return null;};
+      const downOf=function(k){for(let i=0;i<grid.length;i++)if(grid[i][0]===0&&grid[i][1]===k)return grid[i];return null;};
+      const barIdx=Math.floor(step/S), tieIn=!p._noTie&&(barIdx>0||(p._prevComp!=null&&p._prevComp===style));
+      const lastBar=(barIdx+1)*S>=ch.length*M.sps, tieOut=!lastBar||(p._nextComp!=null&&p._nextComp===style);
       grid.forEach(function(t){
         if((t[0]>>1)!==ps)return;
         let kind=t[1];const nxt=kind[0]==='>';if(nxt)kind=kind.slice(1);
+        if(!nxt&&t[0]===0&&pushOf(kind)&&tieIn)return;
         const off=(t[0]&1)*0.25, st=step*0.5+off, v=clampV(posVel(p,ps*240+off*480)*t[3]);
         let inf=info, d, prv=prevInfo;
         if(nxt){
-          const nc=ch[(beat+1)%ch.length];if(nc==null)return;
-          inf=chordInfo(nc,p.key,p.scale);prv=info;d=Math.max(0.08,t[2]*0.25*0.95);
+          const nc=beat+1<ch.length?ch[beat+1]:(p._next!==undefined?p._next:ch[0]);if(nc==null)return;
+          const dn=tieOut?downOf(kind):null;
+          inf=chordInfo(nc,p.key,p.scale);prv=info;d=Math.max(0.08,(t[2]+(dn?dn[2]:0))*0.25*0.95);
         }else d=Math.max(0.08,Math.min(t[2]*0.25*0.95,endQ()-st));
+        const n0=out.length;
         const V=voicing(inf,p.key,p.voic,p.inv?prv:null,p.color), n=V.length, k0=kind[0];
         if(k0==='T'){put(V.slice(1),off,d,v,'D',0);}
         else if(k0==='P'){const r=48+((p.key+inf.tones[0])%12);put([r,r+(inf.slash?7:inf.tones[2]-inf.tones[0])],off,d,v,'D',0);}
@@ -1083,6 +1095,7 @@ const Core=(function(){
         else if(k0==='N'){const k=+kind.slice(1);out.push({k:'c',midi:V[Math.min(k,n-1)]+12,vel:v,dur:d,off:off});}
         else if(k0==='D'||k0==='U'){put(notesFor(p,inf,prv).c,off,d,v,k0,parseInt(kind.slice(1),10)||15);}
         else put(notesFor(p,inf,prv).c,off,d,v,'D',0);
+        if(t[0]&1)for(let i=n0;i<out.length;i++)out[i].s16=1;
       });
     }
     if(attack){
@@ -1096,9 +1109,9 @@ const Core=(function(){
       if(bp==='oct'&&!M.compound){
         out.push({k:'b',midi:bn+(ps%2?12:0),vel:clampV(posVel(p,ps*240)*0.9),dur:0.45,off:0});
       }else if(bp==='kick'&&grid44){
-        const ks=drumsAt(p,step,dpat||'rock8').filter(function(e){return e.n===36;});
+        const ks=drumsRaw(p,step,dpat||'rock8').filter(function(e){return e.n===36;});
         let any0=false;
-        ks.forEach(function(e){const st=step*0.5+e.off;if(e.off===0)any0=true;out.push({k:'b',midi:bn,vel:clampV(posVel(p,ps*240+e.off*480)*0.9),dur:Math.max(0.1,Math.min(0.9,endQ()-st)),off:e.off});});
+        ks.forEach(function(e){const st=step*0.5+e.off;if(e.off===0)any0=true;out.push({s16:e.off===0.25?1:0,k:'b',midi:bn,vel:clampV(posVel(p,ps*240+e.off*480)*0.9),dur:Math.max(0.1,Math.min(0.9,endQ()-st)),off:e.off});});
         if(!any0&&j===0&&(bi===0||ch[beat-1]!==code))out.push({k:'b',midi:bn,vel:Math.round(p.vel4[bslot(bi)]*0.9),dur:Math.min(0.9,endQ()-step*0.5),off:0});
       }else if(j===0){
         const split=!holdLike&&bi===mid;
@@ -1111,8 +1124,8 @@ const Core=(function(){
         }
       }
     }
-    const sw=swingOff(p,step), lay=p.lay>0?p.lay/1000*p.bpm/60:0;
-    if(sw||lay)out.forEach(function(e){e.off=(e.off||0)+sw+(e.k==='c'?lay:0);});
+    const sw=swingOff(p,step), s16=swing16(p), lay=p.lay>0?p.lay/1000*p.bpm/60:0;
+    if(sw||s16||lay)out.forEach(function(e){e.off=(e.off||0)+sw+(e.s16?s16:0)+(e.k==='c'?lay:0);});
     return out;
   }
 
@@ -1313,8 +1326,8 @@ const Core=(function(){
     return {kick:[0,2],snare:[1,3]};
   }
   function drumsAt(p,step,pat){
-    const o=drumsRaw(p,step,pat), sw=swingOff(p,step);
-    if(sw)o.forEach(function(e){e.off+=sw;});
+    const o=drumsRaw(p,step,pat), sw=swingOff(p,step), s16=swing16(p);
+    if(sw||s16)o.forEach(function(e){e.off+=sw+(e.off===0.25?s16:0);});
     return o;
   }
   function drumsRaw(p,step,pat){
@@ -1524,6 +1537,7 @@ const Core=(function(){
     q.strum=clamp(o.strum==null?0:o.strum,0,60);
     q.bpat=BPATS.indexOf(o.bpat)>=0?o.bpat:'root';
     q.swing=clamp(o.swing==null?0:o.swing,0,100);
+    q.swu=o.swu==='16'?'16':'8';
     q.color=['off','add9','sus','69','nine'].indexOf(o.color)>=0?o.color:'off';
     q.lay=clamp(o.lay==null?0:o.lay,0,60);
     q.loose=clamp(o.loose==null?0:o.loose,0,30);
@@ -1582,7 +1596,7 @@ const Core=(function(){
   }
   /* ---- song form ---- */
   const SEC_IDS='ABCDEFGH', ROLES=['','Intro','Verse','Pre','Chorus','Bridge','Outro'];
-  const SECF=['bars','chords','comp','voic','inv','color','bpat','strum','lay','swing','loose','drum','dpat'];
+  const SECF=['bars','chords','comp','voic','inv','color','bpat','strum','lay','swing','swu','loose','drum','dpat'];
   function copySec(src,dst){SECF.forEach(function(f){dst[f]=f==='chords'?src.chords.slice():src[f];});return dst;}
   function curId(p){return p.form[p.slot];}
   function secOf(p,id){for(let i=0;i<p.secs.length;i++)if(p.secs[i].id===id)return p.secs[i];return null;}
@@ -1601,10 +1615,18 @@ const Core=(function(){
   /* the section's drum pattern: its own choice, or (never set) the fallback */
   function secDrums(v,fallback){return v.drum===true?(v.dpat||fallback||'rock8'):v.drum===false?null:fallback;}
   /* which slot an 8th-note step falls in; null before bar 1 or after the form */
-  function songAt(p,step){
+  /* loop = the slot repeats (its neighbours are itself); otherwise the slots before and after decide pushes and ties */
+  function songAt(p,step,loop){
     if(step<0)return null;
     const t=step*240, L=layout(p);
-    for(let i=0;i<L.length;i++){const sl=L[i];if(t>=sl.start&&t<sl.start+sl.len)return {slot:i,id:sl.id,start:sl.start,len:sl.len,view:secView(p,sl.id),local:(t-sl.start)/240};}
+    for(let i=0;i<L.length;i++){const sl=L[i];if(t>=sl.start&&t<sl.start+sl.len){
+      const v=Object.assign({},secView(p,sl.id));
+      if(!loop){
+        const pv=i>0?secView(p,L[i-1].id):null, nx=i+1<L.length?secView(p,L[i+1].id):null;
+        v._prevComp=pv?pv.comp:null;v._nextComp=nx?nx.comp:null;v._next=nx?nx.chords[0]:null;
+      }
+      return {slot:i,id:sl.id,start:sl.start,len:sl.len,view:v,local:(t-sl.start)/240};
+    }}
     return null;
   }
   /* ---- the melody follows changes to the form ---- */
@@ -2062,7 +2084,7 @@ const Aud=(function(){
 })();
 
 /* ---------- transport ---------- */
-let playing=false, timer=null, nextStep=0, nextTime=0, queue=[], cinFrom=0, cinTo=0, cinOnly=false, scrubbing=false;
+let tieFrom=0, playing=false, timer=null, nextStep=0, nextTime=0, queue=[], cinFrom=0, cinTo=0, cinOnly=false, scrubbing=false;
 function inMelody(){return !$('#panelMelody').hidden;}
 function loopSteps(){const M=Core.meter(P);return P.bars*M.bar/240;}
 /* Chord Track: Loop repeats the selected slot, Song plays the form. The Melody Track always plays the song. */
@@ -2080,7 +2102,9 @@ function schedule(step,t){
     if(cinOnly)return;
   }
   /* chords loop; the melody runs straight through (on the Chord Track only with Mel on) */
-  const a=step>=0?Core.songAt(P,step):{view:Core.secView(P,P.form[0]),local:step}, dp=a?Core.secDrums(a.view,null):null;
+  const a=step>=0?Core.songAt(P,step,!inMelody()&&U.cmode!=='song'):{view:Core.secView(P,P.form[0]),local:step}, dp=a?Core.secDrums(a.view,null):null;
+  /* the first bar after Play or a jump has no pushed chord before it, so it is struck */
+  if(a&&step>=0&&Math.floor(step/bs)===Math.floor(tieFrom/bs))a.view._noTie=true;
   const evs=a&&step>=0?Core.eventsAt(a.view,a.local,dp):[], ms=(inMelody()||U.melc)?Core.melAt(P,step):[], dr=dp?Core.drumsAt(a.view,a.local,dp):[];
   if(!evs.length&&!ms.length&&!dr.length)return;
   const spb=60/P.bpm, jc=jit(), jb=jit();
@@ -2133,14 +2157,14 @@ function startPlay(){
     if(h>=0){cinFrom=h-bs;cinTo=h;cinOnly=h>0;nextStep=cinFrom;}
     else{cinFrom=-bs;cinTo=0;nextStep=h;}
   }else nextStep=h;
-  playing=true;nextTime=ctx.currentTime+0.08;queue=[];
+  playing=true;nextTime=ctx.currentTime+0.08;queue=[];tieFrom=Math.max(0,nextStep);
   markHead();tick();timer=setInterval(tick,25);renderTop();wakeOn();
 }
 /* jump while playing (tap the bar-number strip or Rewind) */
 function seekPlay(){
   if(!playing||rec.on)return;
   Aud.stopAll();cinFrom=0;cinTo=0;cinOnly=false;
-  nextStep=headStep();nextTime=Aud.ctx().currentTime+0.06;queue=[];
+  nextStep=headStep();nextTime=Aud.ctx().currentTime+0.06;queue=[];tieFrom=Math.max(0,nextStep);
 }
 function stopPlay(){
   endRec();playing=false;clearInterval(timer);Aud.stopAll();setNow(-1);markSlot(-1);wakeOff();
@@ -2466,6 +2490,7 @@ function renderComp(){
   $('#invBtn').setAttribute('aria-pressed',P.inv?'true':'false');
   $('#strumR').value=P.strum;$('#strumV').textContent=P.strum?P.strum+' ms':'Off';
   $('#layR').value=P.lay;$('#layV').textContent=P.lay?P.lay+' ms':'Off';
+  mkSeg($('#swuSeg'),[['8','8th'],['16','16th']],function(){return P.swu;},function(v){edit(function(){P.swu=v;});});
   $('#swingR').value=P.swing;$('#swingV').textContent=P.swing?P.swing+'%':'Off';
   $('#looseR').value=P.loose;$('#looseV').textContent=P.loose?P.loose+' ms':'Off';
 }
@@ -2477,7 +2502,7 @@ const TIPS={
   bpat:['The bass pattern. Root = the root note, held. Root+5 = root, then the fifth on beat 3. Octave = 8th notes jumping between the low and high root (disco / dance). Kick = plays where the drum kick plays.','베이스 연주 방식이에요. Root = 근음을 길게. Root+5 = 근음 뒤 3박에 5도. Octave = 낮은 근음과 높은 근음을 8분음표로 번갈아(디스코, 댄스). Kick = 드럼 킥이 나오는 자리에서 연주.'],
   strum:['Delay between the notes of a chord, like a guitar strum or a rolled piano chord. Off = all notes at once.','코드의 각 음 사이에 시차를 줘요. 기타 스트럼이나 피아노 롤링 코드 같은 느낌이에요. Off = 모든 음을 동시에.'],
   lay:['Plays the chords a little behind the beat while the bass and drums stay on time. Gives a relaxed, laid-back feel (neo-soul, lo-fi).','코드만 박보다 살짝 늦게 쳐요. 베이스와 드럼은 제 박자에 그대로라서 느긋한 레이드백 느낌이 나요(네오소울, 로파이).'],
-  swing:['Delays the off-beat 8th notes of the chords, bass and drums. 0% = straight. About 55-65% = jazz / shuffle feel. 100% = triplet feel.','코드·베이스·드럼의 엇박 8분음표를 뒤로 밀어요. 0% = 정박. 55~65% 정도 = 재즈/셔플 느낌. 100% = 3연음 느낌.'],
+  swing:['Delays the off-beats of the chords, bass and drums. 8th = the off-beat 8ths (jazz, shuffle). 16th = the off-beat 16ths (hip-hop, lo-fi, neo-soul, R&B). 0% = straight, about 55-65% = a classic swing, 100% = triplet feel.','코드·베이스·드럼의 엇박을 뒤로 밀어요. 8th = 엇박 8분음표(재즈, 셔플). 16th = 엇박 16분음표(힙합, 로파이, 네오소울, R&B). 0% = 정박, 55~65% 정도 = 일반적인 스윙, 100% = 3연음 느낌.'],
   loose:['Random tiny timing slips, so it sounds less robotic. Heard in playback only; it is not written to the exported MIDI.','타이밍을 매번 조금씩 랜덤하게 흩뜨려 기계 같은 느낌을 줄여요. 재생에서만 들리고, 내보내는 MIDI에는 기록되지 않아요.']
 };
 (function(){
@@ -2609,10 +2634,10 @@ let LOW=60, HIGH=76;
 const U={tool:'pen',snap:240,len:240,kbd:false,zoom:48,qGrid:120,qStr:100,qLen:true,view:'roll',nv:4,dot:false,acc:0,drum:false,dpat:'rock8',clk:60};
 try{const r=localStorage.getItem('phrasenote-ui');if(r)Object.assign(U,JSON.parse(r));}catch(e){}
 if(['pen','move','sel','pan'].indexOf(U.tool)<0)U.tool='pen';
-if([120,240,480].indexOf(U.snap)<0)U.snap=120;
-if([120,240,480].indexOf(U.len)<0)U.len=240;
+if([120,240,480,80,160,320].indexOf(U.snap)<0)U.snap=120;
+if([120,240,480,80,160,320].indexOf(U.len)<0)U.len=240;
 U.zoom=Math.max(ZMIN,Math.min(ZMAX,Math.round(+U.zoom||48)));
-if([60,120,240,480].indexOf(U.qGrid)<0)U.qGrid=120;
+if([60,120,240,480,80,160].indexOf(U.qGrid)<0)U.qGrid=120;
 if(['roll','staff'].indexOf(U.view)<0)U.view='roll';
 if([16,8,4,2,1].indexOf(U.nv)<0)U.nv=4;
 U.dot=!!U.dot&&U.nv>1;if([0,1,-1,2].indexOf(U.acc)<0)U.acc=0;
@@ -2640,7 +2665,7 @@ const ICO={
   sel:SV+'<rect x="3.5" y="3.5" width="17" height="17" rx="2" stroke-dasharray="3 2.6"/><path d="M9 9h6v6H9z" fill="currentColor" stroke="none"/></svg>',
   hand:SV+'<path d="M18 11V6a2 2 0 0 0-4 0M14 10V4a2 2 0 0 0-4 0v2M10 10.5V6a2 2 0 0 0-4 0v8M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.9-6-2.3l-3.6-3.6a2 2 0 0 1 2.8-2.8L7 15"/></svg>'
 };
-const GRID_NAME={60:'32',120:'16',240:'8',480:'4'};
+const GRID_NAME={60:'32',120:'16',240:'8',480:'4',80:'16T',160:'8T'};
 function barTk(){return Core.meter(P).bar;}
 function pkT(){return P.pick?barTk():0;}
 function tickX(t){return (t+pkT())/PPQ*U.zoom;}
@@ -2689,14 +2714,15 @@ function renderMelOpts(){
   const sl=$('#stSlide'),op=U.tool==='move';sl.classList.toggle('open',op);if(op)sl.removeAttribute('inert');else sl.setAttribute('inert','');
   $('#zOut').disabled=U.zoom<=ZMIN;$('#zIn').disabled=U.zoom>=ZMAX;
   const ls=$('#lenSel');
-  if(!ls.options.length){[[120,'16'],[240,'8'],[480,'4']].forEach(function(o){const e=document.createElement('option');e.value=o[0];e.textContent=o[1];ls.appendChild(e);});
+  const TRI=[[120,'16'],[240,'8'],[480,'4'],[80,'16T'],[160,'8T'],[320,'4T']];
+  if(!ls.options.length){TRI.forEach(function(o){const e=document.createElement('option');e.value=o[0];e.textContent=o[1];ls.appendChild(e);});
     ls.addEventListener('change',function(){U.len=+ls.value;saveU();});}
   ls.value=String(U.len);
   const ss=$('#snapSel');
-  if(!ss.options.length){[[120,'16'],[240,'8'],[480,'4']].forEach(function(o){const e=document.createElement('option');e.value=o[0];e.textContent=o[1];ss.appendChild(e);});
-    ss.addEventListener('change',function(){U.snap=+ss.value;saveU();});}
+  if(!ss.options.length){TRI.forEach(function(o){const e=document.createElement('option');e.value=o[0];e.textContent=o[1];ss.appendChild(e);});
+    ss.addEventListener('change',function(){U.snap=+ss.value;saveU();if(U.view!=='staff')renderRoll();});}
   ss.value=String(U.snap);
-  mkSeg($('#qGridSeg'),[[60,'32'],[120,'16'],[240,'8'],[480,'4']],function(){return U.qGrid;},function(v){U.qGrid=v;saveU();renderMelOpts();});
+  mkSeg($('#qGridSeg'),[[60,'32'],[120,'16'],[240,'8'],[480,'4'],[80,'16T'],[160,'8T']],function(){return U.qGrid;},function(v){U.qGrid=v;saveU();renderMelOpts();});
   $('#qStr').value=U.qStr;$('#qStrVal').textContent=U.qStr+'%';
   mkSeg($('#qLenSeg'),[[true,'On'],[false,'Off']],function(){return U.qLen;},function(v){U.qLen=v;saveU();renderMelOpts();});
   $('#melAmt').value=P.melAmt;$('#melAmtLbl').textContent='Auto-Velocity '+P.melAmt+'%';
@@ -2719,7 +2745,7 @@ function renderRoll(){
   plane.style.backgroundImage=
     'repeating-linear-gradient(90deg,rgba(128,128,128,.55) 0 1px,transparent 1px '+(bq*z)+'px)'+
     (btq*z>=14?',repeating-linear-gradient(90deg,rgba(128,128,128,.28) 0 1px,transparent 1px '+(btq*z)+'px)':'')+
-    (z>=24?',repeating-linear-gradient(90deg,rgba(128,128,128,.10) 0 1px,transparent 1px '+(z/4)+'px)':'');
+    (z>=24?',repeating-linear-gradient(90deg,rgba(128,128,128,'+(U.snap%120?'.16':'.10')+') 0 1px,transparent 1px '+(U.snap%120?U.snap/PPQ*z:z/4)+'px)':'');
   const sc=Core.SCALES[P.scale]; let rows='', ks='';
   for(let m=HIGH;m>=LOW;m--){
     const rel=((m-P.key)%12+12)%12, inS=sc.indexOf(rel)>=0, tn=rel===0, blk=[1,3,6,8,10].indexOf(m%12)>=0;
@@ -2997,16 +3023,39 @@ function stSplit(p,d,rest){
   }
   return out;
 }
+/* Triplets on the staff: a beat whose notes all sit on an 8th-triplet grid (and not on the plain 8th grid) is drawn as
+   an 8th-note triplet; the same for 16th triplets in a half beat and quarter triplets over two beats. Anything else is
+   drawn on the 16th grid (rounded). Simple meters only. */
+function stZones(src){
+  const M=Core.meter(P);if(M.compound)return [];
+  const z=[], bt=M.bt, lo=P.pick?-M.bar:0, hi=mBars()*M.bar;
+  const starts=function(a,b){return src.filter(function(n){return n.s>=a&&n.s<b;}).map(function(n){return n.s-a;});};
+  const tri=function(st,slot,plain){return st.length>0&&st.every(function(x){return x%slot===0;})&&st.some(function(x){return x%plain!==0;});};
+  for(let a=lo;a<hi;){
+    const inBar=((a%M.bar)+M.bar)%M.bar;
+    if(inBar%(2*bt)===0&&a+2*bt<=hi&&tri(starts(a,a+2*bt),320,480)){z.push({a:a,b:a+2*bt,slot:320,disp:4});a+=2*bt;continue;}
+    if(tri(starts(a,a+bt),160,240)){z.push({a:a,b:a+bt,slot:160,disp:2});a+=bt;continue;}
+    for(const h of [a,a+bt/2])if(tri(starts(h,h+bt/2),80,120))z.push({a:h,b:h+bt/2,slot:80,disp:1});
+    a+=bt;
+  }
+  return z;
+}
 function stModel(){
   const ub=stMt().ub, ou=P.pick?-ub:0, tu=mBars()*ub;
-  const src=P.mel.filter(vis).slice().sort(function(a,b){return a.s-b.s||b.p-a.p;});
+  const all=P.mel.filter(vis).slice().sort(function(a,b){return a.s-b.s||b.p-a.p;});
+  const zones=stZones(all), inZ=function(n){return zones.some(function(z){return n.s>=z.a&&n.s<z.b;});};
+  const src=all.filter(function(n){return !inZ(n);});
   const items=[];
+  zones.forEach(function(z){items.push({zone:z,us:z.a/120,ue:z.b/120});});
   src.forEach(function(n){
     const us=Math.round(n.s/120);
     if(items.length&&items[items.length-1].us===us)return;
+    if(zones.some(function(z){return us*120>=z.a&&us*120<z.b;}))return;
     items.push({n:n,us:us,ue:Math.min(tu,Math.max(us+1,Math.round((n.s+n.l)/120)))});
   });
-  for(let i=0;i<items.length-1;i++)items[i].ue=Math.min(items[i].ue,items[i+1].us);
+  items.sort(function(a,b){return a.us-b.us;});
+  for(let i=0;i<items.length-1;i++)if(!items[i].zone)items[i].ue=Math.min(items[i].ue,items[i+1].us);
+  const items2=items.filter(function(it,i){return it.zone||it.ue>it.us;});
   const pcs=[]; let cur=ou;
   function rests(a,b){
     while(a<b){
@@ -3017,8 +3066,23 @@ function stModel(){
       a=e;
     }
   }
-  items.forEach(function(it){
+  let tid=0;
+  items2.forEach(function(it){
     if(it.us>cur)rests(cur,it.us);
+    if(it.zone){
+      /* the triplet: each note takes whole slots up to the next note; empty slots are rests */
+      const z=it.zone, n=Math.round((z.b-z.a)/z.slot), g=++tid, ns=all.filter(function(x){return x.s>=z.a&&x.s<z.b;});
+      let k=0;
+      while(k<n){
+        const t=z.a+k*z.slot, here=ns.filter(function(x){return x.s===t;})[0];
+        if(here){
+          const nxt=ns.filter(function(x){return x.s>t;})[0], lim=nxt?Math.round((nxt.s-z.a)/z.slot):n;
+          const span=Math.max(1,Math.min(lim-k,Math.round(here.l/z.slot)));
+          pcs.push({p:t/120,d:z.disp*span,du:z.slot*span/120,rest:false,n:here,tri:g});k+=span;
+        }else{pcs.push({p:t/120,d:z.disp,du:z.slot/120,rest:true,tri:g});k++;}
+      }
+      cur=it.ue;return;
+    }
     stSplit(it.us,it.ue-it.us,false).forEach(function(r,i){pcs.push({p:r.p,d:r.d,rest:false,n:it.n,tied:i>0});});
     cur=it.ue;
   });
@@ -3076,7 +3140,7 @@ function renderStaff(){
     const beat=Math.floor((((c.p%UB)+UB)%UB)/UBE);
     const prev=grp&&grp.items[grp.items.length-1];
     if(c.d<=3){
-      if(grp&&prev&&prev.p+prev.d===c.p&&grp.bar===b&&grp.beat===beat)grp.items.push(c);
+      if(grp&&prev&&Math.abs(prev.p+(prev.du||prev.d)-c.p)<1e-6&&grp.bar===b&&(c.tri?prev.tri===c.tri:grp.beat===beat))grp.items.push(c);
       else{grp={bar:b,beat:beat,items:[c]};beamGroups.push(grp);}
     }else grp=null;
   });
@@ -3134,6 +3198,16 @@ function renderStaff(){
       else if(i>0&&BASE[it[i-1].d]===1){}
       else{const xe=i>0?it[i].sx-7:it[i].sx+7;g+='<polygon points="'+it[i].sx+','+(y-d*(th+1.4))+' '+xe+','+(y-d*(th+1.4))+' '+xe+','+(y-d*(th+1.4+th))+' '+it[i].sx+','+(y-d*(th+1.4+th))+'" fill="'+cl+'"/>';}
     }
+  });
+  /* triplet marks: a 3 above (or below) each group, with a bracket when the notes are not beamed together */
+  const tg={};mdl.pcs.forEach(function(c){if(!c.tri)return;(tg[c.tri]=tg[c.tri]||[]).push(c);});
+  Object.keys(tg).forEach(function(k){
+    const it=tg[k], xs=it.map(function(c){return c.x!=null?c.x:xOf(c);}), x1=Math.min.apply(null,xs)-4, x2=Math.max.apply(null,xs)+4, xm=(x1+x2)/2;
+    const ns=it.filter(function(c){return !c.rest;}), beamed=ns.length>1&&ns.every(function(c){return c.gr&&c.gr===ns[0].gr&&c.gr.items.length>1;});
+    const up=!(ns.length&&ns[0].down);
+    let y=up?Math.min.apply(null,ns.map(function(c){return Math.min(c.y,c.ey!=null?c.ey:c.y);}).concat([yOf(38)]))-8:Math.max.apply(null,ns.map(function(c){return Math.max(c.y,c.ey!=null?c.ey:c.y);}).concat([yOf(30)]))+14;
+    if(!beamed){const yb=up?y+3:y-11;g+='<path d="M'+x1+' '+(yb+(up?4:-4))+'V'+yb+'H'+(xm-6)+'M'+(xm+6)+' '+yb+'H'+x2+'V'+(yb+(up?4:-4))+'" fill="none" stroke="'+ink+'" stroke-width="1" opacity=".8"/>';}
+    g+='<text x="'+xm+'" y="'+(up?y+6:y-2)+'" font-size="10" font-style="italic" font-weight="700" text-anchor="middle" fill="'+ink+'">3</text>';
   });
   /* ties */
   note.forEach(function(c,i){

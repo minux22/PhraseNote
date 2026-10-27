@@ -13,7 +13,7 @@ p=Core.normalize({bars:4,ts:'4/4',chords:[0,0,0,0,8,8,8,8,10,10,10,10,6,6,6,6],
 assert.strictEqual(p.secs[1].role,'Chorus');assert.strictEqual(p.bars,4);
 const L=Core.layout(p);assert.deepStrictEqual(L.map(x=>[x.id,x.start/1920,x.len/1920]),[['A',0,4],['B',4,2],['A',6,4],['B',10,2]]);
 let a=Core.songAt(p,4*8);assert.strictEqual(a.id,'B');assert.strictEqual(a.local,0);assert.strictEqual(a.view.comp,'pop');assert.strictEqual(Core.secDrums(a.view,null),'rock8');
-a=Core.songAt(p,6*8+3);assert.strictEqual(a.id,'A');assert.strictEqual(a.local,3);assert.strictEqual(a.view,p);
+a=Core.songAt(p,6*8+3);assert.strictEqual(a.id,'A');assert.strictEqual(a.local,3);assert.strictEqual(a.view.comp,p.comp);
 assert.strictEqual(Core.songAt(p,12*8),null);assert.strictEqual(Core.songAt(p,-1),null);
 // top-level edits of the current section win over the stored copy
 p.comp='funk';assert.strictEqual(Core.songAt(p,0).view.comp,'funk');
