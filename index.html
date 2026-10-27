@@ -431,7 +431,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 .sbox{border:1px solid var(--line); border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:8px}
 .sbox .seg.big button{height:34px; font-size:13px}
 #sfOnly{display:flex; flex-direction:column; gap:6px}
-#sfList{background:color-mix(in srgb,var(--text) 8%,var(--panel-2))}
+#sfList,#recentList{background:color-mix(in srgb,var(--text) 8%,var(--panel-2))}
 #sfRows .sfrow.sub,#sfRows.multi .sfrow.sub{grid-template-columns:52px minmax(0,1fr) 72px; margin:-2px 0 0 14px; padding-left:10px; border-left:2px solid var(--mint)}
 #sfRows.nofont .sfrow.tr:not(.drow){display:none}
 #sfRows.nofont .drow>:not(.lbl){display:none}
@@ -444,8 +444,14 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 #sfRows .fs{display:none}
 #sfRows.multi .fs{display:block}
 #sfRows select{min-width:0; font-size:12px; padding:0 4px 0 7px; text-overflow:ellipsis}
-#sfList{border:1px solid var(--line); border-radius:12px; padding:4px 10px; background:var(--panel-2); display:flex; flex-direction:column; gap:2px}
-#sfList .sfbar .btn{min-height:28px; height:28px}
+#sfList,#recentList{border:1px solid var(--line); border-radius:12px; padding:4px 10px; background:var(--panel-2); display:flex; flex-direction:column; gap:2px}
+#sfList .sfbar .btn,#recentList .sfbar .btn{min-height:28px; height:28px}
+#recentBox{gap:6px}
+#recentBox .note{margin:0}
+#recentList .sfname{display:flex; flex-direction:column; line-height:1.25; padding:3px 0}
+#recentList .sfname b{font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis}
+#recentList .sfname small{font-size:11px; overflow:hidden; text-overflow:ellipsis}
+#recentList .cur{font-size:11px; color:var(--dim); flex:none; padding:0 6px}
 #sheetFile .btn{min-height:32px; height:32px; padding:0 12px; font-size:13px; margin-top:0}
 #sheetFile .seg.lg button{height:32px}
 #sheetFile .dtop .btn{font-size:12px; padding:0 10px}
@@ -595,6 +601,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
     <button class="btn primary" id="btnMidi" type="button">Export MIDI</button>
     <p class="note">Chords, Bass and Melody go out as separate tracks (plus Drums on channel 10 when the drum button is on). Opened from claude.ai the .mid is zipped (unzip it first); a saved copy of the page downloads the plain .mid.</p>
     <input id="fileIn" type="file" accept=".phrasenote" hidden>
+    <div class="sbox" id="recentBox"><span class="lbl">Recent projects</span><div id="recentList"></div><p class="note" id="storeNote"></p></div>
     </div>
     <div class="snd">
       <div class="sec"><span class="lbl">Sound</span></div>
@@ -641,7 +648,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.8.35</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.9.0</p>
   </div>
 </section>
 
@@ -1056,6 +1063,37 @@ const Core=(function(){
     });
     return out.map(function(n){return {s:n.s,l:n.l,p:n.p};});
   }
+  /* ---- the melody follows Key / Scale / Time changes ---- */
+  /* Key: move every note by the smallest interval between the two keys (-6..+5 semitones) */
+  function shiftMelKey(mel,k0,k1){
+    let d=((k1-k0)%12+12)%12;if(d>5)d-=12;
+    if(!d)return mel.slice();
+    return mel.map(function(n){return {s:n.s,l:n.l,p:Math.max(0,Math.min(127,n.p+d))};});
+  }
+  /* Scale: each note keeps its scale degree (C major E -> C minor E-flat). A note outside the old scale moves with the degree below it. */
+  function mapMelScale(mel,key,sc0,sc1){
+    const a=SCALES[sc0], b=SCALES[sc1];if(!a||!b||sc0===sc1)return mel.slice();
+    return mel.map(function(n){
+      const rel=((n.p-key)%12+12)%12;let i=6;while(i>0&&a[i]>rel)i--;
+      return {s:n.s,l:n.l,p:Math.max(0,Math.min(127,n.p+b[i]-a[i]))};
+    });
+  }
+  /* Time: a note keeps its bar and beat. Beats the new meter does not have are dropped; between simple and compound
+     meters the beat (quarter <-> dotted quarter) is stretched. Pickup notes are counted back from bar 1. */
+  function remapMelMeter(mel,ts0,ts1){
+    const A=meter({ts:ts0}), B=meter({ts:ts1}), r=B.bt/A.bt, out=[];let dropped=0;
+    mel.forEach(function(n){
+      if(n.s<0){
+        const dist=Math.round(-n.s*r);
+        if(dist>B.bar){dropped++;return;}
+        out.push({s:-dist,l:Math.max(1,Math.round(n.l*r)),p:n.p});return;
+      }
+      const bar=Math.floor(n.s/A.bar), w=n.s-bar*A.bar, bi=Math.floor(w/A.bt), f=w-bi*A.bt;
+      if(bi>=B.bpb){dropped++;return;}
+      out.push({s:bar*B.bar+bi*B.bt+Math.round(f*r),l:Math.max(1,Math.round(n.l*r)),p:n.p});
+    });
+    return {mel:tidy(out),dropped:dropped};
+  }
   /* g = grid in ticks, k = strength 0..1, lens = also pull note ends onto the grid */
   function quantize(mel,g,k,lens,total,lo){
     lo=lo||0;
@@ -1214,24 +1252,35 @@ const Core=(function(){
     let melEnd=0;(p.mel||[]).forEach(function(n){if(n.s>=0||p.pick)melEnd=Math.max(melEnd,n.s+n.l);});
     const exBars=Math.max(p.bars,Math.ceil(melEnd/M.bar));
     const hasPick=p.pick&&(p.mel||[]).some(function(n){return n.s<0;}), off=hasPick?M.bar:0, total=exBars*M.bar+off;
-    const ce=[], be=[], me=[], de=[];
+    /* notes first ({t,e,st,n,v}), then events: a note that still sounds when the same pitch starts again is cut there,
+       so no note-on lands on a key that is already down (DAWs pair such overlaps unpredictably) */
+    const cn=[], bn=[], mn=[], dn=[];
     if(dpat){for(let s=(hasPick?-sps:0);s<exBars*sps;s++)drumsAt(p,s,dpat).forEach(function(e){
       const t0=s*(PPQ/2)+Math.round(e.off*PPQ)+off;if(t0<0)return;
-      de.push({t:t0,o:1,b:[0x99,e.n,(e.n===35||e.n===36||e.n===37||e.n===38||e.n===40)?100:Math.max(1,Math.min(127,e.vel))]});de.push({t:Math.min(total,t0+60),o:0,b:[0x89,e.n,0]});});}
+      dn.push({t:t0,e:Math.min(total,t0+60),st:0x99,n:e.n,v:(e.n===35||e.n===36||e.n===37||e.n===38||e.n===40)?100:Math.max(1,Math.min(127,e.vel))});});}
     for(let s=0;s<exBars*sps;s++){
       eventsAt(p,s%loopSteps,dpat).forEach(function(e){
         const t0=s*(PPQ/2)+Math.round((e.off||0)*PPQ)+off, t1=Math.min(total,t0+Math.max(1,Math.round(e.dur*PPQ)));
-        const L=e.k==='c'?ce:be, c=e.k==='c'?0:1;
-        const v=Math.max(1,Math.min(127,Math.round(e.vel)));
-        L.push({t:t0,o:1,b:[0x90|c,e.midi,v]});
-        L.push({t:t1,o:0,b:[0x80|c,e.midi,0]});
+        (e.k==='c'?cn:bn).push({t:t0,e:t1,st:e.k==='c'?0x90:0x91,n:e.midi,v:Math.max(1,Math.min(127,Math.round(e.vel)))});
       });
     }
     (p.mel||[]).forEach(function(n){
       if(n.s<0&&!p.pick)return;
-      me.push({t:n.s+off,o:1,b:[0x92,n.p,Math.max(1,Math.min(127,Math.round(melVel(p,n.s))))]});
-      me.push({t:Math.min(total,n.s+n.l+off),o:0,b:[0x82,n.p,0]});
+      mn.push({t:n.s+off,e:Math.min(total,n.s+n.l+off),st:0x92,n:n.p,v:Math.max(1,Math.min(127,Math.round(melVel(p,n.s))))});
     });
+    function evs(notes){
+      notes=notes.filter(function(x){return x.t<total&&x.e>x.t;}).sort(function(a,b){return a.t-b.t||b.v-a.v;});
+      const last={}, keep=[];
+      notes.forEach(function(x){
+        const q=last[x.n];
+        if(q){if(q.t===x.t)return; if(q.e>x.t)q.e=x.t;}
+        last[x.n]=x;keep.push(x);
+      });
+      const out=[];
+      keep.forEach(function(x){out.push({t:x.t,o:1,b:[x.st,x.n,x.v]});out.push({t:x.e,o:0,b:[x.st-0x10,x.n,0]});});
+      return out;
+    }
+    const ce=evs(cn), be=evs(bn), me=evs(mn), de=evs(dn);
     function track(evs,head){
       evs.sort(function(a,b){return a.t-b.t||a.o-b.o;});
       const out=head.slice(); let last=0;
@@ -1342,6 +1391,11 @@ const Core=(function(){
     p.melAmt=o.melAmt!=null?clamp(o.melAmt,0,100):(o.melPat===false?0:D.melAmt);
     p.pick=!!o.pick;
     p.dp=normDp(o.dp,p);
+    /* project identity (for the recent list) and drums, saved with the project */
+    p.id=typeof o.id==='string'&&/^[A-Za-z0-9_-]{1,40}$/.test(o.id)?o.id:null;
+    p.name=typeof o.name==='string'?o.name.slice(0,80):'';
+    p.drum=typeof o.drum==='boolean'?o.drum:null;
+    p.dpat=DPATS.some(function(d){return d[0]===o.dpat;})?o.dpat:null;
     return p;
   }
   function fileStem(p){
@@ -1351,7 +1405,7 @@ const Core=(function(){
   }
   return {SCALES:SCALES,SCALE_NAMES:SCALE_NAMES,KEY_NAMES:KEY_NAMES,chordInfo:chordInfo,voicing:voicing,
     noteName:noteName,bassNote:bassNote,notesFor:notesFor,
-    COMPS:COMPS,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,
+    COMPS:COMPS,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,
     POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM};
 })();
 
@@ -1532,14 +1586,16 @@ const Sf2=(function(){
 'use strict';
 const $=function(s){return document.querySelector(s);};
 const LS='chord-sketch-v1';
+const RK='phrasenote-recent', RMAX=10;
+let recentT=null, storeOk=null;
 let P=Core.fresh(Math.random), sel=0, flashSel=-1, bassSel=0, popOpen=false, undo=[], redo=[], dl=null;
 try{const raw=localStorage.getItem(LS); if(raw)P=Core.normalize(JSON.parse(raw));}catch(e){}
 
 /* ---------- state helpers ---------- */
 const serialize=function(){return JSON.stringify(P);};
-function persist(){try{localStorage.setItem(LS,serialize());}catch(e){}}
+function persist(){try{localStorage.setItem(LS,serialize());}catch(e){}recentKeep();}
 function pushUndo(snap){undo.push(snap);if(undo.length>100)undo.shift();redo.length=0;persist();renderTop();}
-function applySnap(s){P=Core.normalize(JSON.parse(s));persist();renderAll();}
+function applySnap(s){const d={drum:P.drum,dpat:P.dpat,dp:P.dp,id:P.id,name:P.name};P=Core.normalize(JSON.parse(s));Object.assign(P,d);persist();renderAll();}
 function doUndo(){if(!undo.length)return;redo.push(serialize());applySnap(undo.pop());}
 function doRedo(){if(!redo.length)return;undo.push(serialize());applySnap(redo.pop());}
 function edit(fn){const s=serialize();fn();P.sample=false;pushUndo(s);renderAll();}
@@ -2011,7 +2067,7 @@ function pickSlash(i,btn){
   if(sel<7)Aud.preview(selCode());
   setTimeout(function(){popOpen=false;renderSlash(true);},220);
 }
-function renderAll(){renderTop();renderPalette();renderOpts();renderGrid();renderVel();renderComp();renderSlash();renderMelody();}
+function renderAll(){drumsFromP();renderTop();renderPalette();renderOpts();renderGrid();renderVel();renderComp();renderSlash();renderMelody();}
 
 /* ---------- grid painting ---------- */
 let paint=null;
@@ -2149,15 +2205,19 @@ const TIPS={
   Core.TS_LIST.forEach(function(k){const o=document.createElement('option');o.value=k;o.textContent=k;ts.appendChild(o);});
   ts.addEventListener('change',function(){
     if(playing)stopPlay();
+    let dropped=0;
     edit(function(){
-      const ob=Core.meter(P).bpb;P.ts=ts.value;
+      const ob=Core.meter(P).bpb, t0=P.ts;P.ts=ts.value;
       const M=Core.meter(P), UL=Core.unitsFor(M.bpb);
       P.chords=Core.remapChords(P.chords,P.bars,ob,M.bpb);
       if(UL.indexOf(P.unit)<0)P.unit=UL.length===3?2:1;
+      const r=Core.remapMelMeter(P.mel,t0,P.ts);P.mel=r.mel;dropped=r.dropped;
     });
+    K.cur=Math.max(0,K.cur-K.cur%barTk());showCursor();
+    if(dropped)toast('Removed '+dropped+(dropped>1?' melody notes':' melody note')+' on beats that '+ts.value+' does not have. Undo brings '+(dropped>1?'them':'it')+' back.');
   });
-  ks.addEventListener('change',function(){edit(function(){P.key=+ks.value;});});
-  ss.addEventListener('change',function(){edit(function(){P.scale=ss.value;});});
+  ks.addEventListener('change',function(){edit(function(){P.mel=Core.shiftMelKey(P.mel,P.key,+ks.value);P.key=+ks.value;});});
+  ss.addEventListener('change',function(){edit(function(){P.mel=Core.mapMelScale(P.mel,P.key,P.scale,ss.value);P.scale=ss.value;});});
 })();
 $('#playBtn').addEventListener('click',togglePlay);
 function setBpm(v){v=Math.max(40,Math.min(200,Math.round(Number(v))));if(!isFinite(v))return;P.bpm=v;$('#bpmVal').value=v;persist();}
@@ -2167,7 +2227,7 @@ $('#rewBtn').addEventListener('click',function(){
   if(playing)seekPlay();
   showCursor(true);
 });
-$('#drumBtn').addEventListener('click',function(){U.drum=!U.drum;saveU();renderTop();if(U.drum&&!playing){Aud.ensure();Aud.audition('d');}});
+$('#drumBtn').addEventListener('click',function(){setDrums(!U.drum);renderTop();if(U.drum&&!playing){Aud.ensure();Aud.audition('d');}});
 
 (function(){
   const dlg=$('#patDlg'), list=$('#patList');
@@ -2185,7 +2245,7 @@ $('#drumBtn').addEventListener('click',function(){U.drum=!U.drum;saveU();renderT
   dlg.addEventListener('click',function(e){if(e.target===dlg)close();});
   list.addEventListener('click',function(e){
     const b=e.target.closest?e.target.closest('button[data-p]'):null;if(!b)return;
-    U.dpat=b.dataset.p;U.drum=true;saveU();
+    setDrums(true,b.dataset.p);
     const sel=$('#dPat');if(sel)sel.value=U.dpat;
     renderTop();build();Aud.ensure();if(!playing)Aud.audition('d');
     toast('Drums: '+b.textContent);
@@ -2255,6 +2315,13 @@ try{if(!localStorage.getItem('phrasenote-init-1')){U.view='roll';U.snap=240;U.le
 try{if(!localStorage.getItem('phrasenote-kst-g3')){U.kst=25;localStorage.setItem('phrasenote-kst-g3','1');}}catch(e){}
 U.kst=Math.max(7,Math.min(42,Math.round(+U.kst||25)));U.krq=[0,120,240,480].indexOf(+U.krq)<0?120:+U.krq;U.kmode=U.kmode==='step'?'step':'live';U.kcount=U.kcount!==false;U.lat=Math.max(0,Math.min(400,Math.round(+U.lat||0)));U.kbd=!!U.kbd;U.qopen=!!U.qopen;
 function saveU(){try{localStorage.setItem('phrasenote-ui',JSON.stringify(U));}catch(e){}}
+/* drums on/off and the pattern belong to the project; U keeps the last choice for projects saved before that */
+function setDrums(on,pat){U.drum=!!on;if(pat)U.dpat=pat;P.drum=U.drum;P.dpat=U.dpat;saveU();persist();}
+function drumsFromP(){
+  if(typeof P.drum==='boolean')U.drum=P.drum;else P.drum=U.drum;
+  if(P.dpat)U.dpat=P.dpat;else P.dpat=U.dpat;
+  saveU();const d=$('#dPat');if(d&&d.value!==U.dpat)d.value=U.dpat;
+}
 let rd=null, phEl=null, rollInit=false, holdFollow=0;
 const plane=$('#rPlane'), roll=$('#roll');
 const SV='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
@@ -3214,7 +3281,7 @@ function setSheet(name){
   openSheet=name;
   $('#sheetFile').hidden=name!=='file';
   $('#sheetBack').hidden=!name;
-  if(name==='file')abufNote();
+  if(name==='file'){abufNote();renderRecent();}
   $('#kbd').style.visibility=name?'hidden':'';
   $('#dockFile').setAttribute('aria-expanded',name==='file'?'true':'false');
 }
@@ -3278,7 +3345,7 @@ $('#btnMidi').addEventListener('click',function(){
 function ownExt(ext){return dl?'.json':ext;}
 $('#btnSave').addEventListener('click',function(){
   const ext=ownExt('.phrasenote');
-  askName('Save project',Core.fileStem(P),ext,function(name){saveFile(name+ext,JSON.stringify(P,null,1));});
+  askName('Save project',P.name||Core.fileStem(P),ext,function(name){P.name=name;persist();saveFile(name+ext,JSON.stringify(P,null,1));});
 });
 $('#btnLoad').addEventListener('click',function(){$('#fileIn').accept=dl?'.phrasenote,.json':'.phrasenote';$('#fileIn').click();});
 $('#fileIn').addEventListener('change',function(e){
@@ -3287,7 +3354,7 @@ $('#fileIn').addEventListener('change',function(e){
   rd.onload=function(){
     try{
       const np=Core.normalize(JSON.parse(String(rd.result)));
-      const s=serialize();P=np;pushUndo(s);renderAll();setSheet(null);toast('Project opened.');
+      recentSave();const s=serialize();P=np;if(!P.id)P.id=newId();if(!P.name)P.name=f.name.replace(/\.[^.]*$/,'');pushUndo(s);renderAll();setSheet(null);toast('Project opened.');
     }catch(x){toast('This file cannot be read.');}
   };
   rd.readAsText(f);e.target.value='';
@@ -3307,8 +3374,8 @@ $('#btnNew').addEventListener('click',function(){
   if(!newArmed){newArmed=true;b.textContent='Tap again to start a new project';newTimer=setTimeout(function(){newArmed=false;b.textContent='New project';},3000);return;}
   clearTimeout(newTimer);newArmed=false;b.textContent='New project';
   if(playing)stopPlay();
-  const s0=serialize();
-  P=Core.fresh(Math.random);sel=0;bassSel=0;
+  recentSave();const s0=serialize();
+  P=Core.fresh(Math.random);P.id=newId();sel=0;bassSel=0;
   U.view='roll';U.snap=240;U.len=240;U.kbd=false;K.open=false;saveU();
   pushUndo(s0);K.cur=0;renderAll();showTab('chord');setSheet(null);
   toast('New project: '+P.bpm+' BPM, '+(P.scale==='major'?'C major':'A minor')+'.');
@@ -3554,7 +3621,7 @@ document.addEventListener('keydown',function(e){
     const dp=$('#dPat');
     let og=null,gn='';Core.DPATS.forEach(function(d){if(d[2]!=='Basic'&&d[2]!==gn){gn=d[2];og=document.createElement('optgroup');og.label=gn;dp.appendChild(og);}(d[2]==='Basic'?dp:og).appendChild(new Option(d[1],d[0]));});
     dp.value=U.dpat;
-    dp.addEventListener('change',function(){U.dpat=dp.value;if(U.dpat==='custom'&&!P.dp){P.dp=Core.dpFromPreset(P,'rock8',16);persist();}saveU();Aud.ensure();Aud.audition('d');});
+    dp.addEventListener('change',function(){setDrums(U.drum,dp.value);if(U.dpat==='custom'&&!P.dp){P.dp=Core.dpFromPreset(P,'rock8',16);persist();}Aud.ensure();Aud.audition('d');});
     /* ---- drum sequencer ---- */
     const dSl=$('#dSlide'), dGrid=$('#dGrid'); let dTimer=null, dStep=0, dNext=0;
     const lanes=Core.DLANES;
@@ -3586,7 +3653,7 @@ document.addEventListener('keydown',function(e){
         o[l[0]]=r;});
       P.dp=o;persist();dRender();
     }
-    function dUse(){if(U.dpat!=='custom'){U.dpat='custom';saveU();$('#dPat').value='custom';}}
+    function dUse(){if(U.dpat!=='custom'){setDrums(U.drum,'custom');$('#dPat').value='custom';}}
     function dOpen(on){
       dSl.classList.toggle('open',on);if(on)dSl.removeAttribute('inert');else dSl.setAttribute('inert','');
       $('#dEdit').setAttribute('aria-expanded',on?'true':'false');
@@ -3642,6 +3709,64 @@ document.addEventListener('keydown',function(e){
     });
   }).catch(function(){});
 })();
+
+/* ---------- recent projects: the last 10, kept on this device ---------- */
+function newId(){return 'p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+function recentGet(){try{const a=JSON.parse(localStorage.getItem(RK)||'[]');return Array.isArray(a)?a.filter(function(x){return x&&x.id&&x.p;}):[];}catch(e){return [];}}
+function recentPut(a){while(a.length){try{localStorage.setItem(RK,JSON.stringify(a));return;}catch(e){a.pop();}}try{localStorage.removeItem(RK);}catch(e){}}
+function recentKeep(){clearTimeout(recentT);recentT=setTimeout(recentSave,1200);}
+/* an untouched example project is not worth keeping */
+function recentSave(){
+  clearTimeout(recentT);recentT=null;
+  if(P.sample&&!P.mel.length)return;
+  if(!P.id){P.id=newId();try{localStorage.setItem(LS,serialize());}catch(e){}}
+  const a=recentGet().filter(function(x){return x.id!==P.id;});
+  a.unshift({id:P.id,t:Date.now(),p:JSON.parse(serialize())});
+  recentPut(a.slice(0,RMAX));
+  if(openSheet==='file')renderRecent();
+}
+function autoLabel(p){
+  const names=[];let last=null;
+  for(let i=0;i<p.chords.length&&names.length<4;i++){const c=p.chords[i];if(c!=null&&c!==last){names.push(Core.chordInfo(c,p.key,p.scale).name);}last=c;}
+  return Core.KEY_NAMES[p.key]+(p.scale==='major'?'':'m')+' · '+p.bpm+' BPM'+(names.length?' · '+names.join(' '):'');
+}
+function when(t){const d=new Date(t),z=function(n){return (n<10?'0':'')+n;};return z(d.getMonth()+1)+'-'+z(d.getDate())+' '+z(d.getHours())+':'+z(d.getMinutes());}
+function renderRecent(){
+  const L=$('#recentList');if(!L)return;L.innerHTML='';
+  const a=recentGet();
+  if(!a.length){const r=document.createElement('div');r.className='sfbar';r.innerHTML='<span class="sfname"><small>Projects you work on are listed here automatically.</small></span>';L.appendChild(r);}
+  a.forEach(function(x){
+    let p;try{p=Core.normalize(x.p);}catch(e){return;}
+    const r=document.createElement('div');r.className='sfbar';
+    const n=document.createElement('span');n.className='sfname';
+    const b=document.createElement('b');b.textContent=p.name||autoLabel(p);
+    const sm=document.createElement('small');sm.textContent=when(x.t)+(p.name?' · '+autoLabel(p):'');
+    n.appendChild(b);n.appendChild(sm);r.appendChild(n);
+    if(x.id===P.id){const c=document.createElement('span');c.className='cur';c.textContent='Open now';r.appendChild(c);}
+    else{const o=document.createElement('button');o.type='button';o.className='btn';o.textContent='Open';o.dataset.rid=x.id;r.appendChild(o);}
+    L.appendChild(r);
+  });
+  $('#storeNote').textContent=storeOk===true
+    ?'Kept on this device and protected from automatic clean-up. Save project for a copy you can move.'
+    :'Kept on this device. The browser may clear it when storage runs low, so Save project for a copy you can keep.';
+}
+$('#recentList').addEventListener('click',function(e){
+  const b=e.target.closest?e.target.closest('[data-rid]'):null;if(!b)return;
+  const x=recentGet().filter(function(y){return y.id===b.dataset.rid;})[0];if(!x)return;
+  if(playing)stopPlay();
+  recentSave();
+  const s=serialize();P=Core.normalize(x.p);if(!P.id)P.id=x.id;
+  pushUndo(s);K.cur=0;renderAll();setSheet(null);toast('Opened: '+(P.name||autoLabel(P)));
+});
+/* keep the latest state when the app is hidden or closed */
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='hidden'&&recentT)recentSave();});
+window.addEventListener('pagehide',function(){if(recentT)recentSave();});
+/* ask the browser not to clear this app's storage on its own (no prompt in Chrome-based browsers; may be refused) */
+try{
+  if(navigator.storage&&navigator.storage.persist){
+    navigator.storage.persisted().then(function(v){return v||navigator.storage.persist();}).then(function(v){storeOk=!!v;}).catch(function(){storeOk=false;});
+  }
+}catch(e){}
 
 /* ---------- boot ---------- */
 /* One-time reset so a previously saved play style cannot override comping on every beat. */
