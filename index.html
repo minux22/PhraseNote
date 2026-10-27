@@ -262,6 +262,7 @@ body.kbd-open{padding-bottom:calc(92px + var(--kbdh,150px) + env(safe-area-inset
   padding:8px max(16px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
 .dock-in{max-width:560px; margin:0 auto; display:flex; gap:12px}
 .dbtn{display:flex; align-items:center; justify-content:center; gap:8px; flex:1; height:46px; border-radius:999px; border:1px solid var(--line); background:var(--panel-2); font-weight:700; font-size:14px}
+.dbtn[hidden]{display:none}
 .dbtn[aria-expanded="true"]{background:var(--amber); border-color:var(--amber); color:var(--on-amber)}
 .dock,.sheet,.kbd,.dlgback{--amber:var(--mint); --on-amber:var(--mint-ink); --blue:var(--mint); --on-blue:var(--mint-ink); --chord:var(--mint); --chord-ink:var(--mint-ink)}
 .dock{border-top:2px solid var(--mint)}
@@ -640,7 +641,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.8.33</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.8.34</p>
   </div>
 </section>
 
