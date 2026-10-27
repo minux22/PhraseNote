@@ -1,9 +1,15 @@
-const CACHE='phrasenote-v0.9.0';
+const CACHE='phrasenote-v0.9.1';
 const FILES=['./','./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
-// network first (so a new upload shows up), cache fallback (so it opens offline)
+// Cache first, so the app opens at once even on a weak signal; the network copy is fetched in the background
+// and saved for next time (a new version therefore shows on the next launch).
 self.addEventListener('fetch',e=>{
-  if(e.request.method!=='GET')return;
-  e.respondWith(fetch(e.request).then(r=>{const cp=r.clone();caches.open(CACHE).then(c=>c.put(e.request,cp));return r;}).catch(()=>caches.match(e.request).then(m=>m||caches.match('./index.html'))));
+  const req=e.request;
+  if(req.method!=='GET'||new URL(req.url).origin!==self.location.origin)return;
+  e.respondWith(caches.open(CACHE).then(c=>c.match(req,{ignoreSearch:true}).then(hit=>{
+    const net=fetch(req).then(r=>{if(r&&r.ok)c.put(req,r.clone());return r;}).catch(()=>null);
+    if(hit){e.waitUntil(net);return hit;}
+    return net.then(r=>r||c.match('./index.html'));
+  })));
 });

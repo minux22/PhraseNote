@@ -591,7 +591,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
     <button class="btn" id="btnSave" type="button">Save project</button>
     <button class="btn primary" id="btnMidi" type="button">Export MIDI</button>
     <p class="note">Chords, Bass and Melody go out as separate tracks (plus Drums on channel 10 when the drum button is on). Opened from claude.ai the .mid is zipped (unzip it first); a saved copy of the page downloads the plain .mid.</p>
-    <input id="fileIn" type="file" accept=".phrasenote" hidden>
+    <input id="fileIn" type="file" hidden>
     <div class="sbox" id="recentBox"><span class="lbl">Recent projects</span><div id="recentList"></div><p class="note" id="storeNote"></p></div>
     </div>
     <div class="snd">
@@ -615,7 +615,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
           </div>
         </div></div>
       </div>
-      <div class="sbox" id="spBox"><div class="sfpre"><button class="btn" id="spSave" type="button">Save preset</button><button class="btn" id="spOpen" type="button">Load preset</button></div><input id="spIn" type="file" accept=".pnsound" hidden></div>
+      <div class="sbox" id="spBox"><div class="sfpre"><button class="btn" id="spSave" type="button">Save preset</button><button class="btn" id="spOpen" type="button">Load preset</button></div><input id="spIn" type="file" hidden></div>
       <div class="sbox">
         <div class="sfrow" id="sfRevRow"><span class="lbl">Reverb</span><span></span><input id="sfRv" type="range" min="0" max="100" step="1" aria-label="Reverb amount"></div>
         <div class="sfrow"><span class="lbl">Master</span><span style="font-size:11px;color:var(--dim)">50 = normal</span><input id="sfMaster" type="range" min="0" max="100" step="1" aria-label="Master volume"></div>
@@ -639,7 +639,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.9.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.9.1</p>
   </div>
 </section>
 
@@ -1618,7 +1618,7 @@ const Aud=(function(){
     return F.p;
   }
   /* the sample cache budget is shared between all loaded files */
-  function recap(){const ids=Object.keys(fonts);ids.forEach(function(i){if(fonts[i].p)fonts[i].p.setCap(48e6/Math.max(1,ids.length));});}
+  function recap(){const ids=Object.keys(fonts);ids.forEach(function(i){if(fonts[i].p)fonts[i].p.setCap(32e6/Math.max(1,ids.length));});}
   function sfv(k,m,vel,t,dur,mul,zv){
     const T=trk[k];if(T.pi<0||!T.fid)return null;
     const p=getP(T.fid);if(!p)return null;
@@ -1648,7 +1648,7 @@ const Aud=(function(){
       sh.curve=cv;
       master.connect(c);c.connect(mk);mk.connect(lim);lim.connect(sh);sh.connect(ctx.destination);
     }
-    if(ctx.state==='suspended')ctx.resume();
+    if(ctx.state!=='running'&&ctx.state!=='closed'){try{ctx.resume();}catch(e){}}
     return ctx;
   }
   function hz(m){return 440*Math.pow(2,(m-69)/12);}
@@ -1858,7 +1858,7 @@ function startPlay(){
     else{cinFrom=-bs;cinTo=0;nextStep=h;}
   }else nextStep=h;
   playing=true;nextTime=ctx.currentTime+0.08;queue=[];
-  markHead();tick();timer=setInterval(tick,25);renderTop();
+  markHead();tick();timer=setInterval(tick,25);renderTop();wakeOn();
 }
 /* jump while playing (tap the bar-number strip or Rewind) */
 function seekPlay(){
@@ -1867,7 +1867,7 @@ function seekPlay(){
   nextStep=headStep();nextTime=Aud.ctx().currentTime+0.06;queue=[];
 }
 function stopPlay(){
-  endRec();playing=false;clearInterval(timer);Aud.stopAll();setNow(-1);
+  endRec();playing=false;clearInterval(timer);Aud.stopAll();setNow(-1);wakeOff();
   K.cur=Math.floor(Math.max(0,K.cur)/240)*240;
   if(!inMelody())K.cur=K.cur%(P.bars*barTk());
   renderTop();
@@ -1875,6 +1875,18 @@ function stopPlay(){
   showCursor();markHead();
 }
 function togglePlay(){if(playing)stopPlay();else startPlay();}
+/* keep the screen on while playing; the browser drops the lock when the app is hidden */
+let wake=null;
+function wakeOn(){try{if(!navigator.wakeLock||wake)return;navigator.wakeLock.request('screen').then(function(l){if(!playing){l.release();return;}wake=l;l.addEventListener('release',function(){if(wake===l)wake=null;});}).catch(function(){});}catch(e){}}
+function wakeOff(){const l=wake;wake=null;if(l){try{l.release();}catch(e){}}}
+/* Hidden (another app, screen off): stop cleanly, because a background page only gets a timer tick about once a second
+   and playback would stutter. Back again: wake the audio, which the phone may have paused. */
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState==='hidden'){if(playing)stopPlay();if(window.__dStop)window.__dStop();return;}
+  const c=Aud.ctx();if(c&&c.state!=='running'&&c.state!=='closed'){try{c.resume();}catch(e){}}
+});
+/* any touch also wakes audio that a call or another app paused */
+document.addEventListener('pointerdown',function(){const c=Aud.ctx();if(c&&c.state!=='running'&&c.state!=='closed'){try{c.resume();}catch(e){}}},true);
 
 let nowEl=null, nowBeat=-1, cellEls=[];
 function setNow(b){
@@ -3338,16 +3350,20 @@ $('#btnSave').addEventListener('click',function(){
   const ext=ownExt('.phrasenote');
   askName('Save project',P.name||Core.fileStem(P),ext,function(name){P.name=name;persist();saveFile(name+ext,JSON.stringify(P,null,1));});
 });
-$('#btnLoad').addEventListener('click',function(){$('#fileIn').accept=dl?'.phrasenote,.json':'.phrasenote';$('#fileIn').click();});
+/* no extension filter: some phones grey out files whose extension they do not know; the contents are checked instead */
+$('#btnLoad').addEventListener('click',function(){$('#fileIn').click();});
 $('#fileIn').addEventListener('change',function(e){
   const f=e.target.files&&e.target.files[0];if(!f)return;
   const rd=new FileReader();
   rd.onload=function(){
     try{
-      const np=Core.normalize(JSON.parse(String(rd.result)));
+      const o=JSON.parse(String(rd.result));
+      if(!o||typeof o!=='object'||!Array.isArray(o.chords)||o.kind==='sound')throw new Error('not a project');
+      const np=Core.normalize(o);
       recentSave();const s=serialize();P=np;if(!P.id)P.id=newId();if(!P.name)P.name=f.name.replace(/\.[^.]*$/,'');pushUndo(s);renderAll();setSheet(null);toast('Project opened.');
-    }catch(x){toast('This file cannot be read.');}
+    }catch(x){toast('This is not a PhraseNote project file.');}
   };
+  if(f.size>5*1048576){toast('This is not a PhraseNote project file.');e.target.value='';return;}
   rd.readAsText(f);e.target.value='';
 });
 let clearArmed=false, clearTimer=null;
@@ -3423,13 +3439,13 @@ document.addEventListener('keydown',function(e){
   function grp(label){const g=document.createElement('optgroup');g.label=label;return g;}
   const selFile={c:null,b:null,m:null,d:null};
   function fileById(id){return files.filter(function(x){return x.id===id;})[0]||null;}
-  function pool(F,k){return k==='d'?F.sf.kits:F.sf.list;}
+  function pool(F,k){return k==='d'?F.m.kits:F.m.list;}
   function presetOpts(el,F,k){
     el.innerHTML='';el.appendChild(new Option('Basic synth','-1'));
     if(!F)return;
-    if(k==='d'){F.sf.kits.forEach(function(p){el.appendChild(new Option(p.name,String(p.i)));});return;}
+    if(k==='d'){F.m.kits.forEach(function(p){el.appendChild(new Option(p.name,String(p.i)));});return;}
     const g0=grp('General MIDI'), g1=grp('Variations');
-    F.sf.list.forEach(function(p){
+    F.m.list.forEach(function(p){
       const o=new Option(p.bank===0?(p.num+1)+'. '+p.name:p.name+' ('+p.bank+':'+(p.num+1)+')',String(p.i));
       (p.bank===0?g0:g1).appendChild(o);
     });
@@ -3450,10 +3466,10 @@ document.addEventListener('keydown',function(e){
     const none={fid:null,pi:-1};
     if(!files.length||isBasic())return none;
     const t=S[k];if(t===null)return none;
-    let F=t.f?files.filter(function(x){return x.id===t.f;})[0]:null, i=F?F.sf.indexOf(t.b,t.n):-1;
-    if(i<0){for(let j=0;j<files.length&&i<0;j++){const q=files[j].sf.indexOf(t.b,t.n);if(q>=0){F=files[j];i=q;}}}
-    if(i<0){F=files[0];i=F.sf.indexOf(DEFP[k][0],DEFP[k][1]);}
-    if(i<0){const pool=k==='d'?F.sf.kits:F.sf.list;if(pool.length)i=pool[0].i;}
+    let F=t.f?files.filter(function(x){return x.id===t.f;})[0]:null, i=F?F.m.indexOf(t.b,t.n):-1;
+    if(i<0){for(let j=0;j<files.length&&i<0;j++){const q=files[j].m.indexOf(t.b,t.n);if(q>=0){F=files[j];i=q;}}}
+    if(i<0){F=files[0];i=F.m.indexOf(DEFP[k][0],DEFP[k][1]);}
+    if(i<0){const pool=k==='d'?F.m.kits:F.m.list;if(pool.length)i=pool[0].i;}
     return i<0?none:{fid:F.id,pi:i};
   }
   function apply(){
@@ -3469,6 +3485,7 @@ document.addEventListener('keydown',function(e){
     });
     $('#sfRv').value=S.rev;Aud.setReverb(S.rev/100*0.6);
     $('#sfMaster').value=S.mv;Aud.setMaster(mgain(S.mv));
+    syncLoaded();
   }
   function mb(n){return (n/1048576).toFixed(n<1048576*10?1:0)+' MB';}
   function ui(){
@@ -3481,18 +3498,50 @@ document.addEventListener('keydown',function(e){
     if(!on){const r=document.createElement('div');r.className='sfbar';r.innerHTML='<span class="sfname">No SoundFont loaded</span>';L.appendChild(r);}
     files.forEach(function(F){
       const r=document.createElement('div');r.className='sfbar';
-      const n=document.createElement('span');n.className='sfname';n.textContent=F.name+' · '+F.sf.list.length+' sounds · '+mb(F.size);
+      const n=document.createElement('span');n.className='sfname';n.textContent=F.name+' · '+F.m.list.length+' sounds · '+mb(F.size)+(F.sf?' · in use':'');
       const b=document.createElement('button');b.type='button';b.className='btn';b.textContent='Remove';b.dataset.rm=F.id;
       r.appendChild(n);r.appendChild(b);L.appendChild(r);
     });
     const bt=$('#btnSf');bt.textContent=on?'Add SoundFont':'Load SoundFont';bt.hidden=files.length>=MAXF;
     $('#sfNote').textContent=on?'Saved on this device ('+mb(tot)+' in use, up to '+MAXF+' files). Each track can use a sound from any file.':'Load a .sf2 file (for example GeneralUser GS). It is kept on this device, so you only need to do this again to swap it. You can add more files and give each track its own.';
   }
-  function idxSave(){return tx('readwrite',function(st){return st.put(files.map(function(F){return {id:F.id,name:F.name};}),'sfidx');});}
+  /* the index keeps each file's sound list too, so a file can be listed and chosen without reading it into memory */
+  function idxRows(){return files.map(function(F){return {id:F.id,name:F.name,size:F.size,presets:F.m.raw};});}
+  function idxSave(){return tx('readwrite',function(st){return st.put(idxRows(),'sfidx');});}
+  function metaOf(raw){
+    const presets=raw.map(function(r,i){return {i:i,name:r[0],num:r[1],bank:r[2]};});
+    return {raw:raw,presets:presets,
+      list:presets.filter(function(p){return p.bank!==128;}).sort(function(a,b){return a.bank-b.bank||a.num-b.num;}),
+      kits:presets.filter(function(p){return p.bank===128;}).sort(function(a,b){return a.num-b.num;}),
+      indexOf:function(bank,num){for(let i=0;i<presets.length;i++)if(presets[i].bank===bank&&presets[i].num===num)return i;return -1;}};
+  }
+  function metaFromSf(f){return metaOf(f.presets.map(function(p){return [p.name,p.num,p.bank];}));}
+  /* only files that a track plays are read into memory; the others stay on the device until chosen */
+  function loadFile(F){
+    if(F.sf||F.loading||F.bad)return;
+    F.loading=true;
+    const big=F.size>8*1048576;if(big)toast('Loading '+F.name+'…');
+    tx('readonly',function(st){return st.get('sf:'+F.id);}).then(function(r){
+      F.loading=false;
+      if(files.indexOf(F)<0)return;
+      if(!r||!r.buf)throw new Error('missing');
+      F.sf=Sf2.parse(r.buf);Aud.addFont(F.id,F.sf);
+      if(big)toast(F.name+' ready.');
+      apply();ui();
+    }).catch(function(){F.loading=false;F.bad=true;toast('Could not read '+F.name+'. Remove it and load it again.');ui();});
+  }
+  function syncLoaded(){
+    const need={};
+    if(!isBasic())TR.forEach(function(k){const r=resolve(k);if(r.fid)need[r.fid]=1;});
+    files.forEach(function(F){
+      if(need[F.id]){if(!F.sf)loadFile(F);}
+      else if(F.sf){Aud.removeFont(F.id);F.sf=null;}
+    });
+  }
   /* parse a file and make it available; throws when it cannot be read */
   function add(id,buf,name){
     const f=Sf2.parse(buf);
-    files.push({id:id,name:name,size:buf.byteLength,sf:f});
+    files.push({id:id,name:name,size:buf.byteLength,sf:f,m:metaFromSf(f)});
     Aud.addFont(id,f);
   }
   function refresh(){fill();apply();ui();}
@@ -3502,31 +3551,31 @@ document.addEventListener('keydown',function(e){
     if(files.reduce(function(a,F){return a+F.size;},0)+buf.byteLength>MAXB){toast('Too much SoundFont data for this device (limit '+mb(MAXB)+' in total). Remove a file first.');return;}
     const id='f'+Date.now().toString(36);
     add(id,buf,name);S.basic=false;save();refresh();
-    tx('readwrite',function(st){st.put({name:name,buf:buf},'sf:'+id);return st.put(files.map(function(F){return {id:F.id,name:F.name};}),'sfidx');}).catch(function(){toast('Loaded, but it could not be kept for next time.');});
+    tx('readwrite',function(st){st.put({name:name,buf:buf},'sf:'+id);return st.put(idxRows(),'sfidx');}).catch(function(){toast('Loaded, but it could not be kept for next time.');});
     toast('SoundFont ready.');Aud.audition('m');
   }
   function removeFile(id){
     const i=files.map(function(F){return F.id;}).indexOf(id);if(i<0)return;
     files.splice(i,1);Aud.removeFont(id);refresh();
-    tx('readwrite',function(st){st.delete('sf:'+id);return st.put(files.map(function(F){return {id:F.id,name:F.name};}),'sfidx');}).catch(function(){});
+    tx('readwrite',function(st){st.delete('sf:'+id);return st.put(idxRows(),'sfidx');}).catch(function(){});
     toast(files.length?'File removed.':'Using the basic synth.');
   }
   TR.forEach(function(k){
     $('#'+IDS[k]).addEventListener('change',function(e){
       const v=e.target.value, F=fileById(selFile[k]);
       if(v==='-1'||!F)S[k]=null;
-      else{const pr=F.sf.presets[+v];S[k]={f:F.id,b:pr.bank,n:pr.num};}
+      else{const pr=F.m.presets[+v];S[k]={f:F.id,b:pr.bank,n:pr.num};}
       save();apply();Aud.audition(k);
     });
     $('#'+IDS[k]+'f').addEventListener('change',function(e){
       const F=fileById(e.target.value);if(!F)return;
       selFile[k]=F.id;
       const t=S[k]||pre(DEFP[k]);
-      let i=F.sf.indexOf(t.b,t.n);
-      if(i<0)i=F.sf.indexOf(DEFP[k][0],DEFP[k][1]);
+      let i=F.m.indexOf(t.b,t.n);
+      if(i<0)i=F.m.indexOf(DEFP[k][0],DEFP[k][1]);
       if(i<0&&pool(F,k).length)i=pool(F,k)[0].i;
       if(i<0){apply();return;}
-      const pr=F.sf.presets[i];S[k]={f:F.id,b:pr.bank,n:pr.num};
+      const pr=F.m.presets[i];S[k]={f:F.id,b:pr.bank,n:pr.num};
       save();apply();Aud.audition(k);
     });
     $('#'+VID[k]).addEventListener('input',function(e){S.v[k]=+e.target.value;const r=resolve(k);Aud.setTrack(k,r.fid,r.pi,gain(S.v[k]));});
@@ -3566,7 +3615,7 @@ document.addEventListener('keydown',function(e){
     ['m','c','b','d'].forEach(function(k){
       const r=resolve(k), F=r.fid?fileById(r.fid):null;
       if(!F){o.tracks[k]=null;return;}
-      const pr=F.sf.presets[r.pi];
+      const pr=F.m.presets[r.pi];
       o.tracks[k]={file:F.name,size:F.size,bank:pr.bank,num:pr.num,name:pr.name,vol:S.v[k]};
     });
     const d=new Date(), z=function(n){return (n<10?'0':'')+n;};
@@ -3574,23 +3623,23 @@ document.addEventListener('keydown',function(e){
     const ext=dl?'.json':'.pnsound';
     askName('Save sound preset',nm,ext,function(name){saveFile(name+ext,JSON.stringify(o,null,1));});
   });
-  $('#spOpen').addEventListener('click',function(){$('#spIn').accept=dl?'.pnsound,.json':'.pnsound';$('#spIn').click();});
+  $('#spOpen').addEventListener('click',function(){$('#spIn').click();});
   $('#spIn').addEventListener('change',function(e){
     const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;
     const rd=new FileReader();
     rd.onload=function(){
       try{
         const o=JSON.parse(String(rd.result));
-        if(!o||o.kind!=='sound'||!o.tracks)throw new Error('This is not a sound preset file.');
+        if(!o||o.kind!=='sound'||!o.tracks)throw new Error('This is not a PhraseNote sound preset file.');
         const miss=[];
         TR.forEach(function(k){
           const t=o.tracks[k];
           if(t===undefined)return;
           if(t===null){S[k]=null;return;}
           let F=files.filter(function(x){return x.name===t.file&&x.size===t.size;})[0]||files.filter(function(x){return x.name===t.file;})[0]||null;
-          if(!F||F.sf.indexOf(t.bank,t.num)<0){
+          if(!F||F.m.indexOf(t.bank,t.num)<0){
             if(t.file&&miss.indexOf(t.file)<0&&!F)miss.push(t.file);
-            F=null;for(let j=0;j<files.length&&!F;j++)if(files[j].sf.indexOf(t.bank,t.num)>=0)F=files[j];
+            F=null;for(let j=0;j<files.length&&!F;j++)if(files[j].m.indexOf(t.bank,t.num)>=0)F=files[j];
           }
           S[k]={f:F?F.id:null,b:t.bank|0,n:t.num|0};
           if(typeof t.vol==='number')S.v[k]=Math.max(0,Math.min(100,Math.round(t.vol)));
@@ -3598,8 +3647,9 @@ document.addEventListener('keydown',function(e){
         save();apply();
         toast(miss.length?'Preset applied. Missing file: '+miss.join(', '):'Sound preset applied.');
         Aud.audition('m');
-      }catch(x){toast((x&&x.message)||'This file cannot be read.');}
+      }catch(x){toast('This is not a PhraseNote sound preset file.');}
     };
+    if(f.size>1048576){toast('This is not a PhraseNote sound preset file.');return;}
     rd.readAsText(f);
   });
   $('#sfList').addEventListener('click',function(e){const b=e.target.closest?e.target.closest('[data-rm]'):null;if(b)removeFile(b.dataset.rm);});
@@ -3684,18 +3734,25 @@ document.addEventListener('keydown',function(e){
     window.__dStop=dStop;
   })();
   refresh();
-  /* restore saved files (an older single-file save is moved to the new list) */
+  /* restore saved files: the list comes from the index; a file is read into memory only when a track uses it.
+     Files saved by older versions have no sound list in the index yet: they are read once to make it. */
   tx('readonly',function(st){return st.get('sfidx');}).then(function(idx){
     if(idx&&idx.length){
-      return Promise.all(idx.map(function(e){return tx('readonly',function(st){return st.get('sf:'+e.id);}).then(function(r){return {e:e,r:r};});})).then(function(a){
+      const old=[];
+      idx.forEach(function(e){
+        if(Array.isArray(e.presets))files.push({id:e.id,name:e.name,size:e.size||0,sf:null,m:metaOf(e.presets)});
+        else old.push(e);
+      });
+      if(!old.length){refresh();return;}
+      return Promise.all(old.map(function(e){return tx('readonly',function(st){return st.get('sf:'+e.id);}).then(function(r){return {e:e,r:r};});})).then(function(a){
         a.forEach(function(x){if(x.r&&x.r.buf){try{add(x.e.id,x.r.buf,x.r.name);}catch(err){}}});
-        refresh();
+        idxSave().catch(function(){});refresh();
       });
     }
     return tx('readonly',function(st){return st.get('sf2');}).then(function(r){
       if(r&&r.buf){
         try{add('f0',r.buf,r.name);refresh();}catch(err){return;}
-        tx('readwrite',function(st){st.put({name:r.name,buf:r.buf},'sf:f0');return st.put([{id:'f0',name:r.name}],'sfidx');}).then(function(){return tx('readwrite',function(st){return st.delete('sf2');});}).catch(function(){});
+        tx('readwrite',function(st){st.put({name:r.name,buf:r.buf},'sf:f0');return st.put(idxRows(),'sfidx');}).then(function(){return tx('readwrite',function(st){return st.delete('sf2');});}).catch(function(){});
       }
     });
   }).catch(function(){});
