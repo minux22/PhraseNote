@@ -735,7 +735,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.10.4</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.10.5</p>
   </div>
 </section>
 
@@ -2708,7 +2708,7 @@ function renderMelOpts(){
   if(U.view==='staff'&&U.tool==='sel'){U.tool='move';saveU();}
   if(U.view!=='staff'&&U.tool==='move'){U.tool='sel';saveU();}
   const rlTools=[['pen','Pen',ICO.pen],['sel','Select and move',ICO.sel],['pan','Pan (scroll)',ICO.hand]];
-  const stTools=[['pen','Pen',ICO.pen],['move','Move',ICO.move],['pan','Pan (scroll)',ICO.hand]];
+  const stTools=[['pen','Pen',ICO.pen],['move','Select and move',ICO.sel],['pan','Pan (scroll)',ICO.hand]];
   $('#selBar').hidden=!(U.view==='roll'&&U.tool==='sel');renderSelBar();
   roll.dataset.tool=U.tool;$('#stWrap').dataset.tool=U.tool;
   const setTool=function(v){U.tool=v;saveU();renderMelOpts();};
@@ -2741,7 +2741,7 @@ function renderMelOpts(){
   const pk=$('#togPick');pk.setAttribute('aria-checked',P.pick?'true':'false');
   $('#melHint').textContent=U.view==='staff'
     ?(U.tool==='pen'?'Hold to hear the pitch · drag up or down to change it · release to place · tap a note to delete'
-      :U.tool==='move'?'Tap a note to select · drag to move · use the buttons to nudge it'
+      :U.tool==='move'?'Tap a note or drag a box to select · drag a note to move · use the buttons to nudge'
       :'Drag to scroll · switch back to Pen or Move to edit')
     :(U.tool==='pen'?'Tap to add · drag to stretch or change pitch · tap a note to delete'
       :U.tool==='move'?'Drag a note to move it · drag its right end to resize'
@@ -3197,7 +3197,7 @@ function renderStaff(){
     }else grp=null;
   });
   const BASE={16:16,12:8,8:8,6:4,4:4,3:2,2:2,1:1};
-  const col=function(c){const k=selKey&&c.n.s===selKey.s&&c.n.p===selKey.p;return k?'var(--mel)':ink;};
+  const col=function(c){const k=(selKey&&c.n.s===selKey.s&&c.n.p===selKey.p)||selKeys.has(c.n.s+'|'+c.n.p);return k?'var(--mel)':ink;};
   /* stems: groups first so beams and stems agree */
   const stem={};
   beamGroups.forEach(function(gr){
@@ -3360,8 +3360,14 @@ stMain.addEventListener('pointerdown',function(e){
     sd={mode:'add',snap:serialize(),abs:ps.abs,dp:dp,rel:Aud.hold(m,95)};
     stG={x:ps.x,dp:dp,m:m};
   }else{
-    if(!hit){selKey=null;renderMelOpts();renderStaff();return;}
-    selKey={s:hit.s,p:hit.p};
+    if(!hit){
+      /* drag a box over several notes; a plain tap clears the selection */
+      sd={mode:'box',x0:q.x,y0:q.y,x1:q.x,y1:q.y,el:document.createElement('div'),rel:function(){}};
+      sd.el.className='selbox';stMain.appendChild(sd.el);
+      try{stMain.setPointerCapture(e.pointerId);}catch(x){}
+      e.preventDefault();return;
+    }
+    selKey={s:hit.s,p:hit.p};selKeys=new Set([hit.s+'|'+hit.p]);
     sd={mode:'move',snap:serialize(),n:hit,dp:spell(hit.p).dp,abs:Math.round(hit.s/120),moved:false,rel:Aud.hold(hit.p,95),grab:null};
     renderMelOpts();
   }
@@ -3370,6 +3376,11 @@ stMain.addEventListener('pointerdown',function(e){
 });
 stMain.addEventListener('pointermove',function(e){
   if(!sd)return;
+  if(sd.mode==='box'){
+    const q=stLocal(e);sd.x1=q.x;sd.y1=q.y;
+    sd.el.style.left=Math.min(sd.x0,sd.x1)+'px';sd.el.style.top=Math.min(sd.y0,sd.y1)+'px';sd.el.style.width=Math.abs(sd.x1-sd.x0)+'px';sd.el.style.height=Math.abs(sd.y1-sd.y0)+'px';
+    return;
+  }
   const q=stLocal(e), ps=stPosAt(q.x), dp=stDpAt(q.y);
   if(sd.mode==='add'){
     const m=pitchFromDp(dp,U.acc);
@@ -3389,6 +3400,17 @@ stMain.addEventListener('pointermove',function(e){
 function endStaff(){
   if(!sd)return;
   const d=sd;sd=null;try{d.rel();}catch(x){}
+  if(d.mode==='box'){
+    d.el.remove();
+    const x0=Math.min(d.x0,d.x1), x1=Math.max(d.x0,d.x1), y0=Math.min(d.y0,d.y1), y1=Math.max(d.y0,d.y1);
+    if(x1-x0<4&&y1-y0<4){selKey=null;selKeys=new Set();}
+    else{
+      const hits=[];stNotes.forEach(function(sn){if(sn.x>=x0-6&&sn.x<=x1+6&&sn.y>=y0-6&&sn.y<=y1+6&&hits.indexOf(sn.n)<0)hits.push(sn.n);});
+      selKeys=new Set(hits.map(function(n){return n.s+'|'+n.p;}));
+      selKey=hits.length?{s:hits[0].s,p:hits[0].p}:null;
+    }
+    renderMelOpts();renderStaff();return;
+  }
   if(d.mode==='add'&&stG){
     const s=d.abs*120, tot=totalTicks();
     if(s>=-pkT()&&s<tot){
@@ -3400,7 +3422,7 @@ function endStaff(){
   }else if(d.mode==='move'&&d.moved){
     const n=d.n;
     P.mel=Core.insertMono(P.mel.filter(function(x){return x!==n;}),{s:n.s,l:n.l,p:n.p});
-    selKey={s:n.s,p:n.p};
+    selKey={s:n.s,p:n.p};selKeys=new Set([n.s+'|'+n.p]);
     P.sample=false;pushUndo(d.snap);
   }
   stG=null;renderMelOpts();renderStaff();
@@ -3409,6 +3431,7 @@ stMain.addEventListener('pointerup',endStaff);
 stMain.addEventListener('pointercancel',function(){
   if(!sd)return;
   const d=sd;sd=null;try{d.rel();}catch(x){}
+  if(d.mode==='box'){d.el.remove();return;}
   stG=null;if(d.mode==='move'){applySnap(d.snap);}else renderStaff();
 });
 $('#stEdit').addEventListener('click',function(e){
@@ -3416,14 +3439,27 @@ $('#stEdit').addEventListener('click',function(e){
   b.classList.remove('nl');void b.offsetWidth;b.classList.add('nl');
   const n=selNote();if(!n)return;
   const a=b.dataset.ed, s=serialize();
-  if(a==='del'){P.mel.splice(P.mel.indexOf(n),1);selKey=null;}
+  /* several notes selected (box): the buttons move or delete all of them */
+  const many=selNotes().length>1?selNotes():null;
+  if(many){
+    if(a==='del'){const k=new Set(many);P.mel=P.mel.filter(function(x){return !k.has(x);});selKey=null;selKeys=new Set();}
+    else{
+      const ds=a==='right'?120:a==='left'?-120:0, dpp=a==='semi+'?1:a==='semi-'?-1:0, lo=P.pick?-barTk():0;
+      if(many.some(function(x){return x.s+ds<lo||x.s+ds+x.l>128*barTk()||x.p+dpp<0||x.p+dpp>127;}))return;
+      many.forEach(function(x){x.s+=ds;x.p+=dpp;});
+      P.mel=Core.tidy(P.mel);selKeys=new Set(many.map(function(x){return x.s+'|'+x.p;}));selKey={s:many[0].s,p:many[0].p};
+      Aud.tone(many[0].p,95,0.4);
+    }
+    P.sample=false;pushUndo(s);renderMelOpts();renderStaff();return;
+  }
+  if(a==='del'){P.mel.splice(P.mel.indexOf(n),1);selKey=null;selKeys=new Set();}
   else{
     if(a==='left'||a==='right'){
       const ds=a==='right'?120:-120, ns=n.s+ds, lo=P.pick?-barTk():0;
       if(ns<lo||ns+n.l>128*barTk())return;
       n.s=ns;
     }else n.p=Math.max(0,Math.min(127,n.p+(a==='semi+'?1:-1)));
-    P.mel=Core.tidy(P.mel);selKey={s:n.s,p:n.p};
+    P.mel=Core.tidy(P.mel);selKey={s:n.s,p:n.p};selKeys=new Set([n.s+'|'+n.p]);
     Aud.tone(n.p,95,0.4);
   }
   P.sample=false;pushUndo(s);renderMelOpts();renderStaff();
