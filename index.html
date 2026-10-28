@@ -353,11 +353,12 @@ body.kbd-open{padding-bottom:calc(92px + var(--kbdh,150px) + env(safe-area-inset
 .crow .pill.smt{height:30px; flex:none; width:68px; white-space:nowrap; padding:0; font-size:11px}
 .cr{display:flex; align-items:center; gap:6px; min-width:0}
 .cv{flex:none; width:48px; text-align:right; font-size:12px; font-weight:700; color:var(--dim)}
-input.sq{-webkit-appearance:none; appearance:none; flex:1; min-width:0; height:26px; margin:0; background:transparent; accent-color:var(--blue)}
-input.sq::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:var(--line)}
-input.sq::-moz-range-track{height:4px; border-radius:2px; background:var(--line)}
-input.sq::-webkit-slider-thumb{-webkit-appearance:none; width:18px; height:18px; border-radius:4px; background:var(--blue); border:0; margin-top:-7px}
-input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; background:var(--blue); border:0}
+input[type=range]{-webkit-appearance:none; appearance:none; height:26px; margin:0; background:transparent; accent-color:var(--blue)}
+input.sq{flex:1; min-width:0}
+input[type=range]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:var(--line)}
+input[type=range]::-moz-range-track{height:4px; border-radius:2px; background:var(--line)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:18px; height:18px; border-radius:4px; background:var(--blue); border:0; margin-top:-7px}
+input[type=range]::-moz-range-thumb{width:18px; height:18px; border-radius:4px; background:var(--blue); border:0}
 .cchips{gap:5px}
 .cchips .gh{flex:0 0 100%; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin-top:4px}
 .cchips .gh:first-child{margin-top:0}
@@ -480,7 +481,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 .qrow{display:flex; align-items:center; gap:8px 10px; flex-wrap:nowrap}
 .qrow .grp{display:flex; align-items:center; gap:4px; flex:none}
 .qrow .lbl{font-size:10px; letter-spacing:.06em}
-.qrow input[type=range]{width:52px; min-width:0; flex:none; accent-color:var(--mel); height:32px}
+.qrow input[type=range]{width:52px; min-width:0; flex:none; height:32px}
 .soon{border:1px dashed var(--line); border-radius:22px; padding:16px; color:var(--dim)}
 .soon strong{display:block; color:var(--text); font-size:16px; margin-bottom:6px}
 .soon ul{margin:8px 0 0; padding-left:18px}
@@ -664,7 +665,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
         <div class="mrow">
           <div class="mcol" style="flex:none"><span class="lbl">Mode</span><div class="seg mode3" id="viewSeg" role="group" aria-label="Mode"></div></div>
           <div class="mcol"><span class="lbl">Pickup</span><button type="button" class="tg" id="togPick" role="switch" aria-checked="false" aria-label="Pickup measure"></button></div>
-          <div class="mcol"><span class="lbl" id="melAmtLbl">Auto-Velocity 30%</span><input type="range" id="melAmt" min="0" max="100" step="5" aria-label="Auto-Velocity amount" style="width:76px;height:32px;margin:0;accent-color:var(--blue)"></div>
+          <div class="mcol"><span class="lbl" id="melAmtLbl">Auto-Velocity 30%</span><input type="range" id="melAmt" min="0" max="100" step="5" aria-label="Auto-Velocity amount" style="width:76px;height:32px"></div>
         </div>
         </div>
         <div id="rollCtl" class="ctl">
@@ -794,7 +795,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.5</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.6</p>
   </div>
 </section>
 
