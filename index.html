@@ -747,7 +747,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.11.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.11.2</p>
   </div>
 </section>
 
@@ -1535,12 +1535,11 @@ const Core=(function(){
     return {v:1,key:0,scale:'major',bars:4,bpm:90,unit:2,sev:false,bass:true,comp:'beat',voic:'close',inv:false,strum:0,bpat:'root',swing:0,color:'off',lay:0,loose:0,
       vel4:[100,60,80,60],vel8:[100,55,60,50,80,50,60,50],jitter:6,chords:ch,sample:true,mel:[],melAmt:30,pick:false,ts:'4/4'};
   }
-  /* starting point for a new project: random tempo 85-130, random major/minor (C major or A minor), 8 bars (the example
-     progression twice), 2-beat cells, pickup off, auto-velocity on */
+  /* starting point for a new project: random tempo 85-130, random major/minor (C major or A minor), 4 bars, 2-beat cells, pickup off, auto-velocity on */
   function fresh(rnd){
     const d=defaults(), minor=rnd()<0.5;
     d.bpm=85+Math.floor(rnd()*46);d.scale=minor?'minor':'major';d.key=minor?9:0;
-    d.bars=8;d.chords=d.chords.concat(d.chords);d.unit=2;d.pick=false;d.melAmt=30;
+    d.bars=4;d.unit=2;d.pick=false;d.melAmt=30;
     return normalize(d);
   }
   function clamp(x,a,b){x=Math.round(Number(x));if(!isFinite(x))x=a;return Math.max(a,Math.min(b,x));}
@@ -3019,7 +3018,7 @@ function selAction(a){
 $('#selBar').addEventListener('click',function(e){const b=e.target.closest?e.target.closest('[data-sa]'):null;if(b&&!b.disabled)selAction(b.dataset.sa);});
 
 /* ---------- melody: staff ---------- */
-const ST={step:8,lane:42,pad:22,rpad:6};
+const ST={step:8,lane:46,pad:22,rpad:6,top:2};
 const LET=[0,2,4,5,7,9,11];
 const SH_ORD=[3,0,4,1,5,2,6], FL_ORD=[6,2,5,1,4,0,3];
 const SH_DP=[38,35,39,36,33,37,34], FL_DP=[34,37,33,36,32,35,31];
@@ -3159,9 +3158,9 @@ function renderStaff(){
   const ux=stUx(), bw=stBw(), mb=mBars(), nb=mb+(P.pick?1:0), W=nb*bw+6, sf=Core.keySig(P.key,P.scale);
   const TM=stMt(), UB=TM.ub, UBE=TM.ube;
   const mdl=stModel(), sig=sigAccs(), STEP=ST.step;
-  let minDp=27, maxDp=41;
+  let minDp=27, maxDp=39;
   P.mel.forEach(function(n){if(!vis(n))return;const d=spell(n.p).dp;minDp=Math.min(minDp,d-3);maxDp=Math.max(maxDp,d+4);});
-  const yOf=function(dp){return ST.lane+8+(maxDp-dp)*STEP;};
+  const yOf=function(dp){return ST.lane+ST.top+(maxDp-dp)*STEP;};
   const H=yOf(minDp)+6;
   const barX=function(b){return 2+b*bw;};
   const xOf=function(pc){const b=Math.floor((pc.p-mdl.ou)/UB), pib=((pc.p%UB)+UB)%UB;return barX(b)+ST.pad+pib*ux;};
@@ -3169,14 +3168,14 @@ function renderStaff(){
   const ink='currentColor';
   let g='';
   /* the bar strip (tap or drag: playhead) above the chord row (tap: chord picker) */
-  g+='<rect x="0" y="0" width="'+W+'" height="14" fill="currentColor" opacity=".06"/><line x1="0" x2="'+W+'" y1="14.5" y2="14.5" stroke="currentColor" stroke-opacity=".25"/>';
+  g+='<rect x="0" y="0" width="'+W+'" height="20" fill="currentColor" opacity=".06"/><line x1="0" x2="'+W+'" y1="20.5" y2="20.5" stroke="currentColor" stroke-opacity=".25"/>';
   /* staff lines, bar lines, bar numbers */
   for(let dp=30;dp<=38;dp+=2)g+='<line x1="0" x2="'+W+'" y1="'+yOf(dp)+'" y2="'+yOf(dp)+'" stroke="'+ink+'" stroke-opacity=".55" stroke-width="1.2"/>';
   for(let b=0;b<=nb;b++){
     const x=barX(b)-(b===0?0:0);
     g+='<line x1="'+x+'" x2="'+x+'" y1="'+yOf(38)+'" y2="'+yOf(30)+'" stroke="'+ink+'" stroke-opacity="'+(b===nb?.9:.6)+'" stroke-width="'+(b===nb?2.4:1.2)+'"/>';
-    if(b<nb)g+='<text x="'+(x+3)+'" y="10" font-size="9" font-family="'+"'DejaVu Sans Mono',monospace"+'" fill="currentColor" opacity=".5">'+((P.pick&&b===0)?'pickup':(b-(P.pick?1:0)+1))+'</text>';
-    if(b<nb&&!(P.pick&&b===0)){const lc=laneBar(b-(P.pick?1:0));if(lc&&lc.first)g+='<text x="'+(x+16)+'" y="10" font-size="9" font-weight="800" font-family="'+"'DejaVu Sans Mono',monospace"+'" fill="var(--chord)">'+lc.tag+'</text>';}
+    if(b<nb)g+='<text x="'+(x+3)+'" y="14" font-size="10" font-family="'+"'DejaVu Sans Mono',monospace"+'" fill="currentColor" opacity=".5">'+((P.pick&&b===0)?'pickup':(b-(P.pick?1:0)+1))+'</text>';
+    if(b<nb&&!(P.pick&&b===0)){const lc=laneBar(b-(P.pick?1:0));if(lc&&lc.first)g+='<text x="'+(x+18)+'" y="14" font-size="9.5" font-weight="800" font-family="'+"'DejaVu Sans Mono',monospace"+'" fill="var(--chord)">'+lc.tag+'</text>';}
   }
   if(P.pick)g+='<rect x="'+barX(0)+'" y="'+(ST.lane-4)+'" width="'+bw+'" height="'+(yOf(minDp)-ST.lane+4)+'" fill="var(--mel)" opacity=".07"/>';
   /* chords above */
@@ -3187,8 +3186,8 @@ function renderStaff(){
       if(code==null||(q>0&&lc.c[q-1]===code))continue;
       const info=Core.chordInfo(code,P.key,P.scale);
       const x=barX(b+(P.pick?1:0))+Math.max(ST.pad-4,13)+q*UBE*ux, sm=ux<4;
-      g+='<text x="'+x+'" y="'+(ST.lane-18)+'" font-size="'+(sm?10:13)+'" font-weight="800" fill="var(--chord)">'+info.name+'</text>';
-      g+='<text x="'+x+'" y="'+(ST.lane-6)+'" font-size="'+(sm?8:10)+'" fill="currentColor" opacity=".6">'+info.label+'</text>';
+      g+='<text x="'+x+'" y="'+(ST.lane-15)+'" font-size="'+(sm?10:13)+'" font-weight="800" fill="var(--chord)">'+info.name+'</text>';
+      g+='<text x="'+x+'" y="'+(ST.lane-4)+'" font-size="'+(sm?8:10)+'" fill="currentColor" opacity=".6">'+info.label+'</text>';
     }
   }
   /* notes + rests */
@@ -3312,8 +3311,8 @@ function renderStaff(){
   const CLEF_H=Math.round(STEP*9.5), CLEF_W=Math.round(CLEF_H*92/240), fw=CLEF_W+12+Math.abs(sf)*9+6, yg=yOf(32);
   let f='';
   for(let dp=30;dp<=38;dp+=2)f+='<line x1="0" x2="'+fw+'" y1="'+yOf(dp)+'" y2="'+yOf(dp)+'" stroke="'+ink+'" stroke-opacity=".55" stroke-width="1.2"/>';
-  f+='<rect x="0" y="0" width="'+fw+'" height="14" fill="currentColor" opacity=".06"/><line x1="0" x2="'+fw+'" y1="14.5" y2="14.5" stroke="currentColor" stroke-opacity=".25"/>';
-  f+='<text x="3" y="10" font-size="8" font-family="monospace" fill="currentColor" opacity=".5">BAR</text><text x="3" y="30" font-size="8" font-family="monospace" fill="currentColor" opacity=".5">CHORD</text>';
+  f+='<rect x="0" y="0" width="'+fw+'" height="20" fill="currentColor" opacity=".06"/><line x1="0" x2="'+fw+'" y1="20.5" y2="20.5" stroke="currentColor" stroke-opacity=".25"/>';
+  f+='<text x="3" y="14" font-size="8" font-family="monospace" fill="currentColor" opacity=".5">BAR</text><text x="3" y="34" font-size="8" font-family="monospace" fill="currentColor" opacity=".5">CHORD</text>';
   const ch=CLEF_H, cw=CLEF_W, cy=Math.round(yg-0.62*ch);
   f+='<mask id="clefM" maskUnits="userSpaceOnUse" x="4" y="'+cy+'" width="'+cw+'" height="'+ch+'" style="mask-type:alpha"><image href="'+CLEF_URI+'" x="4" y="'+cy+'" width="'+cw+'" height="'+ch+'"/></mask><rect x="4" y="'+cy+'" width="'+cw+'" height="'+ch+'" transform="translate(0 0)" fill="currentColor" mask="url(#clefM)"/>';
   for(let i=0;i<Math.abs(sf);i++){
@@ -3346,7 +3345,7 @@ function movePhStaff(beat){
 /* ---- staff touch input ---- */
 const stMain=$('#stMain');
 function stLocal(e){const r=stMain.getBoundingClientRect();return {x:e.clientX-r.left,y:e.clientY-r.top};}
-function stDpAt(y){const m=stMeta;return Math.max(m.minDp+1,Math.min(m.maxDp-1,m.maxDp-Math.round((y-(ST.lane+8))/ST.step)));}
+function stDpAt(y){const m=stMeta;return Math.max(m.minDp+1,Math.min(m.maxDp-1,m.maxDp-Math.round((y-(ST.lane+ST.top))/ST.step)));}
 function stSnapUnits(){const base=U.nv;return Math.min(base,4);}
 /* x -> {abs: unit index from bar 1 (negative in the pickup bar), x: snapped screen x} */
 function stPosAt(x){
@@ -3628,16 +3627,17 @@ function stTickAt(x){
     if(sc.chord)return;
     const r=lane.getBoundingClientRect();move((e.clientX-r.left)/U.zoom*PPQ-pkT());
   });
-  lane.addEventListener('pointerup',function(e){if(sc&&sc.kind==='roll'&&e.pointerId===sc.id){const s0=sc;endScrub(e);if(!s0.moved&&s0.chord&&s0.t>=0)openChordAt(s0.t);}});
+  lane.addEventListener('pointerup',function(e){if(sc&&sc.kind==='roll'&&e.pointerId===sc.id){const s0=sc;endScrub(e);if(!s0.moved&&s0.chord&&s0.t>=0)chordSoon(s0.t);}});
   lane.addEventListener('pointercancel',endScrub);
   /* staff: the strip above the lines */
   const sm=$('#stMain');
   sm.addEventListener('pointerdown',function(e){
-    if(U.tool==='pan'||rec.on)return;
+    if(rec.on)return;
     const r=sm.getBoundingClientRect();
     if(e.clientY-r.top>=ST.lane-2)return;
+    /* the bar strip and chord row work with every tool, Pan included */
     e.stopImmediatePropagation();
-    const chord=e.clientY-r.top>=15;
+    const chord=e.clientY-r.top>=21;
     sc={id:e.pointerId,kind:'staff',x:e.clientX,moved:false,chord:chord,t:stTickAt(e.clientX-r.left)};scrubbing=!chord;
     try{sm.setPointerCapture(e.pointerId);}catch(x){}
     if(!chord)move(sc.t);
@@ -3648,7 +3648,12 @@ function stTickAt(x){
     if(sc.chord)return;
     const r=sm.getBoundingClientRect();move(stTickAt(e.clientX-r.left));
   });
-  sm.addEventListener('pointerup',function(e){if(sc&&sc.kind==='staff'&&e.pointerId===sc.id){const s0=sc;endScrub(e);if(!s0.moved&&s0.chord&&s0.t>=0)openChordAt(s0.t);}});
+  sm.addEventListener('pointerup',function(e){if(sc&&sc.kind==='staff'&&e.pointerId===sc.id){const s0=sc;endScrub(e);if(!s0.moved&&s0.chord&&s0.t>=0)chordSoon(s0.t);}});
+  /* open the picker after the tap's own click has passed, or that click would land on a chord in the new dialog */
+  let pend=null, pendT=null;
+  function chordSoon(t){pend=t;clearTimeout(pendT);pendT=setTimeout(fire,350);}
+  function fire(){clearTimeout(pendT);if(pend==null)return;const t=pend;pend=null;openChordAt(t);}
+  document.addEventListener('click',function(e){if(pend==null)return;e.stopPropagation();e.preventDefault();fire();},true);
   sm.addEventListener('pointercancel',endScrub);
 })();
 
@@ -4431,11 +4436,11 @@ function insertSlot(k,id,notes){
 }
 function addNew(){
   const id=freeId();if(!id){toast('Up to 8 sections (A to H).');return;}
-  if(!fitOr(8))return;
+  if(!fitOr(P.bars))return;
   edit(function(){
     Core.storeCur(P);
-    /* a new section: 8 bars (a progression played twice), the current section's sound */
-    const x=Core.copySec(P,{});x.id=id;x.role='';x.bars=8;x.chords=[];for(let i=0;i<8*Core.meter(P).bpb;i++)x.chords.push(null);
+    /* a new section: the current section's length and sound, no chords */
+    const x=Core.copySec(P,{});x.id=id;x.role='';x.chords=x.chords.map(function(){return null;});
     P.secs.push(x);insertSlot(P.slot,id,null);
   });
   closeForm();K.cur=slotRange().t0;toast('Section '+id+' added. Paint its chords.');
@@ -4488,7 +4493,9 @@ function setRole(role){edit(function(){Core.storeCur(P);Core.secOf(P,Core.curId(
 /* ---- dialogs ---- */
 function closeForm(){$('#formDlg').hidden=true;}
 $('#formClose').addEventListener('click',closeForm);
-$('#formDlg').addEventListener('click',function(e){if(e.target===$('#formDlg'))closeForm();});
+/* the tap that opened the dialog can arrive as a click on its backdrop right after; ignore that one */
+let formOpenAt=0;
+$('#formDlg').addEventListener('click',function(e){if(e.target===$('#formDlg')&&Date.now()-formOpenAt>450)closeForm();});
 function optRow(title,items,cur,fn){
   const w=document.createElement('div');w.className='fopt';
   const t=document.createElement('span');t.textContent=title;w.appendChild(t);
@@ -4606,7 +4613,7 @@ function writeChordAt(tick,code,len,copy){
 let cpk=null;
 function openChordAt(tick){
   const M=Core.meter(P), t=Math.floor(tick/M.bt)*M.bt;
-  cpk={t:t,len:P.unit};renderChordPick();$('#formDlg').hidden=false;
+  cpk={t:t,len:P.unit};renderChordPick();$('#formDlg').hidden=false;formOpenAt=Date.now();
 }
 function renderChordPick(){
   const M=Core.meter(P), t=cpk.t, bar=Math.floor(t/M.bar), beat=Math.floor((t%M.bar)/M.bt);
