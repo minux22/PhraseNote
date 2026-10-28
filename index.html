@@ -511,7 +511,9 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 .slot.over{border:1.5px dashed var(--amber); color:var(--amber); background:transparent; animation:ghostp 1.6s ease-in-out infinite}
 .slot.over small{color:var(--amber)}
 @media (prefers-reduced-motion: reduce){.cb.ghost,.ghostr,.slot.over{animation:none}}
-.rsec{position:absolute; top:0; margin-left:17px; font-family:var(--mono); font-size:9.5px; line-height:18px; font-weight:800; color:var(--chord); pointer-events:none; white-space:nowrap}
+.rsec{position:absolute; top:2px; margin-left:17px; height:14px; display:flex; align-items:center; gap:4px; font-family:var(--mono); font-size:9.5px; color:var(--dim); pointer-events:none; white-space:nowrap}
+/* the section letter in a box, so it never reads as a chord */
+.rsec b{display:inline-grid; place-items:center; min-width:14px; height:14px; padding:0 2px; border:1.3px solid var(--text); border-radius:3px; color:var(--text); font-size:9.5px; font-weight:800; line-height:1}
 .barbox.empty{visibility:hidden}
 .dlg h3{margin:0; font-size:13px; letter-spacing:.04em; text-transform:uppercase; color:var(--mint)}
 .dlg input{height:32px; border:1px solid var(--line); border-radius:10px; background:var(--panel-2); color:var(--text); padding:0 10px; font:inherit; font-size:13px; width:100%; box-sizing:border-box}
@@ -752,7 +754,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.12.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.12.2</p>
   </div>
 </section>
 
@@ -2895,7 +2897,7 @@ function renderRoll(){
     let i=0;
     const lc=laneBar(b);
     if(!lc){if(b<Core.formTicks(P)/bq/PPQ+overBars())lh+='<div class="cb ghost" style="left:'+(b*bq*z+1+po)+'px;width:'+(bq*z-2)+'px"></div>';i=M.bpb;continue;}
-    if(lc.first)lh+='<div class="rsec" style="left:'+(b*bq*z+po+1)+'px">'+lc.tag+'</div>';
+    if(lc.first)lh+='<div class="rsec" style="left:'+(b*bq*z+po+1)+'px"><b>'+lc.id+'</b>'+(lc.role?'<span>'+lc.role+'</span>':'')+'</div>';
     while(i<M.bpb){
       const code=lc.c[i]; let j=i+1;
       while(j<M.bpb&&lc.c[j]===code)j++;
@@ -3284,7 +3286,7 @@ function renderStaff(){
     const x=barX(b)-(b===0?0:0);
     g+='<line x1="'+x+'" x2="'+x+'" y1="'+yOf(38)+'" y2="'+yOf(30)+'" stroke="'+ink+'" stroke-opacity="'+(b===nb?.9:.6)+'" stroke-width="'+(b===nb?2.4:1.2)+'"/>';
     if(b<nb)g+='<text x="'+(x+3)+'" y="14" font-size="10" font-family="'+"'DejaVu Sans Mono',monospace"+'" fill="currentColor" opacity=".5">'+((P.pick&&b===0)?'pickup':(b-(P.pick?1:0)+1))+'</text>';
-    if(b<nb&&!(P.pick&&b===0)){const lc=laneBar(b-(P.pick?1:0));if(lc&&lc.first)g+='<text x="'+(x+18)+'" y="14" font-size="9.5" font-weight="800" font-family="'+"'DejaVu Sans Mono',monospace"+'" fill="var(--chord)">'+lc.tag+'</text>';}
+    if(b<nb&&!(P.pick&&b===0)){const lc=laneBar(b-(P.pick?1:0));if(lc&&lc.first){const bw2=Math.max(14,lc.id.length*6+6);g+='<rect x="'+(x+17)+'" y="3" width="'+bw2+'" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="1.3"/><text x="'+(x+17+bw2/2)+'" y="14" text-anchor="middle" font-size="9.5" font-weight="800" font-family="'+"'DejaVu Sans Mono',monospace"+'" fill="currentColor">'+lc.id+'</text>'+(lc.role?'<text x="'+(x+21+bw2)+'" y="14" font-size="9.5" font-family="'+"'DejaVu Sans Mono',monospace"+'" fill="currentColor" opacity=".55">'+lc.role+'</text>':'');}}
   }
   if(P.pick)g+='<rect x="'+barX(0)+'" y="'+(ST.lane-4)+'" width="'+bw+'" height="'+(yOf(minDp)-ST.lane+4)+'" fill="var(--mel)" opacity=".07"/>';
   /* chords above */
@@ -4437,7 +4439,7 @@ function overBars(){const M=Core.meter(P);let me=0;P.mel.forEach(function(n){if(
 function laneBar(b){
   const M=Core.meter(P), a=Core.songAt(P,b*M.bar/240);if(!a)return null;
   const lb=Math.floor(a.local*240/M.bar), x=Core.secOf(P,a.id);
-  return {c:a.view.chords.slice(lb*M.bpb,(lb+1)*M.bpb),first:lb===0,tag:a.id+(x&&x.role?' '+x.role:'')};
+  return {c:a.view.chords.slice(lb*M.bpb,(lb+1)*M.bpb),first:lb===0,tag:a.id+(x&&x.role?' '+x.role:''),id:a.id,role:x&&x.role?x.role:''};
 }
 let playSlot=-1;
 function markSlot(i){
