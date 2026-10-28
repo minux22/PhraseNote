@@ -198,6 +198,10 @@ sup{font-family:var(--mono); font-size:.5em; font-weight:700; vertical-align:sup
 
 .rand{height:26px; padding:0 10px; border-radius:999px; border:1.5px solid var(--amber); background:transparent; color:var(--amber); font-weight:700; font-size:12px; display:inline-flex; align-items:center; gap:5px}
 .rand svg{width:14px; height:14px}
+.rand .spk{display:none}
+.rand.sug .spk{display:block}
+.rand.sug .dice{display:none}
+.rand.sug{border-color:var(--amber); background:color-mix(in srgb,var(--amber) 14%,transparent)}
 .panel{position:relative}
 .pill.ring{border-color:var(--text); box-shadow:inset 0 0 0 1px var(--text); color:var(--text)}
 .lit{animation:lightup 1.1s ease-out}
@@ -486,17 +490,18 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 .fopt .ob .pill{height:30px; padding:0 11px; font-size:12.5px}
 .fopt .ob .pill[aria-pressed="true"]{background:var(--chord); border-color:var(--chord); color:var(--chord-ink)}
 #formBody{display:flex; flex-direction:column; gap:12px; max-height:60vh; overflow:auto}
-.askrow{display:grid; grid-template-columns:1fr 1fr; gap:8px}
-.palette.cpk{grid-template-columns:repeat(4,1fr); gap:6px}
-.palette.cpk .chip{min-height:40px}
-.palette.cpk .chip .rn{font-size:16px}
-.palette.cpk .xgl{grid-column:1/-1; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin:4px 0 -2px}
 #formBody .sfbar{border:1px solid var(--line); border-radius:10px; padding:4px 8px}
 #formBody .sfname{display:flex; flex-direction:column; line-height:1.25}
 #formBody .sfname b{font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis}
 #formBody .sfname small{font-size:11px; overflow:hidden; text-overflow:ellipsis}
 #formBody .sfbar .btn{min-height:28px; height:28px}
 .imel{display:flex; align-items:center; justify-content:space-between; font-size:13px}
+.cb.ghost{background:transparent; border:1.5px dashed var(--amber); animation:ghostp 1.6s ease-in-out infinite}
+@keyframes ghostp{0%,100%{opacity:.35}50%{opacity:1}}
+.ghostr{animation:ghostp 1.6s ease-in-out infinite}
+.slot.over{border:1.5px dashed var(--amber); color:var(--amber); background:transparent; animation:ghostp 1.6s ease-in-out infinite}
+.slot.over small{color:var(--amber)}
+@media (prefers-reduced-motion: reduce){.cb.ghost,.ghostr,.slot.over{animation:none}}
 .rsec{position:absolute; top:0; margin-left:17px; font-family:var(--mono); font-size:9.5px; line-height:18px; font-weight:800; color:var(--chord); pointer-events:none; white-space:nowrap}
 .barbox.empty{visibility:hidden}
 .dlg h3{margin:0; font-size:13px; letter-spacing:.04em; text-transform:uppercase; color:var(--mint)}
@@ -578,7 +583,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
           <button class="pill" id="togSev" type="button" aria-pressed="false">7th</button>
 
           <button class="pill" id="togSlash" type="button" aria-haspopup="listbox" aria-expanded="false" aria-label="Slash chord bass note">/–</button>
-          <button class="rand" id="btnRand" type="button" aria-label="Random progression"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/></svg><span class="rl">Random</span></button>
+          <button class="rand" id="btnRand" type="button" aria-label="Random progression"><svg class="dice" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><rect x="3.5" y="3.5" width="17" height="17" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="8.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="8.5" r="1.5" fill="currentColor"/><circle cx="12" cy="12" r="1.5" fill="currentColor"/><circle cx="8.5" cy="15.5" r="1.5" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1.5" fill="currentColor"/></svg><svg class="spk" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="M12 3l1.9 5.1L19 10l-5.1 1.9L12 17l-1.9-5.1L5 10l5.1-1.9z" fill="currentColor"/><path d="M19 15l.8 2.2L22 18l-2.2.8L19 21l-.8-2.2L16 18l2.2-.8z" fill="currentColor"/></svg><span class="rl">Random</span></button>
         </div>
       </div>
       <div class="pop" id="slashPop" role="listbox" aria-label="Bass note (scale degree)" hidden></div>
@@ -738,7 +743,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.11.3</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.12.0</p>
   </div>
 </section>
 
@@ -1202,6 +1207,79 @@ const Core=(function(){
       else{const f=Math.ceil(bpb/2);for(let k=0;k<bpb;k++)ch.push(add(k<f?bar[0]:bar[1]));}
     }
     return {i:i,chords:ch,names:names.join(' – ')};
+  }
+
+  /* ---- chord suggestions from a melody ----
+     chords: the section's chords (one code or null per beat); mel: notes {s,l,p} with s relative to the slot start;
+     unit: beats per cell. Only empty cells are filled. Returns up to n different fillings (arrays like chords), best first.
+     Each cell scores its candidate chords (the scale's seven, plus secondary dominants and borrowed chords at a small cost)
+     by how much of the melody in it are chord tones (downbeats and long notes count more); neighbouring cells add points
+     for strong moves (V-I, ii-V, a secondary dominant to its target, root up a fourth) and a beam search keeps the best. */
+  function suggestChords(p,chords,mel,unit,n){
+    const M=meter(p), bt=M.bt, nCell=Math.floor(chords.length/unit);
+    const cand=[];
+    for(let d=0;d<7;d++)cand.push(d*2+(p.sev?1:0));
+    extraPalette(p.scale).forEach(function(g){g[1].forEach(function(x){cand.push(xWith(xcode(x[0],x[1],x[2]),p.sev,0));});});
+    const inf={};const I=function(c){return inf[c]||(inf[c]=chordInfo(c,p.key,p.scale));};
+    const root=function(c){return ((I(c).tones[0]%12)+12)%12;};
+    const pcs=function(c){return I(c).tones.slice(0,I(c).sev?4:3).map(function(t){return ((t%12)+12)%12;});};
+    const isDom=function(c){const t=I(c).tones;return t[1]-t[0]===4&&t[2]-t[0]===7&&(I(c).sev?t[3]-t[0]===10:true);};
+    const cells=[];
+    for(let i=0;i<nCell;i++){
+      const a=i*unit*bt, b=(i+1)*unit*bt;let fixed=null;
+      for(let k=i*unit;k<(i+1)*unit;k++)if(chords[k]!=null){fixed=chords[k];break;}
+      const notes=[];
+      mel.forEach(function(nt){
+        const s=Math.max(a,nt.s), e=Math.min(b,nt.s+nt.l);if(e<=s)return;
+        const onCell=nt.s===a, onBeat=nt.s>=a&&(nt.s-a)%bt===0, strong=onCell||(onBeat&&((nt.s%M.bar)%(2*bt)===0));
+        const w=Math.min(4,(e-s)/240)*(onCell?2:strong?1.5:onBeat?1.2:1);
+        notes.push({pc:((nt.p-p.key)%12+12)%12,w:w,strong:strong||onBeat});
+      });
+      cells.push({fixed:fixed,notes:notes});
+    }
+    const emit=function(c,cell){
+      const ps=pcs(c);let sc=cand.indexOf(c)>=7?-1.3:0;
+      cell.notes.forEach(function(nt){sc+=ps.indexOf(nt.pc)>=0?nt.w:-(nt.strong?0.7:0.25)*nt.w;});
+      if(cell.notes.length&&cell.notes[0].pc===root(c))sc+=0.3;
+      return sc;
+    };
+    const trans=function(a,b,quiet){
+      if(a==null)return 0;
+      if(a===b)return quiet?0.4:0.05;
+      const ra=root(a), rb=root(b), up4=((rb-ra)%12+12)%12===5;
+      let sc=0;
+      if(isDom(a)&&up4)sc+=0.8;
+      else if(a>=1000&&isDom(a))sc-=0.6;
+      if(up4)sc+=0.35;
+      if((ra===2||ra===5)&&rb===7)sc+=0.3;
+      if(ra===7&&rb===9)sc+=0.2;
+      return sc;
+    };
+    /* beam search over the cells */
+    let beam=[{sc:0,seq:[]}];
+    const B=80;
+    cells.forEach(function(cell,i){
+      const opts=cell.fixed!=null?[cell.fixed]:cand, next=[];
+      beam.forEach(function(st){
+        const prev=st.seq.length?st.seq[st.seq.length-1]:null;
+        opts.forEach(function(c){
+          let sc=st.sc+(cell.fixed!=null?0:emit(c,cell))+trans(prev,c,!cell.notes.length);
+          if(i===0&&cell.fixed==null)sc+=root(c)===0?0.3:root(c)===9?0.15:0;
+          if(i===cells.length-1&&cell.fixed==null)sc+=root(c)===0||root(c)===7?0.25:0;
+          next.push({sc:sc,seq:st.seq.concat([c])});
+        });
+      });
+      next.sort(function(x,y){return y.sc-x.sc;});
+      beam=next.slice(0,B);
+    });
+    const out=[], seen={};
+    for(let k=0;k<beam.length&&out.length<(n||5);k++){
+      const key=beam[k].seq.join(',');if(seen[key])continue;seen[key]=1;
+      const res=chords.slice();
+      cells.forEach(function(cell,i){if(cell.fixed==null)for(let j=i*unit;j<(i+1)*unit;j++)res[j]=beam[k].seq[i];});
+      out.push(res);
+    }
+    return out;
   }
 
   /* ---- melody: notes are {s,l,p} in ticks (480 per quarter), p = MIDI pitch ---- */
@@ -1672,7 +1750,7 @@ const Core=(function(){
   return {SCALES:SCALES,SCALE_NAMES:SCALE_NAMES,KEY_NAMES:KEY_NAMES,chordInfo:chordInfo,voicing:voicing,
     noteName:noteName,bassNote:bassNote,notesFor:notesFor,
     COMPS:COMPS,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,
-    POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM,SEC_IDS:SEC_IDS,ROLES:ROLES,SECF:SECF,normSec:normSec,copySec:copySec,secOf:secOf,curId:curId,storeCur:storeCur,loadCur:loadCur,layout:layout,formTicks:formTicks,secView:secView,secDrums:secDrums,songAt:songAt,melInsert:melInsert,melDelete:melDelete,melSlice:melSlice,melPaste:melPaste,resizeSec:resizeSec,xcode:xcode,isX:isX,xWith:xWith,extraPalette:extraPalette};
+    POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM,suggestChords:suggestChords,SEC_IDS:SEC_IDS,ROLES:ROLES,SECF:SECF,normSec:normSec,copySec:copySec,secOf:secOf,curId:curId,storeCur:storeCur,loadCur:loadCur,layout:layout,formTicks:formTicks,secView:secView,secDrums:secDrums,songAt:songAt,melInsert:melInsert,melDelete:melDelete,melSlice:melSlice,melPaste:melPaste,resizeSec:resizeSec,xcode:xcode,isX:isX,xWith:xWith,extraPalette:extraPalette};
 })();
 
 /* SoundFont 2 reader + sample player. Pure (no DOM): parse(ArrayBuffer) and createPlayer(ctx). */
@@ -2297,6 +2375,7 @@ function renderOpts(){
   $('#togSev').setAttribute('aria-pressed',P.sev?'true':'false');
   $('#togBass').setAttribute('aria-pressed',P.bass?'true':'false');
   $('#togMel').setAttribute('aria-pressed',U.melc?'true':'false');
+  renderRandBtn();
   const MB=Core.meter(P), UN={1:'Beat',2:'2 Beats'};UN[MB.bpb]='Bar';
   mkSeg($('#unitSeg'),Core.unitsFor(MB.bpb).map(function(u){return [u,UN[u]];}),function(){return P.unit;},function(v){P.unit=v;persist();renderOpts();renderGrid();});
   mkSeg($('#barsSeg'),[[2,'2'],[4,'4'],[8,'8'],[16,'16']],function(){return P.bars;},function(n){
@@ -2615,7 +2694,35 @@ $('#jitter').addEventListener('input',function(e){beginLive();P.jitter=+e.target
 $('#jitter').addEventListener('change',commitLive);
 
 let lastRand=-1;
+/* The dice fills the slot with a random progression; when the slot has melody it becomes Suggest instead,
+   which fills the empty cells with chords that fit that melody (tap again: the next alternative). */
+function slotMel(){const r=slotRange();return P.mel.filter(function(n){return n.s<r.t1&&n.s+n.l>r.t0;}).map(function(n){return {s:n.s-r.t0,l:n.l,p:n.p};});}
+function renderRandBtn(){
+  const b=$('#btnRand'), sug=slotMel().length>0;
+  b.classList.toggle('sug',sug);b.querySelector('.rl').textContent=sug?'Suggest':'Random';
+  b.setAttribute('aria-label',sug?'Suggest chords for the melody in this slot':'Random progression');
+}
+let sugg=null;
+function suggestNow(){
+  Aud.ensure();
+  const mel=slotMel(), key=JSON.stringify(mel)+'|'+P.key+P.scale+P.unit+(P.sev?1:0)+'|'+Core.curId(P)+'|'+P.slot;
+  let again=sugg&&sugg.key===key&&sugg.alts[sugg.idx].join()===P.chords.join();
+  if(!again){
+    if(!P.chords.some(function(c,i){return c==null;})){toast('No empty cells in this slot. Clear some chords to get suggestions.');return;}
+    const alts=Core.suggestChords(P,P.chords,mel,P.unit,5);
+    if(!alts.length)return;
+    sugg={key:key,alts:alts,idx:0,base:P.chords.slice()};
+  }else sugg.idx=(sugg.idx+1)%sugg.alts.length;
+  const alt=sugg.alts[sugg.idx];
+  edit(function(){P.chords=alt.slice();});
+  const M=Core.meter(P), names=[];let last=null;
+  for(let i=0;i<alt.length;i+=P.unit){if(sugg.base[i]!=null)continue;const c=alt[i];if(c!==last)names.push(Core.chordInfo(c,P.key,P.scale).name);last=c;}
+  toast('Suggest '+(sugg.idx+1)+'/'+sugg.alts.length+': '+names.join(' – ')+(sugg.alts.length>1?' · tap again for another':''));
+  K.cur=slotRange().t0;showCursor(true);
+  if(playing)seekPlay();else startPlay();
+}
 $('#btnRand').addEventListener('click',function(){
+  if($('#btnRand').classList.contains('sug')){suggestNow();return;}
   Aud.ensure();
   const s=serialize();
   const r=Core.randomChords(P,Math.random,lastRand);
@@ -2636,6 +2743,7 @@ function showTab(which){
   if(!chord&&!rollInit){rollInit=true;fitRoll();centerRoll();}
   $('#tabChord').setAttribute('aria-selected',chord?'true':'false');
   $('#tabMelody').setAttribute('aria-selected',chord?'false':'true');
+  if(chord){renderForm();renderRandBtn();}
   kbdRender();
 }
 $('#tabChord').addEventListener('click',function(){showTab('chord');});
@@ -2776,7 +2884,8 @@ function renderRoll(){
   for(let b=0;b<mb;b++){
     lh+='<div class="rbn" style="left:'+(b*bq*z+po)+'px">'+(b+1)+'</div>';
     let i=0;
-    const lc=laneBar(b);if(!lc){i=M.bpb;continue;}
+    const lc=laneBar(b);
+    if(!lc){if(b<Core.formTicks(P)/bq/PPQ+overBars())lh+='<div class="cb ghost" style="left:'+(b*bq*z+1+po)+'px;width:'+(bq*z-2)+'px"></div>';i=M.bpb;continue;}
     if(lc.first)lh+='<div class="rsec" style="left:'+(b*bq*z+po+1)+'px">'+lc.tag+'</div>';
     while(i<M.bpb){
       const code=lc.c[i]; let j=i+1;
@@ -3172,7 +3281,8 @@ function renderStaff(){
   /* chords above */
   for(let b=0;b<mb;b++){
     for(let q=0;q<TM.M.bpb;q++){
-      const lc=laneBar(b);if(!lc)break;
+      const lc=laneBar(b);
+      if(!lc){if(q===0&&b<Core.formTicks(P)/TM.M.bar+overBars())g+='<rect class="ghostr" x="'+(barX(b+(P.pick?1:0))+3)+'" y="'+(ST.lane-24)+'" width="'+(bw-6)+'" height="22" rx="6" fill="none" stroke="var(--amber)" stroke-width="1.4" stroke-dasharray="4 3"/>';break;}
       const code=lc.c[q];
       if(code==null||(q>0&&lc.c[q-1]===code))continue;
       const info=Core.chordInfo(code,P.key,P.scale);
@@ -3607,18 +3717,16 @@ function stTickAt(x){
   /* a tap (no drag) on the chord row opens the chord picker for that beat; a drag moves the playhead */
   lane.addEventListener('pointerdown',function(e){
     if(rec.on)return;
-    const r=lane.getBoundingClientRect(), chord=e.clientY-r.top>=19;
-    sc={id:e.pointerId,kind:'roll',x:e.clientX,moved:false,chord:chord,t:(e.clientX-r.left)/U.zoom*PPQ-pkT()};scrubbing=!chord;
+    const r=lane.getBoundingClientRect();
+    sc={id:e.pointerId,kind:'roll'};scrubbing=true;
     try{lane.setPointerCapture(e.pointerId);}catch(x){}
-    if(!chord)move(sc.t);
+    move((e.clientX-r.left)/U.zoom*PPQ-pkT());
   });
   lane.addEventListener('pointermove',function(e){
     if(!sc||sc.kind!=='roll'||e.pointerId!==sc.id)return;
-    if(Math.abs(e.clientX-sc.x)>6)sc.moved=true;
-    if(sc.chord)return;
     const r=lane.getBoundingClientRect();move((e.clientX-r.left)/U.zoom*PPQ-pkT());
   });
-  lane.addEventListener('pointerup',function(e){if(sc&&sc.kind==='roll'&&e.pointerId===sc.id){const s0=sc;endScrub(e);if(!s0.moved&&s0.chord&&s0.t>=0)chordSoon(s0.t);}});
+  lane.addEventListener('pointerup',endScrub);
   lane.addEventListener('pointercancel',endScrub);
   /* staff: the strip above the lines */
   const sm=$('#stMain');
@@ -3626,25 +3734,17 @@ function stTickAt(x){
     if(rec.on)return;
     const r=sm.getBoundingClientRect();
     if(e.clientY-r.top>=ST.lane-2)return;
-    /* the bar strip and chord row work with every tool, Pan included */
+    /* the strip above the staff (bars and chords) moves the playhead with every tool, Pan included */
     e.stopImmediatePropagation();
-    const chord=e.clientY-r.top>=21;
-    sc={id:e.pointerId,kind:'staff',x:e.clientX,moved:false,chord:chord,t:stTickAt(e.clientX-r.left)};scrubbing=!chord;
+    sc={id:e.pointerId,kind:'staff'};scrubbing=true;
     try{sm.setPointerCapture(e.pointerId);}catch(x){}
-    if(!chord)move(sc.t);
+    move(stTickAt(e.clientX-r.left));
   },true);
   sm.addEventListener('pointermove',function(e){
     if(!sc||sc.kind!=='staff'||e.pointerId!==sc.id)return;
-    if(Math.abs(e.clientX-sc.x)>6)sc.moved=true;
-    if(sc.chord)return;
     const r=sm.getBoundingClientRect();move(stTickAt(e.clientX-r.left));
   });
-  sm.addEventListener('pointerup',function(e){if(sc&&sc.kind==='staff'&&e.pointerId===sc.id){const s0=sc;endScrub(e);if(!s0.moved&&s0.chord&&s0.t>=0)chordSoon(s0.t);}});
-  /* open the picker after the tap's own click has passed, or that click would land on a chord in the new dialog */
-  let pend=null, pendT=null;
-  function chordSoon(t){pend=t;clearTimeout(pendT);pendT=setTimeout(fire,350);}
-  function fire(){clearTimeout(pendT);if(pend==null)return;const t=pend;pend=null;openChordAt(t);}
-  document.addEventListener('click',function(e){if(pend==null)return;e.stopPropagation();e.preventDefault();fire();},true);
+  sm.addEventListener('pointerup',endScrub);
   sm.addEventListener('pointercancel',endScrub);
 })();
 
@@ -4323,6 +4423,8 @@ document.addEventListener('keydown',function(e){
 })();
 
 /* ---------- song form: sections and slots ---------- */
+/* bars of melody that run past the end of the song form (they have no chords yet) */
+function overBars(){const M=Core.meter(P);let me=0;P.mel.forEach(function(n){if(n.s>=0)me=Math.max(me,n.s+n.l);});return Math.max(0,Math.ceil((me-Core.formTicks(P))/M.bar));}
 function laneBar(b){
   const M=Core.meter(P), a=Core.songAt(P,b*M.bar/240);if(!a)return null;
   const lb=Math.floor(a.local*240/M.bar), x=Core.secOf(P,a.id);
@@ -4342,8 +4444,12 @@ function renderForm(){
     b.innerHTML='<b>'+id+'</b><small>'+(x.role||'–')+'</small>';
     host.appendChild(b);
   });
+  /* melody past the end of the form: one blinking box per 4 bars, tap = add a 4-bar slot there for its chords */
+  const ob=overBars(), nOver=Math.ceil(ob/4);
+  for(let k=0;k<nOver;k++){const o=document.createElement('button');o.type='button';o.className='slot over';o.dataset.over='1';
+    o.innerHTML='<b>♪</b><small>'+Math.min(4,ob-k*4)+' bars</small>';o.setAttribute('aria-label','Melody without chords: add a 4-bar slot');host.appendChild(o);}
   /* empty boxes fill the row up to five, so the structure reads as slots to fill; each one adds a slot */
-  const empties=Math.max(1,5-P.form.length);
+  const empties=Math.max(1,5-P.form.length-nOver);
   for(let k=0;k<empties;k++){const add=document.createElement('button');add.type='button';add.className='slot add'+(k?' ghost':'');add.textContent=k?'':'+';add.dataset.add='1';add.setAttribute('aria-label','Add a slot');host.appendChild(add);}
   $('#cmodeSw').setAttribute('aria-checked',U.cmode==='song'?'true':'false');
   const on=host.querySelector('.slot.on');if(on){const r=on.getBoundingClientRect(),h=host.getBoundingClientRect();if(r.left<h.left||r.right>h.right)host.scrollLeft+=r.left-h.left-40;}
@@ -4409,6 +4515,7 @@ function selectSlot(i){
 $('#formRow').addEventListener('click',function(e){
   const b=e.target.closest?e.target.closest('.slot'):null;if(!b)return;
   if(b.dataset.add){openAdd();return;}
+  if(b.dataset.over){addOverSlot();return;}
   const i=+b.dataset.i;
   if(i===P.slot)openSlotMenu();else selectSlot(i);
 });
@@ -4424,6 +4531,17 @@ function insertSlot(k,id,notes){
   const L=Core.layout(P), at=k<0?0:L[k].start+L[k].len, len=barsOf(id)*barTk();
   P.mel=Core.melInsert(P.mel,at,len);if(notes)P.mel=Core.melPaste(P.mel,notes,at);
   Core.storeCur(P);P.form.splice(k+1,0,id);P.slot=k+1;Core.loadCur(P);
+}
+/* a 4-bar slot at the end, under melody that already sits there (nothing moves) */
+function addOverSlot(){
+  const id=freeId();if(!id){toast('Up to 8 sections (A to H).');return;}
+  if(totBars()+4>128){toast('A song can be up to 128 bars.');return;}
+  edit(function(){
+    Core.storeCur(P);
+    const x=Core.copySec(P,{});x.id=id;x.role='';x.bars=4;x.chords=[];for(let i=0;i<4*Core.meter(P).bpb;i++)x.chords.push(null);
+    P.secs.push(x);P.form.push(id);P.slot=P.form.length-1;Core.loadCur(P);
+  });
+  K.cur=slotRange().t0;toast('Section '+id+' added under the melody. Paint its chords.');
 }
 function addNew(){
   const id=freeId();if(!id){toast('Up to 8 sections (A to H).');return;}
@@ -4568,98 +4686,6 @@ function importFrom(o){
   });
   closeForm();K.cur=slotRange().t0;
   toast('Imported as section '+id+(n>1?' ('+n+' slots)':'')+(src.scale!==P.scale?'. Chords follow this song\'s scale.':'.'));
-}
-
-/* ---------- chords from the melody view ---------- */
-/* a new section name for a copy of id: A -> A', A' -> A'' (null when all are taken) */
-function primeId(id){const b=id[0];for(let n=1;n<=3;n++){const c=b+"'".repeat(n);if(!Core.secOf(P,c))return c;}return null;}
-/* Write code (null = erase) for len beats from tick. Past the end of the song an empty 4-bar section is added first.
-   A section that also plays in other slots is copied (A -> A') so only this slot changes. */
-function writeChordAt(tick,code,len,copy){
-  const M=Core.meter(P), bar=barTk();
-  let added=null, copied=null;
-  if(tick>=Core.formTicks(P)){
-    const need=Math.ceil((tick+1-Core.formTicks(P))/(4*bar));
-    if(totBars()+need*4>128){toast('A song can be up to 128 bars.');return;}
-    const id=freeId();if(!id){toast('Up to 8 sections (A to H).');return;}
-    Core.storeCur(P);
-    const last=Core.secOf(P,P.form[P.form.length-1]), x=Core.copySec(last,{});x.id=id;x.role='';x.bars=4;x.chords=[];for(let i=0;i<4*M.bpb;i++)x.chords.push(null);
-    P.secs.push(x);for(let i=0;i<need;i++)P.form.push(id);
-    Core.loadCur(P);added=id;
-  }
-  const L=Core.layout(P);let k=0;while(k<L.length-1&&tick>=L[k].start+L[k].len)k++;
-  const sl=L[k];
-  Core.storeCur(P);
-  let x=Core.secOf(P,sl.id);
-  if(copy&&P.form.filter(function(y){return y===sl.id;}).length>1){
-    const nid=primeId(sl.id);
-    if(!nid){toast('This section has too many copies; change it on the Chord Track.');Core.loadCur(P);return;}
-    const c=Core.copySec(x,{});c.id=nid;c.role=x.role;P.secs.push(c);P.form[k]=nid;x=c;copied=nid;
-  }
-  const b0=Math.floor((tick-sl.start)/M.bt);
-  for(let i=0;i<len&&b0+i<x.chords.length;i++)x.chords[b0+i]=code;
-  Core.loadCur(P);
-  return {added:added,copied:copied,slot:k,id:x.id};
-}
-let cpk=null;
-/* the chord starts on the Cell grid, as on the Chord Track: with 2-beat cells a tap in the middle of a bar lands on beat 3 */
-function cellStart(tick,len){const M=Core.meter(P), bar=Math.floor(tick/M.bar)*M.bar, b=Math.floor((tick-bar)/M.bt);return bar+Math.floor(b/len)*len*M.bt;}
-function openChordAt(tick){
-  cpk={tap:tick,t:cellStart(tick,P.unit),len:P.unit};renderChordPick();$('#formDlg').hidden=false;formOpenAt=Date.now();
-}
-function renderChordPick(){
-  const M=Core.meter(P), t=cpk.t, bar=Math.floor(t/M.bar), beat=Math.floor((t%M.bar)/M.bt);
-  const a=Core.songAt(P,t/240), cur=a?a.view.chords[Math.round(a.local*240/M.bt)]:null;
-  const body=$('#formBody');body.innerHTML='';
-  $('#formTitle').textContent='Bar '+(bar+1)+' · beat '+(beat+1)+(a?' · section '+a.id:' · new section');
-  const pal=document.createElement('div');pal.className='palette cpk';
-  const chip=function(code,lab){
-    const info=Core.chordInfo(code,P.key,P.scale), b=document.createElement('button');b.type='button';b.className='chip'+(code>=1000?' x':'');
-    b.setAttribute('aria-pressed',cur===code?'true':'false');b.setAttribute('aria-label',info.label+' ('+info.name+')');
-    b.innerHTML='<span class="rn">'+labelHtml(info)+'</span><span class="nm">'+info.name+'</span>';
-    b.addEventListener('click',function(){pickChord(code);});pal.appendChild(b);
-  };
-  for(let d=0;d<7;d++)chip(d*2+(P.sev?1:0));
-  const er=document.createElement('button');er.type='button';er.className='chip erase';er.textContent='Erase';er.addEventListener('click',function(){pickChord(null);});pal.appendChild(er);
-  Core.extraPalette(P.scale).forEach(function(g){
-    const h=document.createElement('div');h.className='xgl';h.textContent=g[0];pal.appendChild(h);
-    g[1].forEach(function(x){chip(Core.xWith(Core.xcode(x[0],x[1],x[2]),P.sev,0));});
-  });
-  const UN={1:'Beat',2:'2 Beats'};UN[M.bpb]='Bar';
-  body.appendChild(optRow('Length',Core.unitsFor(M.bpb).map(function(u){return [u,UN[u]];}),cpk.len,function(v){cpk.len=v;cpk.t=cellStart(cpk.tap,v);renderChordPick();}));
-  body.appendChild(optRow('Chords',[['7','7th']],P.sev?'7':null,function(){P.sev=!P.sev;persist();renderOpts();renderPalette();renderChordPick();}));
-  body.appendChild(pal);
-}
-/* A section that also plays in other slots: ask whether to change it everywhere or copy it for this slot (A -> A') */
-function pickChord(code){
-  if(code!=null){Aud.ensure();Aud.preview(code);}
-  const M=Core.meter(P), a=Core.songAt(P,cpk.t/240);
-  if(a){
-    const uses=P.form.filter(function(y){return y===a.id;}).length, b0=Math.round(a.local*240/M.bt), ch=a.view.chords;
-    let same=true;for(let i=0;i<cpk.len&&b0+i<ch.length;i++)if(ch[b0+i]!==code)same=false;
-    if(same){closeForm();return;}
-    if(uses>1){askShared(a.id,uses,code);return;}
-  }
-  doPick(code,false);
-}
-function doPick(code,copy){
-  let r=null;
-  edit(function(){r=writeChordAt(cpk.t,code,cpk.len,copy);});
-  closeForm();
-  if(r&&r.added)toast('Section '+r.added+' added (4 bars).');
-  else if(r&&r.copied)toast('This slot is now section '+r.copied+'.');
-  else if(r)toast('Section '+r.id+' changed in every slot.');
-}
-function askShared(id,uses,code){
-  const body=$('#formBody');body.innerHTML='';
-  $('#formTitle').textContent='Section '+id+' plays in '+uses+' slots';
-  const p=document.createElement('p');p.className='note';p.style.margin='0';
-  p.textContent='Change the chord in every '+id+', or only here? Only here copies this slot to a new section ('+(primeId(id)||id+'…')+').';
-  body.appendChild(p);
-  const w=document.createElement('div');w.className='askrow';
-  const all=document.createElement('button');all.type='button';all.className='btn';all.textContent='Every '+id;all.addEventListener('click',function(){doPick(code,false);});
-  const one=document.createElement('button');one.type='button';one.className='btn primary';one.textContent='Only here ('+(primeId(id)||'—')+')';one.disabled=!primeId(id);one.addEventListener('click',function(){doPick(code,true);});
-  w.appendChild(all);w.appendChild(one);body.appendChild(w);
 }
 
 /* ---------- recent projects: the last 10, kept on this device ---------- */
