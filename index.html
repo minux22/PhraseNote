@@ -747,7 +747,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.11.2</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.11.3</p>
   </div>
 </section>
 
@@ -4582,17 +4582,17 @@ function importFrom(o){
 /* ---------- chords from the melody view ---------- */
 /* a new section name for a copy of id: A -> A', A' -> A'' (null when all are taken) */
 function primeId(id){const b=id[0];for(let n=1;n<=3;n++){const c=b+"'".repeat(n);if(!Core.secOf(P,c))return c;}return null;}
-/* Write code (null = erase) for len beats from tick. Past the end of the song an empty 8-bar section is added first.
+/* Write code (null = erase) for len beats from tick. Past the end of the song an empty 4-bar section is added first.
    A section that also plays in other slots is copied (A -> A') so only this slot changes. */
 function writeChordAt(tick,code,len,copy){
   const M=Core.meter(P), bar=barTk();
   let added=null, copied=null;
   if(tick>=Core.formTicks(P)){
-    const need=Math.ceil((tick+1-Core.formTicks(P))/(8*bar));
-    if(totBars()+need*8>128){toast('A song can be up to 128 bars.');return;}
+    const need=Math.ceil((tick+1-Core.formTicks(P))/(4*bar));
+    if(totBars()+need*4>128){toast('A song can be up to 128 bars.');return;}
     const id=freeId();if(!id){toast('Up to 8 sections (A to H).');return;}
     Core.storeCur(P);
-    const last=Core.secOf(P,P.form[P.form.length-1]), x=Core.copySec(last,{});x.id=id;x.role='';x.bars=8;x.chords=[];for(let i=0;i<8*M.bpb;i++)x.chords.push(null);
+    const last=Core.secOf(P,P.form[P.form.length-1]), x=Core.copySec(last,{});x.id=id;x.role='';x.bars=4;x.chords=[];for(let i=0;i<4*M.bpb;i++)x.chords.push(null);
     P.secs.push(x);for(let i=0;i<need;i++)P.form.push(id);
     Core.loadCur(P);added=id;
   }
@@ -4611,9 +4611,10 @@ function writeChordAt(tick,code,len,copy){
   return {added:added,copied:copied,slot:k,id:x.id};
 }
 let cpk=null;
+/* the chord starts on the Cell grid, as on the Chord Track: with 2-beat cells a tap in the middle of a bar lands on beat 3 */
+function cellStart(tick,len){const M=Core.meter(P), bar=Math.floor(tick/M.bar)*M.bar, b=Math.floor((tick-bar)/M.bt);return bar+Math.floor(b/len)*len*M.bt;}
 function openChordAt(tick){
-  const M=Core.meter(P), t=Math.floor(tick/M.bt)*M.bt;
-  cpk={t:t,len:P.unit};renderChordPick();$('#formDlg').hidden=false;formOpenAt=Date.now();
+  cpk={tap:tick,t:cellStart(tick,P.unit),len:P.unit};renderChordPick();$('#formDlg').hidden=false;formOpenAt=Date.now();
 }
 function renderChordPick(){
   const M=Core.meter(P), t=cpk.t, bar=Math.floor(t/M.bar), beat=Math.floor((t%M.bar)/M.bt);
@@ -4634,7 +4635,7 @@ function renderChordPick(){
     g[1].forEach(function(x){chip(Core.xWith(Core.xcode(x[0],x[1],x[2]),P.sev,0));});
   });
   const UN={1:'Beat',2:'2 Beats'};UN[M.bpb]='Bar';
-  body.appendChild(optRow('Length',Core.unitsFor(M.bpb).map(function(u){return [u,UN[u]];}),cpk.len,function(v){cpk.len=v;renderChordPick();}));
+  body.appendChild(optRow('Length',Core.unitsFor(M.bpb).map(function(u){return [u,UN[u]];}),cpk.len,function(v){cpk.len=v;cpk.t=cellStart(cpk.tap,v);renderChordPick();}));
   body.appendChild(optRow('Chords',[['7','7th']],P.sev?'7':null,function(){P.sev=!P.sev;persist();renderOpts();renderPalette();renderChordPick();}));
   body.appendChild(pal);
 }
@@ -4654,7 +4655,7 @@ function doPick(code,copy){
   let r=null;
   edit(function(){r=writeChordAt(cpk.t,code,cpk.len,copy);});
   closeForm();
-  if(r&&r.added)toast('Section '+r.added+' added (8 bars).');
+  if(r&&r.added)toast('Section '+r.added+' added (4 bars).');
   else if(r&&r.copied)toast('This slot is now section '+r.copied+'.');
   else if(r)toast('Section '+r.id+' changed in every slot.');
 }
