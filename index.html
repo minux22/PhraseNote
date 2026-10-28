@@ -20,6 +20,7 @@
   --amber:#f5a33b; --on-amber:#2b1a03; --rec:#ff5d50; --blue:#4d8ff5; --on-blue:#ffffff; --nudge:#d6d9df; --nudge-ink:#14161a;
   --chord:#4d8ff5; --chord-ink:#06152c; --mel:#e8318a; --mel-ink:#ffffff; --mint:#34d3a6; --mint-ink:#04241b; --ctl:#d6d9df; --ctl-ink:#14161a;
   --shadow:0 4px 16px rgba(0,0,0,.4);
+  --fgroove:#0a0b0d; --fcap1:#3a3e46; --fcap2:#24272d; --fcapb:#5a5f69; --ftick:rgba(150,155,165,.45);
   color-scheme:dark;
 }
 @media (prefers-color-scheme: light){
@@ -28,7 +29,7 @@
     --text:#24524b; --dim:#58807a;
     --amber:#f5a33b; --on-amber:#2b1a03; --rec:#ef786b; --blue:#3d7fd9; --on-blue:#ffffff; --nudge:#5f6b78; --nudge-ink:#ffffff;
     --chord:#2f6fc9; --chord-ink:#ffffff; --mel:#d11a74; --mel-ink:#ffffff; --mint:#0f9d79; --mint-ink:#ffffff; --ctl:#3d6660; --ctl-ink:#ffffff;
-    --shadow:0 5px 14px rgba(0,0,0,.09);
+    --shadow:0 5px 14px rgba(0,0,0,.09); --fgroove:#cfe3dd; --fcap1:#ffffff; --fcap2:#e2eeea; --fcapb:#9cc4b9; --ftick:rgba(36,82,75,.35);
     color-scheme:light;
   }
 }
@@ -37,7 +38,7 @@
   --text:#24524b; --dim:#58807a;
   --amber:#f5a33b; --on-amber:#2b1a03; --rec:#ef786b; --blue:#3d7fd9; --on-blue:#ffffff; --nudge:#5f6b78; --nudge-ink:#ffffff;
   --chord:#2f6fc9; --chord-ink:#ffffff; --mel:#d11a74; --mel-ink:#ffffff; --mint:#0f9d79; --mint-ink:#ffffff; --ctl:#3d6660; --ctl-ink:#ffffff;
-  --shadow:0 5px 14px rgba(0,0,0,.09);
+  --shadow:0 5px 14px rgba(0,0,0,.09); --fgroove:#cfe3dd; --fcap1:#ffffff; --fcap2:#e2eeea; --fcapb:#9cc4b9; --ftick:rgba(36,82,75,.35);
   color-scheme:light;
 }
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:pan-x pan-y}
@@ -357,13 +358,15 @@ body.kbd-open{padding-bottom:calc(92px + var(--kbdh,150px) + env(safe-area-inset
 .crow .pill.smt{height:30px; flex:none; width:68px; white-space:nowrap; padding:0; font-size:11px}
 .cr{display:flex; align-items:center; gap:6px; min-width:0}
 .cv{flex:none; width:48px; text-align:right; font-size:12px; font-weight:700; color:var(--dim)}
-input[type=range]{-webkit-appearance:none; appearance:none; height:26px; margin:0; background:transparent; accent-color:var(--blue)}
+/* sliders: a fader in a dark groove, a cap with a coloured centre line, a scale of ticks underneath */
+input[type=range]{-webkit-appearance:none; appearance:none; height:34px; margin:0; accent-color:var(--blue);
+  background:repeating-linear-gradient(90deg,var(--ftick) 0 1px,transparent 1px calc((100% - 1px) / var(--n,10))) 7px calc(100% - 1px)/calc(100% - 13px) 5px no-repeat}
 input.sq{flex:1; min-width:0}
-input[type=range]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(var(--blue),var(--blue)) left center/calc(9px + (100% - 18px) * var(--f,0)) 2px no-repeat, var(--line)}
-input[type=range]::-moz-range-track{height:4px; border-radius:2px; background:var(--line)}
+input[type=range]::-webkit-slider-runnable-track{height:6px; border-radius:3px; background:linear-gradient(var(--blue),var(--blue)) left center/calc(7px + (100% - 14px) * var(--f,0)) 2px no-repeat,var(--fgroove); box-shadow:inset 0 1px 2px rgba(0,0,0,.55),0 1px 0 rgba(255,255,255,.05)}
+input[type=range]::-moz-range-track{height:6px; border-radius:3px; background:var(--fgroove)}
 input[type=range]::-moz-range-progress{height:2px; background:var(--blue)}
-input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:18px; height:18px; border-radius:4px; background:var(--blue); border:0; margin-top:-7px}
-input[type=range]::-moz-range-thumb{width:18px; height:18px; border-radius:4px; background:var(--blue); border:0}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:14px; height:24px; margin-top:-9px; border-radius:3px; background:linear-gradient(90deg,transparent 5px,var(--blue) 5px 7px,transparent 7px),linear-gradient(180deg,var(--fcap1),var(--fcap2)); border:1px solid var(--fcapb); box-shadow:0 2px 4px rgba(0,0,0,.45)}
+input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; background:linear-gradient(90deg,transparent 5px,var(--blue) 5px 7px,transparent 7px),linear-gradient(180deg,var(--fcap1),var(--fcap2)); border:1px solid var(--fcapb)}
 .cchips{gap:5px}
 .cchips .gh{flex:0 0 100%; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin-top:4px}
 .cchips .gh:first-child{margin-top:0}
@@ -800,7 +803,7 @@ input[type=range]::-moz-range-thumb{width:18px; height:18px; border-radius:4px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.8</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.9</p>
   </div>
 </section>
 
@@ -4865,11 +4868,25 @@ function openKeyGuess(){
 }
 
 /* sliders: the part already passed shows a thin line (--f = position 0..1) */
-function rangeFill(e){const lo=+e.min||0, hi=e.max===''?100:+e.max, v=+e.value;e.style.setProperty('--f',hi>lo?Math.max(0,Math.min(1,(v-lo)/(hi-lo))):0);}
+function rangeFill(e){
+  const lo=+e.min||0, hi=e.max===''?100:+e.max, v=+e.value, f=hi>lo?Math.max(0,Math.min(1,(v-lo)/(hi-lo))):0;
+  e.style.setProperty('--f',f);
+  const w=e.offsetWidth;if(w)e.style.setProperty('--n',w<80?4:w<130?5:10);
+  return f;
+}
+/* a short buzz each time the cap crosses a tick, like a detented fader */
+let rangeBuzzT=0;
+function rangeTick(e){
+  const f=rangeFill(e), n=+(e.style.getPropertyValue('--n')||10), k=Math.round(f*n);
+  if(e._tk!=null&&k!==e._tk){const t=Date.now();if(t-rangeBuzzT>30&&navigator.vibrate){try{navigator.vibrate(k===0||k===n?14:6);}catch(x){}rangeBuzzT=t;}}
+  e._tk=k;
+}
 (function(){
   const d=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
   Object.defineProperty(HTMLInputElement.prototype,'value',{configurable:true,enumerable:d.enumerable,get:d.get,set:function(v){d.set.call(this,v);if(this.type==='range')rangeFill(this);}});
-  document.addEventListener('input',function(e){if(e.target&&e.target.type==='range')rangeFill(e.target);},true);
+  document.addEventListener('input',function(e){if(e.target&&e.target.type==='range')rangeTick(e.target);},true);
+  document.addEventListener('pointerdown',function(e){if(e.target&&e.target.type==='range'){const t=e.target;t._tk=Math.round(rangeFill(t)*(+(t.style.getPropertyValue('--n')||10)));}},true);
+  if(window.ResizeObserver){const ro=new ResizeObserver(function(es){es.forEach(function(x){rangeFill(x.target);});});document.querySelectorAll('input[type=range]').forEach(function(e){ro.observe(e);});window.__rangeRO=ro;}
   document.querySelectorAll('input[type=range]').forEach(rangeFill);
 })();
 /* ---------- REC: audio takes over the song ----------
@@ -5115,7 +5132,7 @@ function renderTakes(){
   const host=$('#takeList');if(!host)return;host.innerHTML='';
   const vol=document.createElement('div');vol.className='rrow';
   vol.innerHTML='<span class="lbl" style="font-size:10px">Take volume</span><input type="range" id="voxVol" min="0" max="100" step="1" style="flex:1" aria-label="Take volume">';
-  host.appendChild(vol);$('#voxVol').value=U.voxVol;$('#voxVol').addEventListener('input',function(e){U.voxVol=+e.target.value;saveU();});
+  host.appendChild(vol);$('#voxVol').value=U.voxVol;if(window.__rangeRO)window.__rangeRO.observe($('#voxVol'));$('#voxVol').addEventListener('input',function(e){U.voxVol=+e.target.value;saveU();});
   const M=Core.meter(P);
   (P.takes||[]).slice().reverse().forEach(function(t){
     const r=document.createElement('div');r.className='take'+(t.id===P.vtake?' on':'');r.dataset.id=t.id;
