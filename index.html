@@ -178,6 +178,7 @@ select{font:inherit; font-size:13px; height:32px; border:1px solid var(--line); 
 body.aud{--mel:var(--rec); --mel-ink:#ffffff}
 body.aud .rmeter{--amber:#f5a33b}
 body.aud .velc{visibility:hidden}
+.dbtn:disabled{opacity:.35}
 #recNote.warn{color:var(--rec)}
 #recGainV.clip{color:var(--rec); font-weight:700}
 .rrow{display:flex; align-items:center; gap:8px}
@@ -803,7 +804,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.9</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.10</p>
   </div>
 </section>
 
@@ -3771,8 +3772,10 @@ function kbdLabels(){
 function kbdRender(){
   const on=!$('#panelMelody').hidden;
   $('#dockKeys').hidden=!on;
-  $('#dockKeys').setAttribute('aria-expanded',K.open?'true':'false');
-  const show=on&&K.open;
+  /* Audio mode: the keyboard is put away (it comes back with Roll or Staff) */
+  const aud=U.view==='rec';$('#dockKeys').disabled=on&&aud;
+  $('#dockKeys').setAttribute('aria-expanded',K.open&&!aud?'true':'false');
+  const show=on&&K.open&&!aud;
   $('#kbd').hidden=!show;
   document.body.classList.toggle('kbd-open',show);
   if(show){
@@ -5002,6 +5005,7 @@ function recNote(msg){
 }
 /* shown REC view = microphone on; anything else = off */
 function recView(){
+  kbdRender();
   document.body.classList.toggle('aud',inMelody()&&U.view==='rec');
   if(inMelody()&&U.view==='rec'){micOn();renderRecCtl();renderTakes();if(P.vtake)loadTake(P.vtake).then(function(){renderRec();});}
   else micOff();
