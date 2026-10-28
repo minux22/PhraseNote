@@ -790,7 +790,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.1</p>
   </div>
 </section>
 
@@ -2953,7 +2953,7 @@ function renderMelOpts(){
   const setTool=function(v){U.tool=v;saveU();renderMelOpts();};
   mkSeg($('#toolSeg'),rlTools,function(){return U.tool;},setTool);
   mkSeg($('#toolSeg2'),stTools,function(){return U.tool;},setTool);
-  mkSeg($('#viewSeg'),[['roll','Roll'],['staff','Staff'],['rec','REC']],function(){return U.view;},function(v){if(v===U.view)return;if(playing)stopPlay();U.view=v;saveU();renderMelody();recView();});
+  mkSeg($('#viewSeg'),[['roll','Roll'],['staff','Staff'],['rec','Audio']],function(){return U.view;},function(v){if(v===U.view)return;if(playing)stopPlay();U.view=v;saveU();renderMelody();recView();});
   const isRec=U.view==='rec';
   $('#rollCtl').hidden=U.view!=='roll';$('#staffCtl').hidden=U.view!=='staff';$('#recCtl').hidden=!isRec;
   roll.hidden=U.view!=='roll';$('#stWrap').hidden=U.view!=='staff';$('.zwrap').classList.toggle('st',U.view==='staff');
