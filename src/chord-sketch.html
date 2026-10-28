@@ -482,6 +482,10 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 .fopt .ob .pill{height:30px; padding:0 11px; font-size:12.5px}
 .fopt .ob .pill[aria-pressed="true"]{background:var(--chord); border-color:var(--chord); color:var(--chord-ink)}
 #formBody{display:flex; flex-direction:column; gap:12px; max-height:60vh; overflow:auto}
+.palette.cpk{grid-template-columns:repeat(4,1fr); gap:6px}
+.palette.cpk .chip{min-height:40px}
+.palette.cpk .chip .rn{font-size:16px}
+.palette.cpk .xgl{grid-column:1/-1; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin:4px 0 -2px}
 #formBody .sfbar{border:1px solid var(--line); border-radius:10px; padding:4px 8px}
 #formBody .sfname{display:flex; flex-direction:column; line-height:1.25}
 #formBody .sfname b{font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis}
@@ -729,7 +733,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.10.6</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.11.0</p>
   </div>
 </section>
 
@@ -1576,7 +1580,7 @@ const Core=(function(){
     const top=normSec(o,MB);
     p.secs=[];
     if(Array.isArray(o.secs))o.secs.forEach(function(x){
-      if(!x||typeof x!=='object'||SEC_IDS.indexOf(x.id)<0||x.id.length!==1||p.secs.some(function(y){return y.id===x.id;}))return;
+      if(!x||typeof x!=='object'||typeof x.id!=='string'||!/^[A-H]'{0,3}$/.test(x.id)||p.secs.length>=24||p.secs.some(function(y){return y.id===x.id;}))return;
       const q=normSec(x,MB);q.id=x.id;q.role=ROLES.indexOf(x.role)>=0?x.role:'';p.secs.push(q);
     });
     let form=Array.isArray(o.form)?o.form.filter(function(id){return p.secs.some(function(y){return y.id===id;});}):[];
@@ -3592,17 +3596,21 @@ function stTickAt(x){
     if(playing)seekPlay();
   }
   const lane=$('#rLaneP');
+  /* a tap (no drag) on the chord row opens the chord picker for that beat; a drag moves the playhead */
   lane.addEventListener('pointerdown',function(e){
     if(rec.on)return;
-    sc={id:e.pointerId,kind:'roll'};scrubbing=true;
+    const r=lane.getBoundingClientRect();
+    sc={id:e.pointerId,kind:'roll',x:e.clientX,moved:false,chord:e.clientY-r.top>=14,t:(e.clientX-r.left)/U.zoom*PPQ-pkT()};scrubbing=true;
     try{lane.setPointerCapture(e.pointerId);}catch(x){}
-    const r=lane.getBoundingClientRect();move((e.clientX-r.left)/U.zoom*PPQ-pkT());
+    move(sc.t);
   });
   lane.addEventListener('pointermove',function(e){
     if(!sc||sc.kind!=='roll'||e.pointerId!==sc.id)return;
+    if(Math.abs(e.clientX-sc.x)>6)sc.moved=true;
     const r=lane.getBoundingClientRect();move((e.clientX-r.left)/U.zoom*PPQ-pkT());
   });
-  lane.addEventListener('pointerup',endScrub);lane.addEventListener('pointercancel',endScrub);
+  lane.addEventListener('pointerup',function(e){if(sc&&sc.kind==='roll'&&e.pointerId===sc.id){const s0=sc;endScrub(e);if(!s0.moved&&s0.chord&&s0.t>=0)openChordAt(s0.t);}});
+  lane.addEventListener('pointercancel',endScrub);
   /* staff: the strip above the lines */
   const sm=$('#stMain');
   sm.addEventListener('pointerdown',function(e){
@@ -3610,15 +3618,17 @@ function stTickAt(x){
     const r=sm.getBoundingClientRect();
     if(e.clientY-r.top>=ST.lane-2)return;
     e.stopImmediatePropagation();
-    sc={id:e.pointerId,kind:'staff'};scrubbing=true;
+    sc={id:e.pointerId,kind:'staff',x:e.clientX,moved:false,chord:e.clientY-r.top>=12,t:stTickAt(e.clientX-r.left)};scrubbing=true;
     try{sm.setPointerCapture(e.pointerId);}catch(x){}
-    move(stTickAt(e.clientX-r.left));
+    move(sc.t);
   },true);
   sm.addEventListener('pointermove',function(e){
     if(!sc||sc.kind!=='staff'||e.pointerId!==sc.id)return;
+    if(Math.abs(e.clientX-sc.x)>6)sc.moved=true;
     const r=sm.getBoundingClientRect();move(stTickAt(e.clientX-r.left));
   });
-  sm.addEventListener('pointerup',endScrub);sm.addEventListener('pointercancel',endScrub);
+  sm.addEventListener('pointerup',function(e){if(sc&&sc.kind==='staff'&&e.pointerId===sc.id){const s0=sc;endScrub(e);if(!s0.moved&&s0.chord&&s0.t>=0)openChordAt(s0.t);}});
+  sm.addEventListener('pointercancel',endScrub);
 })();
 
 /* --- recording --- */
@@ -4538,6 +4548,74 @@ function importFrom(o){
   });
   closeForm();K.cur=slotRange().t0;
   toast('Imported as section '+id+(n>1?' ('+n+' slots)':'')+(src.scale!==P.scale?'. Chords follow this song\'s scale.':'.'));
+}
+
+/* ---------- chords from the melody view ---------- */
+/* a new section name for a copy of id: A -> A', A' -> A'' (null when all are taken) */
+function primeId(id){const b=id[0];for(let n=1;n<=3;n++){const c=b+"'".repeat(n);if(!Core.secOf(P,c))return c;}return null;}
+/* Write code (null = erase) for len beats from tick. Past the end of the song an empty 8-bar section is added first.
+   A section that also plays in other slots is copied (A -> A') so only this slot changes. */
+function writeChordAt(tick,code,len){
+  const M=Core.meter(P), bar=barTk();
+  let added=null, copied=null;
+  if(tick>=Core.formTicks(P)){
+    const need=Math.ceil((tick+1-Core.formTicks(P))/(8*bar));
+    if(totBars()+need*8>128){toast('A song can be up to 128 bars.');return;}
+    const id=freeId();if(!id){toast('Up to 8 sections (A to H).');return;}
+    Core.storeCur(P);
+    const last=Core.secOf(P,P.form[P.form.length-1]), x=Core.copySec(last,{});x.id=id;x.role='';x.bars=8;x.chords=[];for(let i=0;i<8*M.bpb;i++)x.chords.push(null);
+    P.secs.push(x);for(let i=0;i<need;i++)P.form.push(id);
+    Core.loadCur(P);added=id;
+  }
+  const L=Core.layout(P);let k=0;while(k<L.length-1&&tick>=L[k].start+L[k].len)k++;
+  const sl=L[k];
+  Core.storeCur(P);
+  let x=Core.secOf(P,sl.id);
+  if(P.form.filter(function(y){return y===sl.id;}).length>1){
+    const nid=primeId(sl.id);
+    if(!nid){toast('This section has too many copies; change it on the Chord Track.');Core.loadCur(P);return;}
+    const c=Core.copySec(x,{});c.id=nid;c.role=x.role;P.secs.push(c);P.form[k]=nid;x=c;copied=nid;
+  }
+  const b0=Math.floor((tick-sl.start)/M.bt);
+  for(let i=0;i<len&&b0+i<x.chords.length;i++)x.chords[b0+i]=code;
+  Core.loadCur(P);
+  return {added:added,copied:copied,slot:k,id:x.id};
+}
+let cpk=null;
+function openChordAt(tick){
+  const M=Core.meter(P), t=Math.floor(tick/M.bt)*M.bt;
+  cpk={t:t,len:P.unit};renderChordPick();$('#formDlg').hidden=false;
+}
+function renderChordPick(){
+  const M=Core.meter(P), t=cpk.t, bar=Math.floor(t/M.bar), beat=Math.floor((t%M.bar)/M.bt);
+  const a=Core.songAt(P,t/240), cur=a?a.view.chords[Math.round(a.local*240/M.bt)]:null;
+  const body=$('#formBody');body.innerHTML='';
+  $('#formTitle').textContent='Bar '+(bar+1)+' · beat '+(beat+1)+(a?' · section '+a.id:' · new section');
+  const pal=document.createElement('div');pal.className='palette cpk';
+  const chip=function(code,lab){
+    const info=Core.chordInfo(code,P.key,P.scale), b=document.createElement('button');b.type='button';b.className='chip'+(code>=1000?' x':'');
+    b.setAttribute('aria-pressed',cur===code?'true':'false');b.setAttribute('aria-label',info.label+' ('+info.name+')');
+    b.innerHTML='<span class="rn">'+labelHtml(info)+'</span><span class="nm">'+info.name+'</span>';
+    b.addEventListener('click',function(){pickChord(code);});pal.appendChild(b);
+  };
+  for(let d=0;d<7;d++)chip(d*2+(P.sev?1:0));
+  const er=document.createElement('button');er.type='button';er.className='chip erase';er.textContent='Erase';er.addEventListener('click',function(){pickChord(null);});pal.appendChild(er);
+  Core.extraPalette(P.scale).forEach(function(g){
+    const h=document.createElement('div');h.className='xgl';h.textContent=g[0];pal.appendChild(h);
+    g[1].forEach(function(x){chip(Core.xWith(Core.xcode(x[0],x[1],x[2]),P.sev,0));});
+  });
+  const UN={1:'Beat',2:'2 Beats'};UN[M.bpb]='Bar';
+  body.appendChild(optRow('Length',Core.unitsFor(M.bpb).map(function(u){return [u,UN[u]];}),cpk.len,function(v){cpk.len=v;renderChordPick();}));
+  body.appendChild(optRow('Chords',[['7','7th']],P.sev?'7':null,function(){P.sev=!P.sev;persist();renderOpts();renderPalette();renderChordPick();}));
+  body.appendChild(pal);
+}
+function pickChord(code){
+  let r=null;
+  if(code!=null){Aud.ensure();Aud.preview(code);}
+  edit(function(){r=writeChordAt(cpk.t,code,cpk.len);});
+  closeForm();
+  if(r&&r.added)toast('Section '+r.added+' added (8 bars).');
+  else if(r&&r.copied)toast('Copied to section '+r.copied+' for this slot only.');
 }
 
 /* ---------- recent projects: the last 10, kept on this device ---------- */
