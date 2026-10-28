@@ -363,14 +363,18 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 .seg button svg{display:block; width:16px; height:16px}
 .seg.ic button{padding:0 8px; display:flex; align-items:center}
 .roll{position:relative; height:340px; overflow:auto; border:1px solid var(--line); border-radius:14px; background:var(--panel-2); overscroll-behavior:contain}
-.rlane{position:sticky; top:0; z-index:4; display:flex; height:44px; width:max-content; min-width:100%; background:var(--panel); border-bottom:1px solid var(--line)}
-.rcorner{position:sticky; left:0; z-index:5; flex:none; width:36px; background:var(--panel); border-right:1px solid var(--line); font-family:var(--mono); font-size:8px; color:var(--dim); display:grid; place-items:center; letter-spacing:.04em}
-.rlp{position:relative; flex:none; touch-action:none; cursor:ew-resize}
-.lph{position:absolute; top:0; left:0; height:44px; width:2px; background:var(--text); pointer-events:none; z-index:2; display:none}
+.rlane{position:sticky; top:0; z-index:4; display:flex; height:52px; width:max-content; min-width:100%; background:var(--panel); border-bottom:1px solid var(--line)}
+.rcorner span{display:block; line-height:1}
+.rcorner span:first-child{height:18px; display:grid; place-items:center; width:100%; border-bottom:1px solid var(--line); background:color-mix(in srgb,var(--text) 6%,var(--panel))}
+.rcorner span:last-child{flex:1; display:grid; place-items:center}
+.rcorner{position:sticky; left:0; z-index:5; flex:none; width:36px; background:var(--panel); border-right:1px solid var(--line); font-family:var(--mono); font-size:8px; color:var(--dim); display:flex; flex-direction:column; letter-spacing:.04em}
+.rlp{position:relative; flex:none; touch-action:none; cursor:pointer;
+  background:linear-gradient(to bottom,color-mix(in srgb,var(--text) 6%,transparent) 0 18px,var(--line) 18px 19px,transparent 19px)}
+.lph{position:absolute; top:0; left:0; height:52px; width:2px; background:var(--text); pointer-events:none; z-index:2; display:none}
 .lph::before,.sph::before{content:""; position:absolute; left:-4px; top:0; border-left:5px solid transparent; border-right:5px solid transparent; border-top:8px solid currentColor}
 .lph{color:var(--text)} .sph{color:var(--mel)}
-.rbn{position:absolute; top:0; height:44px; border-left:1px solid rgba(128,128,128,.45); padding-left:3px; font-family:var(--mono); font-size:9px; line-height:13px; color:var(--dim); pointer-events:none}
-.cb{position:absolute; top:15px; height:26px; border-radius:8px; background:var(--chord); color:var(--chord-ink); display:flex; align-items:center; justify-content:center; gap:5px; font-size:13px; font-weight:800; overflow:hidden; white-space:nowrap}
+.rbn{position:absolute; top:0; height:52px; border-left:1px solid rgba(128,128,128,.45); padding-left:3px; font-family:var(--mono); font-size:10px; line-height:18px; color:var(--dim); pointer-events:none}
+.cb{position:absolute; top:22px; height:27px; border-radius:8px; background:var(--chord); color:var(--chord-ink); display:flex; align-items:center; justify-content:center; gap:5px; font-size:13px; font-weight:800; overflow:hidden; white-space:nowrap}
 .cb .cn{font-family:var(--mono); font-size:9px; font-weight:400; opacity:.8}
 .rbody{display:flex; width:max-content}
 .rkeys{position:sticky; left:0; z-index:3; flex:none; width:36px; background:var(--panel); border-right:1px solid var(--line)}
@@ -395,7 +399,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 .selbar button:disabled{opacity:.4}
 .selbar button.dl{color:var(--rec)}
 .pk{position:absolute; top:0; bottom:0; left:0; background:rgba(232,49,138,.10); border-right:2px solid var(--mel); pointer-events:none}
-.pkl{position:absolute; top:15px; height:26px; left:1px; border-radius:8px; border:1px dashed var(--mel); color:var(--mel); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:9px; letter-spacing:.08em}
+.pkl{position:absolute; top:22px; height:27px; left:1px; border-radius:8px; border:1px dashed var(--mel); color:var(--mel); display:flex; align-items:center; justify-content:center; font-family:var(--mono); font-size:9px; letter-spacing:.08em}
 .ph{position:absolute; top:0; bottom:0; left:0; width:2px; background:var(--text); z-index:2; pointer-events:none; display:none}
 .ctl{display:flex; flex-direction:column; gap:10px}
 .ctl[hidden]{display:none}
@@ -491,6 +495,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 .fopt .ob .pill{height:30px; padding:0 11px; font-size:12.5px}
 .fopt .ob .pill[aria-pressed="true"]{background:var(--chord); border-color:var(--chord); color:var(--chord-ink)}
 #formBody{display:flex; flex-direction:column; gap:12px; max-height:60vh; overflow:auto}
+.askrow{display:grid; grid-template-columns:1fr 1fr; gap:8px}
 .palette.cpk{grid-template-columns:repeat(4,1fr); gap:6px}
 .palette.cpk .chip{min-height:40px}
 .palette.cpk .chip .rn{font-size:16px}
@@ -501,7 +506,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 #formBody .sfname small{font-size:11px; overflow:hidden; text-overflow:ellipsis}
 #formBody .sfbar .btn{min-height:28px; height:28px}
 .imel{display:flex; align-items:center; justify-content:space-between; font-size:13px}
-.rsec{position:absolute; top:0; margin-left:15px; font-family:var(--mono); font-size:9px; line-height:13px; font-weight:800; color:var(--chord); pointer-events:none; white-space:nowrap}
+.rsec{position:absolute; top:0; margin-left:17px; font-family:var(--mono); font-size:9.5px; line-height:18px; font-weight:800; color:var(--chord); pointer-events:none; white-space:nowrap}
 .barbox.empty{visibility:hidden}
 .dlg h3{margin:0; font-size:13px; letter-spacing:.04em; text-transform:uppercase; color:var(--mint)}
 .dlg input{height:32px; border:1px solid var(--line); border-radius:10px; background:var(--panel-2); color:var(--text); padding:0 10px; font:inherit; font-size:13px; width:100%; box-sizing:border-box}
@@ -654,7 +659,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <div class="zwrap">
       <div class="roll" id="roll" data-tool="pen" aria-label="Piano roll">
-        <div class="rlane"><div class="rcorner">CHORD</div><div class="rlp" id="rLaneP"></div></div>
+        <div class="rlane"><div class="rcorner"><span>BAR</span><span>CHORD</span></div><div class="rlp" id="rLaneP"></div></div>
         <div class="rbody"><div class="rkeys" id="rKeys"></div><div class="rplane" id="rPlane"></div></div>
       </div>
       <div class="stwrap" id="stWrap" data-tool="pen" aria-label="Staff" hidden>
@@ -742,7 +747,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.11.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.11.1</p>
   </div>
 </section>
 
@@ -1530,11 +1535,12 @@ const Core=(function(){
     return {v:1,key:0,scale:'major',bars:4,bpm:90,unit:2,sev:false,bass:true,comp:'beat',voic:'close',inv:false,strum:0,bpat:'root',swing:0,color:'off',lay:0,loose:0,
       vel4:[100,60,80,60],vel8:[100,55,60,50,80,50,60,50],jitter:6,chords:ch,sample:true,mel:[],melAmt:30,pick:false,ts:'4/4'};
   }
-  /* starting point for a new project: random tempo 85-130, random major/minor (C major or A minor), 4 bars, 2-beat cells, pickup off, auto-velocity on */
+  /* starting point for a new project: random tempo 85-130, random major/minor (C major or A minor), 8 bars (the example
+     progression twice), 2-beat cells, pickup off, auto-velocity on */
   function fresh(rnd){
     const d=defaults(), minor=rnd()<0.5;
     d.bpm=85+Math.floor(rnd()*46);d.scale=minor?'minor':'major';d.key=minor?9:0;
-    d.bars=4;d.unit=2;d.pick=false;d.melAmt=30;
+    d.bars=8;d.chords=d.chords.concat(d.chords);d.unit=2;d.pick=false;d.melAmt=30;
     return normalize(d);
   }
   function clamp(x,a,b){x=Math.round(Number(x));if(!isFinite(x))x=a;return Math.max(a,Math.min(b,x));}
@@ -3013,7 +3019,7 @@ function selAction(a){
 $('#selBar').addEventListener('click',function(e){const b=e.target.closest?e.target.closest('[data-sa]'):null;if(b&&!b.disabled)selAction(b.dataset.sa);});
 
 /* ---------- melody: staff ---------- */
-const ST={step:8,lane:30,pad:22,rpad:6};
+const ST={step:8,lane:42,pad:22,rpad:6};
 const LET=[0,2,4,5,7,9,11];
 const SH_ORD=[3,0,4,1,5,2,6], FL_ORD=[6,2,5,1,4,0,3];
 const SH_DP=[38,35,39,36,33,37,34], FL_DP=[34,37,33,36,32,35,31];
@@ -3162,6 +3168,8 @@ function renderStaff(){
   stMeta={ux:ux,bw:bw,nb:nb,maxDp:maxDp,minDp:minDp,H:H,W:W,ou:mdl.ou};
   const ink='currentColor';
   let g='';
+  /* the bar strip (tap or drag: playhead) above the chord row (tap: chord picker) */
+  g+='<rect x="0" y="0" width="'+W+'" height="14" fill="currentColor" opacity=".06"/><line x1="0" x2="'+W+'" y1="14.5" y2="14.5" stroke="currentColor" stroke-opacity=".25"/>';
   /* staff lines, bar lines, bar numbers */
   for(let dp=30;dp<=38;dp+=2)g+='<line x1="0" x2="'+W+'" y1="'+yOf(dp)+'" y2="'+yOf(dp)+'" stroke="'+ink+'" stroke-opacity=".55" stroke-width="1.2"/>';
   for(let b=0;b<=nb;b++){
@@ -3304,7 +3312,8 @@ function renderStaff(){
   const CLEF_H=Math.round(STEP*9.5), CLEF_W=Math.round(CLEF_H*92/240), fw=CLEF_W+12+Math.abs(sf)*9+6, yg=yOf(32);
   let f='';
   for(let dp=30;dp<=38;dp+=2)f+='<line x1="0" x2="'+fw+'" y1="'+yOf(dp)+'" y2="'+yOf(dp)+'" stroke="'+ink+'" stroke-opacity=".55" stroke-width="1.2"/>';
-  f+='<text x="3" y="10" font-size="8" font-family="monospace" fill="currentColor" opacity=".5">CHORD</text>';
+  f+='<rect x="0" y="0" width="'+fw+'" height="14" fill="currentColor" opacity=".06"/><line x1="0" x2="'+fw+'" y1="14.5" y2="14.5" stroke="currentColor" stroke-opacity=".25"/>';
+  f+='<text x="3" y="10" font-size="8" font-family="monospace" fill="currentColor" opacity=".5">BAR</text><text x="3" y="30" font-size="8" font-family="monospace" fill="currentColor" opacity=".5">CHORD</text>';
   const ch=CLEF_H, cw=CLEF_W, cy=Math.round(yg-0.62*ch);
   f+='<mask id="clefM" maskUnits="userSpaceOnUse" x="4" y="'+cy+'" width="'+cw+'" height="'+ch+'" style="mask-type:alpha"><image href="'+CLEF_URI+'" x="4" y="'+cy+'" width="'+cw+'" height="'+ch+'"/></mask><rect x="4" y="'+cy+'" width="'+cw+'" height="'+ch+'" transform="translate(0 0)" fill="currentColor" mask="url(#clefM)"/>';
   for(let i=0;i<Math.abs(sf);i++){
@@ -3541,11 +3550,11 @@ function kbdRender(){
 function centerRoll(){
   let m=wMidi(K.st+5);
   if(P.mel.length){let a=127,b=0;P.mel.forEach(function(n){if(n.p<a)a=n.p;if(n.p>b)b=n.p;});m=Math.round((a+b)/2);}
-  roll.scrollTop=Math.max(0,(HIGH-m)*ROW_H-(roll.clientHeight-44)/2);
+  roll.scrollTop=Math.max(0,(HIGH-m)*ROW_H-(roll.clientHeight-52)/2);
 }
 function revealPitch(m){
   if(U.view!=='roll'||m==null)return;
-  const y=(HIGH-m)*ROW_H, top=roll.scrollTop+44, bot=roll.scrollTop+roll.clientHeight-ROW_H*2;
+  const y=(HIGH-m)*ROW_H, top=roll.scrollTop+52, bot=roll.scrollTop+roll.clientHeight-ROW_H*2;
   if(y<top||y>bot)roll.scrollTop=Math.max(0,y-roll.clientHeight/2);
 }
 function clampHead(){
@@ -3608,14 +3617,15 @@ function stTickAt(x){
   /* a tap (no drag) on the chord row opens the chord picker for that beat; a drag moves the playhead */
   lane.addEventListener('pointerdown',function(e){
     if(rec.on)return;
-    const r=lane.getBoundingClientRect();
-    sc={id:e.pointerId,kind:'roll',x:e.clientX,moved:false,chord:e.clientY-r.top>=14,t:(e.clientX-r.left)/U.zoom*PPQ-pkT()};scrubbing=true;
+    const r=lane.getBoundingClientRect(), chord=e.clientY-r.top>=19;
+    sc={id:e.pointerId,kind:'roll',x:e.clientX,moved:false,chord:chord,t:(e.clientX-r.left)/U.zoom*PPQ-pkT()};scrubbing=!chord;
     try{lane.setPointerCapture(e.pointerId);}catch(x){}
-    move(sc.t);
+    if(!chord)move(sc.t);
   });
   lane.addEventListener('pointermove',function(e){
     if(!sc||sc.kind!=='roll'||e.pointerId!==sc.id)return;
     if(Math.abs(e.clientX-sc.x)>6)sc.moved=true;
+    if(sc.chord)return;
     const r=lane.getBoundingClientRect();move((e.clientX-r.left)/U.zoom*PPQ-pkT());
   });
   lane.addEventListener('pointerup',function(e){if(sc&&sc.kind==='roll'&&e.pointerId===sc.id){const s0=sc;endScrub(e);if(!s0.moved&&s0.chord&&s0.t>=0)openChordAt(s0.t);}});
@@ -3627,13 +3637,15 @@ function stTickAt(x){
     const r=sm.getBoundingClientRect();
     if(e.clientY-r.top>=ST.lane-2)return;
     e.stopImmediatePropagation();
-    sc={id:e.pointerId,kind:'staff',x:e.clientX,moved:false,chord:e.clientY-r.top>=12,t:stTickAt(e.clientX-r.left)};scrubbing=true;
+    const chord=e.clientY-r.top>=15;
+    sc={id:e.pointerId,kind:'staff',x:e.clientX,moved:false,chord:chord,t:stTickAt(e.clientX-r.left)};scrubbing=!chord;
     try{sm.setPointerCapture(e.pointerId);}catch(x){}
-    move(sc.t);
+    if(!chord)move(sc.t);
   },true);
   sm.addEventListener('pointermove',function(e){
     if(!sc||sc.kind!=='staff'||e.pointerId!==sc.id)return;
     if(Math.abs(e.clientX-sc.x)>6)sc.moved=true;
+    if(sc.chord)return;
     const r=sm.getBoundingClientRect();move(stTickAt(e.clientX-r.left));
   });
   sm.addEventListener('pointerup',function(e){if(sc&&sc.kind==='staff'&&e.pointerId===sc.id){const s0=sc;endScrub(e);if(!s0.moved&&s0.chord&&s0.t>=0)openChordAt(s0.t);}});
@@ -4419,10 +4431,11 @@ function insertSlot(k,id,notes){
 }
 function addNew(){
   const id=freeId();if(!id){toast('Up to 8 sections (A to H).');return;}
-  if(!fitOr(P.bars))return;
+  if(!fitOr(8))return;
   edit(function(){
     Core.storeCur(P);
-    const x=Core.copySec(P,{});x.id=id;x.role='';x.chords=x.chords.map(function(){return null;});
+    /* a new section: 8 bars (a progression played twice), the current section's sound */
+    const x=Core.copySec(P,{});x.id=id;x.role='';x.bars=8;x.chords=[];for(let i=0;i<8*Core.meter(P).bpb;i++)x.chords.push(null);
     P.secs.push(x);insertSlot(P.slot,id,null);
   });
   closeForm();K.cur=slotRange().t0;toast('Section '+id+' added. Paint its chords.');
@@ -4564,7 +4577,7 @@ function importFrom(o){
 function primeId(id){const b=id[0];for(let n=1;n<=3;n++){const c=b+"'".repeat(n);if(!Core.secOf(P,c))return c;}return null;}
 /* Write code (null = erase) for len beats from tick. Past the end of the song an empty 8-bar section is added first.
    A section that also plays in other slots is copied (A -> A') so only this slot changes. */
-function writeChordAt(tick,code,len){
+function writeChordAt(tick,code,len,copy){
   const M=Core.meter(P), bar=barTk();
   let added=null, copied=null;
   if(tick>=Core.formTicks(P)){
@@ -4580,7 +4593,7 @@ function writeChordAt(tick,code,len){
   const sl=L[k];
   Core.storeCur(P);
   let x=Core.secOf(P,sl.id);
-  if(P.form.filter(function(y){return y===sl.id;}).length>1){
+  if(copy&&P.form.filter(function(y){return y===sl.id;}).length>1){
     const nid=primeId(sl.id);
     if(!nid){toast('This section has too many copies; change it on the Chord Track.');Core.loadCur(P);return;}
     const c=Core.copySec(x,{});c.id=nid;c.role=x.role;P.secs.push(c);P.form[k]=nid;x=c;copied=nid;
@@ -4618,13 +4631,36 @@ function renderChordPick(){
   body.appendChild(optRow('Chords',[['7','7th']],P.sev?'7':null,function(){P.sev=!P.sev;persist();renderOpts();renderPalette();renderChordPick();}));
   body.appendChild(pal);
 }
+/* A section that also plays in other slots: ask whether to change it everywhere or copy it for this slot (A -> A') */
 function pickChord(code){
-  let r=null;
   if(code!=null){Aud.ensure();Aud.preview(code);}
-  edit(function(){r=writeChordAt(cpk.t,code,cpk.len);});
+  const M=Core.meter(P), a=Core.songAt(P,cpk.t/240);
+  if(a){
+    const uses=P.form.filter(function(y){return y===a.id;}).length, b0=Math.round(a.local*240/M.bt), ch=a.view.chords;
+    let same=true;for(let i=0;i<cpk.len&&b0+i<ch.length;i++)if(ch[b0+i]!==code)same=false;
+    if(same){closeForm();return;}
+    if(uses>1){askShared(a.id,uses,code);return;}
+  }
+  doPick(code,false);
+}
+function doPick(code,copy){
+  let r=null;
+  edit(function(){r=writeChordAt(cpk.t,code,cpk.len,copy);});
   closeForm();
   if(r&&r.added)toast('Section '+r.added+' added (8 bars).');
-  else if(r&&r.copied)toast('Copied to section '+r.copied+' for this slot only.');
+  else if(r&&r.copied)toast('This slot is now section '+r.copied+'.');
+  else if(r)toast('Section '+r.id+' changed in every slot.');
+}
+function askShared(id,uses,code){
+  const body=$('#formBody');body.innerHTML='';
+  $('#formTitle').textContent='Section '+id+' plays in '+uses+' slots';
+  const p=document.createElement('p');p.className='note';p.style.margin='0';
+  p.textContent='Change the chord in every '+id+', or only here? Only here copies this slot to a new section ('+(primeId(id)||id+'…')+').';
+  body.appendChild(p);
+  const w=document.createElement('div');w.className='askrow';
+  const all=document.createElement('button');all.type='button';all.className='btn';all.textContent='Every '+id;all.addEventListener('click',function(){doPick(code,false);});
+  const one=document.createElement('button');one.type='button';one.className='btn primary';one.textContent='Only here ('+(primeId(id)||'—')+')';one.disabled=!primeId(id);one.addEventListener('click',function(){doPick(code,true);});
+  w.appendChild(all);w.appendChild(one);body.appendChild(w);
 }
 
 /* ---------- recent projects: the last 10, kept on this device ---------- */
