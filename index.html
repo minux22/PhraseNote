@@ -173,6 +173,7 @@ select{font:inherit; font-size:13px; height:32px; border:1px solid var(--line); 
 .seg.mode3 button:last-child.on{background:var(--rec); color:#fff}
 #recCtl{gap:8px}
 #recModeSeg button{white-space:nowrap}
+#recNote.warn{color:var(--rec)}
 .rrow{display:flex; align-items:center; gap:8px}
 #recDev{flex:1; min-width:0; height:30px; font-size:12px}
 .rlat{font-size:11px; color:var(--dim); white-space:nowrap}
@@ -790,7 +791,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.2</p>
   </div>
 </section>
 
@@ -4858,7 +4859,7 @@ function openKeyGuess(){
    The microphone is open only while the REC view is shown. Recording always plays the backing (chords, bass, drums)
    after one bar of pre-roll. Song: one take from the playhead's bar until Stop. Loop: the selected slot repeats and
    every pass becomes a take. The sound is kept on the device (IndexedDB) and goes into saved project files. */
-const REC={stream:null,src:null,proc:null,sink:null,cap:null,run:null,opening:false};
+const REC={heard:0,loud:0,stream:null,src:null,proc:null,sink:null,cap:null,run:null,opening:false};
 const takeData={}, takeBufs={};
 U.recMode=U.recMode==='loop'?'loop':'song';U.recMel=!!U.recMel;U.recLat=Math.max(0,Math.min(0.8,+U.recLat||0));U.voxVol=U.voxVol==null?80:Math.max(0,Math.min(100,+U.voxVol));
 function tdb(){return new Promise(function(res,rej){try{const r=indexedDB.open('phrasenote',1);r.onupgradeneeded=function(){r.result.createObjectStore('f');};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};}catch(e){rej(e);}});}
@@ -4897,24 +4898,46 @@ function takeAt(step,t){
 function micOn(){
   if(REC.stream||REC.opening)return Promise.resolve(!!REC.stream);
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){recNote('The microphone is not available here. Open PhraseNote from its own web address.');return Promise.resolve(false);}
-  REC.opening=true;
+  REC.opening=true;REC.err=null;
   const c={echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1};if(U.recDev)c.deviceId={exact:U.recDev};
-  return navigator.mediaDevices.getUserMedia({audio:c}).catch(function(){
-    if(U.recDev){U.recDev=null;saveU();return navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});}
-    throw new Error('denied');
+  return navigator.mediaDevices.getUserMedia({audio:c}).catch(function(err){
+    if(err&&err.name==='NotAllowedError')throw err;
+    /* a remembered input that is gone, or a constraint this phone refuses: try the plainest request */
+    if(U.recDev){U.recDev=null;saveU();}
+    return navigator.mediaDevices.getUserMedia({audio:true});
   }).then(function(st){
     REC.opening=false;
     if(!(inMelody()&&U.view==='rec')){st.getTracks().forEach(function(t){t.stop();});return false;}
-    const ctx=Aud.ensure();REC.stream=st;REC.src=ctx.createMediaStreamSource(st);
+    const ctx=Aud.ensure();REC.stream=st;REC.heard=0;REC.loud=0;REC.src=ctx.createMediaStreamSource(st);
     REC.proc=ctx.createScriptProcessor(4096,1,1);REC.sink=ctx.createGain();REC.sink.gain.value=0;
     REC.src.connect(REC.proc);REC.proc.connect(REC.sink);REC.sink.connect(ctx.destination);
     REC.proc.onaudioprocess=function(e){
       const d=e.inputBuffer.getChannelData(0);let q=0;for(let i=0;i<d.length;i+=4)q+=d[i]*d[i];
-      const m=$('#recMeter');if(m)m.style.width=(100-Math.min(100,Math.sqrt(q/(d.length/4))*400))+'%';
-      if(REC.cap){if(REC.cap.first==null)REC.cap.first=e.playbackTime;REC.cap.chunks.push(new Float32Array(d));}
+      REC.heard++;if(q>0)REC.loud++;
+      const m=$('#recMeter');if(m){const db=20*Math.log10(Math.sqrt(q/(d.length/4))+1e-9);m.style.width=(100-Math.max(0,Math.min(100,(db+60)/60*100)))+'%';}
+      if(REC.cap){if(REC.cap.first==null)REC.cap.first=e.playbackTime!=null?e.playbackTime:ctx.currentTime;REC.cap.chunks.push(new Float32Array(d));}
     };
-    fillDevs();recNote();return true;
-  }).catch(function(){REC.opening=false;recNote('Microphone permission was refused. Allow it in the browser settings to record.');return false;});
+    REC.err=null;fillDevs();recNote();
+    /* two seconds later: is anything arriving? */
+    setTimeout(function(){
+      if(!REC.stream||REC.stream!==st)return;
+      const tr=st.getAudioTracks()[0], c2=Aud.ctx();
+      if(c2&&c2.state!=='running')recNote('Audio is paused by the browser. Tap anywhere on the page, then try again.');
+      else if(!tr||tr.readyState==='ended'||tr.muted)recNote('The microphone was opened but gives no signal. Another app (a call, a voice recorder) may be holding it: close it and switch Mode away and back to Audio.');
+      else if(!REC.heard)recNote('No audio is arriving from the microphone in this browser. Close PhraseNote completely and open it again.');
+      else if(!REC.loud)recNote('The microphone sends only silence. Check that no other app is using it, then switch Mode away and back to Audio.');
+    },2000);
+    return true;
+  }).catch(function(err){
+    REC.opening=false;
+    if(REC.stream){try{REC.stream.getTracks().forEach(function(t){t.stop();});}catch(e){}REC.stream=null;}
+    const n=err&&err.name, framed=window.top!==window;
+    recNote(n==='NotAllowedError'?(framed?'The microphone is blocked inside this preview. Open PhraseNote from its installed app or web address to record.':'Microphone permission was refused. Allow it for this site in the browser settings (Site permissions → Microphone), then reopen the page.')
+      :n==='NotReadableError'||n==='AbortError'?'The microphone is busy: another app is using it. Close that app and switch Mode away and back to Audio.'
+      :n==='NotFoundError'||n==='OverconstrainedError'?'No microphone was found.'
+      :'The microphone could not be opened ('+(n||(err&&err.message)||'unknown')+').');
+    return false;
+  });
 }
 function micOff(){
   if(REC.run)return;
@@ -4935,7 +4958,9 @@ function fillDevs(){
 $('#recDev').addEventListener('change',function(e){U.recDev=e.target.value;saveU();micOff();micOn();});
 function recNote(msg){
   const n=$('#recNote');if(!n)return;
-  n.textContent=msg||('Wear wired earphones: the backing must not reach the microphone. Bluetooth adds a delay, so press Calibrate once (earphones out, volume up).'+(U.recMode==='loop'?' Loop: every pass of the selected slot becomes a take.':' Song: records from the playhead\'s bar until Stop.'));
+  if(msg)REC.err=msg;
+  n.classList.toggle('warn',!!REC.err);
+  n.textContent=REC.err||('Wear wired earphones: the backing must not reach the microphone. Bluetooth adds a delay, so press Calibrate once (earphones out, volume up).'+(U.recMode==='loop'?' Loop: every pass of the selected slot becomes a take.':' Song: records from the playhead\'s bar until Stop.'));
 }
 /* shown REC view = microphone on; anything else = off */
 function recView(){
