@@ -160,8 +160,6 @@ select{font:inherit; font-size:13px; height:32px; border:1px solid var(--line); 
 .seg button.on{background:var(--blue); color:var(--on-blue); font-weight:700}
 .seg.mode3{border-radius:10px; padding:3px; gap:3px}
 .seg.mode3 button{height:32px; padding:0 6px; border-radius:8px; font-size:13px; flex:none; font-weight:600}
-.seg.mode3 button:last-child{color:var(--rec)}
-.seg.mode3 button:last-child.on{background:var(--rec); color:#fff}
 #recCtl{gap:8px}
 #recModeSeg button{white-space:nowrap}
 #recNote.warn{color:var(--rec)}
@@ -178,10 +176,10 @@ select{font:inherit; font-size:13px; height:32px; border:1px solid var(--line); 
 .recwrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--panel); touch-action:pan-x}
 .recin{position:relative; width:max-content}
 #recCv{display:block}
-.rph{position:absolute; top:0; bottom:0; width:2px; background:var(--rec); pointer-events:none; left:0}
+.rph{position:absolute; top:0; bottom:0; width:2px; background:var(--mel); pointer-events:none; left:0}
 .takes{display:flex; flex-direction:column; gap:6px; margin-top:6px}
 .take{display:flex; align-items:center; gap:6px; border:1px solid var(--line); border-radius:10px; padding:5px 8px; background:var(--panel-2)}
-.take.on{border-color:var(--rec); box-shadow:inset 3px 0 0 var(--rec)}
+.take.on{border-color:var(--mel); box-shadow:inset 3px 0 0 var(--mel)}
 .take .tn{flex:1; min-width:0; display:flex; flex-direction:column; line-height:1.25}
 .take .tn b{font-size:13px}
 .take .tn small{font-size:11px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
@@ -467,6 +465,8 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 .qhead[aria-expanded="true"] svg{transform:rotate(180deg)}
 .qbody{display:flex; flex-direction:column; gap:14px; padding:8px 0 4px}
 .qbox .qhead .lbl{color:var(--mel)}
+.qbox[hidden]{display:none}
+#recGain,#voxVol{accent-color:var(--mel)}
 .qrow{display:flex; align-items:center; gap:8px 10px; flex-wrap:nowrap}
 .qrow .grp{display:flex; align-items:center; gap:4px; flex:none}
 .qrow .lbl{font-size:10px; letter-spacing:.06em}
@@ -784,7 +784,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.3</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.4</p>
   </div>
 </section>
 
@@ -5068,7 +5068,7 @@ function renderRec(){
   const m=P.vtake?takeMeta(P.vtake):null, a=m?takeData[m.id]:null;
   if(m&&a){
     const spt=60/m.bpm/480, x0=X(m.t0), px=Math.ceil(m.n/m.sr/spt/PPQ*z), per=a.length/px;
-    g.fillStyle=col('--rec');
+    g.fillStyle=col('--mel');
     for(let i=0;i<px;i++){let mn=0,mx=0;const s0=Math.floor(i*per),s1=Math.min(a.length,Math.floor((i+1)*per));for(let j=s0;j<s1;j+=Math.max(1,Math.floor((s1-s0)/64))){const v=a[j]/32768;if(v<mn)mn=v;if(v>mx)mx=v;}
       g.fillRect(x0+i,81-mx*40,1,Math.max(1,(mx-mn)*40));}
   }else{g.fillStyle=col('--dim');g.font='12px sans-serif';g.fillText(P.takes&&P.takes.length?'Tap a take below to show and play it.':'No takes yet. Press REC: one bar of backing, then sing.',10,86);}
