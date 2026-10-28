@@ -173,6 +173,10 @@ select{font:inherit; font-size:13px; height:32px; border:1px solid var(--line); 
 .seg.mode3 button:last-child.on{background:var(--rec); color:#fff}
 #recCtl{gap:8px}
 #recModeSeg button{white-space:nowrap}
+/* Audio mode: the melody colour turns coral, the MIDI-only Auto-Velocity leaves a blank */
+body.aud{--mel:var(--rec); --mel-ink:#ffffff}
+body.aud .rmeter{--amber:#f5a33b}
+body.aud .velc{visibility:hidden}
 #recNote.warn{color:var(--rec)}
 #recGainV.clip{color:var(--rec); font-weight:700}
 .rrow{display:flex; align-items:center; gap:8px}
@@ -666,7 +670,7 @@ input[type=range]::-moz-range-thumb{width:18px; height:18px; border-radius:4px; 
         <div class="mrow">
           <div class="mcol" style="flex:none"><span class="lbl">Mode</span><div class="seg mode3" id="viewSeg" role="group" aria-label="Mode"></div></div>
           <div class="mcol"><span class="lbl">Pickup</span><button type="button" class="tg" id="togPick" role="switch" aria-checked="false" aria-label="Pickup measure"></button></div>
-          <div class="mcol"><span class="lbl" id="melAmtLbl">Auto-Velocity 30%</span><input type="range" id="melAmt" min="0" max="100" step="5" aria-label="Auto-Velocity amount" style="width:76px;height:32px"></div>
+          <div class="mcol velc"><span class="lbl" id="melAmtLbl">Auto-Velocity 30%</span><input type="range" id="melAmt" min="0" max="100" step="5" aria-label="Auto-Velocity amount" style="width:76px;height:32px"></div>
         </div>
         </div>
         <div id="rollCtl" class="ctl">
@@ -796,7 +800,7 @@ input[type=range]::-moz-range-thumb{width:18px; height:18px; border-radius:4px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.7</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.8</p>
   </div>
 </section>
 
@@ -4981,6 +4985,7 @@ function recNote(msg){
 }
 /* shown REC view = microphone on; anything else = off */
 function recView(){
+  document.body.classList.toggle('aud',inMelody()&&U.view==='rec');
   if(inMelody()&&U.view==='rec'){micOn();renderRecCtl();renderTakes();if(P.vtake)loadTake(P.vtake).then(function(){renderRec();});}
   else micOff();
 }
