@@ -752,7 +752,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.12.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.12.1</p>
   </div>
 </section>
 
@@ -3127,7 +3127,7 @@ function selAction(a){
 $('#selBar').addEventListener('click',function(e){const b=e.target.closest?e.target.closest('[data-sa]'):null;if(b&&!b.disabled)selAction(b.dataset.sa);});
 
 /* ---------- melody: staff ---------- */
-const ST={step:8,lane:46,pad:22,rpad:6,top:2};
+const ST={step:8,lane:40,pad:22,rpad:6,top:-3};
 const LET=[0,2,4,5,7,9,11];
 const SH_ORD=[3,0,4,1,5,2,6], FL_ORD=[6,2,5,1,4,0,3];
 const SH_DP=[38,35,39,36,33,37,34], FL_DP=[34,37,33,36,32,35,31];
@@ -3291,13 +3291,13 @@ function renderStaff(){
   for(let b=0;b<mb;b++){
     for(let q=0;q<TM.M.bpb;q++){
       const lc=laneBar(b);
-      if(!lc){if(q===0&&b<Core.formTicks(P)/TM.M.bar+overBars())g+='<rect class="ghostr" x="'+(barX(b+(P.pick?1:0))+3)+'" y="'+(ST.lane-24)+'" width="'+(bw-6)+'" height="22" rx="6" fill="none" stroke="var(--amber)" stroke-width="1.4" stroke-dasharray="4 3"/>';break;}
+      if(!lc){if(q===0&&b<Core.formTicks(P)/TM.M.bar+overBars())g+='<rect class="ghostr" x="'+(barX(b+(P.pick?1:0))+3)+'" y="'+(ST.lane-18)+'" width="'+(bw-6)+'" height="16" rx="5" fill="none" stroke="var(--amber)" stroke-width="1.4" stroke-dasharray="4 3"/>';break;}
       const code=lc.c[q];
       if(code==null||(q>0&&lc.c[q-1]===code))continue;
       const info=Core.chordInfo(code,P.key,P.scale);
       const x=barX(b+(P.pick?1:0))+Math.max(ST.pad-4,13)+q*UBE*ux, sm=ux<4;
-      g+='<text x="'+x+'" y="'+(ST.lane-15)+'" font-size="'+(sm?10:13)+'" font-weight="800" fill="var(--chord)">'+info.name+'</text>';
-      g+='<text x="'+x+'" y="'+(ST.lane-4)+'" font-size="'+(sm?8:10)+'" fill="currentColor" opacity=".6">'+info.label+'</text>';
+      /* one line in the chord row: name, then the numeral */
+      g+='<text x="'+x+'" y="'+(ST.lane-5)+'" font-size="'+(sm?10:13)+'"><tspan font-weight="800" fill="var(--chord)">'+info.name+'</tspan>'+(sm?'':'<tspan dx="4" font-size="10" fill="currentColor" opacity=".6">'+info.label+'</tspan>')+'</text>';
     }
   }
   /* notes + rests */
@@ -3422,7 +3422,7 @@ function renderStaff(){
   let f='';
   for(let dp=30;dp<=38;dp+=2)f+='<line x1="0" x2="'+fw+'" y1="'+yOf(dp)+'" y2="'+yOf(dp)+'" stroke="'+ink+'" stroke-opacity=".55" stroke-width="1.2"/>';
   f+='<rect x="0" y="0" width="'+fw+'" height="20" fill="currentColor" opacity=".06"/><line x1="0" x2="'+fw+'" y1="20.5" y2="20.5" stroke="currentColor" stroke-opacity=".25"/>';
-  f+='<text x="3" y="14" font-size="8" font-family="monospace" fill="currentColor" opacity=".5">BAR</text><text x="3" y="34" font-size="8" font-family="monospace" fill="currentColor" opacity=".5">CHORD</text>';
+  f+='<text x="3" y="14" font-size="8" font-family="monospace" fill="currentColor" opacity=".5">BAR</text><text x="3" y="33" font-size="8" font-family="monospace" fill="currentColor" opacity=".5">CHORD</text>';
   const ch=CLEF_H, cw=CLEF_W, cy=Math.round(yg-0.62*ch);
   f+='<mask id="clefM" maskUnits="userSpaceOnUse" x="4" y="'+cy+'" width="'+cw+'" height="'+ch+'" style="mask-type:alpha"><image href="'+CLEF_URI+'" x="4" y="'+cy+'" width="'+cw+'" height="'+ch+'"/></mask><rect x="4" y="'+cy+'" width="'+cw+'" height="'+ch+'" transform="translate(0 0)" fill="currentColor" mask="url(#clefM)"/>';
   for(let i=0;i<Math.abs(sf);i++){
