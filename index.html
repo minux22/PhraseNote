@@ -355,8 +355,9 @@ body.kbd-open{padding-bottom:calc(92px + var(--kbdh,150px) + env(safe-area-inset
 .cv{flex:none; width:48px; text-align:right; font-size:12px; font-weight:700; color:var(--dim)}
 input[type=range]{-webkit-appearance:none; appearance:none; height:26px; margin:0; background:transparent; accent-color:var(--blue)}
 input.sq{flex:1; min-width:0}
-input[type=range]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:var(--line)}
+input[type=range]::-webkit-slider-runnable-track{height:4px; border-radius:2px; background:linear-gradient(var(--blue),var(--blue)) left center/calc(9px + (100% - 18px) * var(--f,0)) 2px no-repeat, var(--line)}
 input[type=range]::-moz-range-track{height:4px; border-radius:2px; background:var(--line)}
+input[type=range]::-moz-range-progress{height:2px; background:var(--blue)}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:18px; height:18px; border-radius:4px; background:var(--blue); border:0; margin-top:-7px}
 input[type=range]::-moz-range-thumb{width:18px; height:18px; border-radius:4px; background:var(--blue); border:0}
 .cchips{gap:5px}
@@ -795,7 +796,7 @@ input[type=range]::-moz-range-thumb{width:18px; height:18px; border-radius:4px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.6</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.7</p>
   </div>
 </section>
 
@@ -4859,6 +4860,14 @@ function openKeyGuess(){
   $('#formDlg').hidden=false;formOpenAt=Date.now();
 }
 
+/* sliders: the part already passed shows a thin line (--f = position 0..1) */
+function rangeFill(e){const lo=+e.min||0, hi=e.max===''?100:+e.max, v=+e.value;e.style.setProperty('--f',hi>lo?Math.max(0,Math.min(1,(v-lo)/(hi-lo))):0);}
+(function(){
+  const d=Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value');
+  Object.defineProperty(HTMLInputElement.prototype,'value',{configurable:true,enumerable:d.enumerable,get:d.get,set:function(v){d.set.call(this,v);if(this.type==='range')rangeFill(this);}});
+  document.addEventListener('input',function(e){if(e.target&&e.target.type==='range')rangeFill(e.target);},true);
+  document.querySelectorAll('input[type=range]').forEach(rangeFill);
+})();
 /* ---------- REC: audio takes over the song ----------
    The microphone is open only while the REC view is shown. Recording always plays the backing (chords, bass, drums)
    after one bar of pre-roll. Song: one take from the playhead's bar until Stop. Loop: the selected slot repeats and
