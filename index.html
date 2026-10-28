@@ -504,6 +504,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
 #formBody .sfname b{font-weight:600; color:var(--text); overflow:hidden; text-overflow:ellipsis}
 #formBody .sfname small{font-size:11px; overflow:hidden; text-overflow:ellipsis}
 #formBody .sfbar .btn{min-height:28px; height:28px}
+#formBody .sfbar .btn:disabled{opacity:.35}
 .imel{display:flex; align-items:center; justify-content:space-between; font-size:13px}
 .cb.ghost{background:transparent; border:1.5px dashed var(--amber); animation:ghostp 1.6s ease-in-out infinite}
 @keyframes ghostp{0%,100%{opacity:.35}50%{opacity:1}}
@@ -754,7 +755,7 @@ input.sq::-moz-range-thumb{width:18px; height:18px; border-radius:4px; backgroun
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.12.2</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.12.3</p>
   </div>
 </section>
 
@@ -1218,6 +1219,62 @@ const Core=(function(){
       else{const f=Math.ceil(bpb/2);for(let k=0;k<bpb;k++)ch.push(add(k<f?bar[0]:bar[1]));}
     }
     return {i:i,chords:ch,names:names.join(' – ')};
+  }
+
+  /* ---- key from the melody ----
+     Krumhansl-Kessler key profiles (major / minor): how strongly each scale step belongs to a key. The melody's
+     pitch classes (weighted by length, more on beats and on the last note, plus the chords if any) are compared with
+     the profile of each of the 24 keys (Pearson correlation); the best three are returned. */
+  const KK_MAJ=[6.35,2.23,3.48,2.33,4.38,4.09,2.52,5.19,2.39,3.66,2.29,2.88];
+  const KK_MIN=[6.33,2.68,3.52,5.38,2.60,3.53,2.54,4.75,3.98,2.69,3.34,3.17];
+  function corr(a,b){const n=a.length;let ma=0,mb=0;for(let i=0;i<n;i++){ma+=a[i];mb+=b[i];}ma/=n;mb/=n;let x=0,ya=0,yb=0;for(let i=0;i<n;i++){x+=(a[i]-ma)*(b[i]-mb);ya+=(a[i]-ma)*(a[i]-ma);yb+=(b[i]-mb)*(b[i]-mb);}return ya&&yb?x/Math.sqrt(ya*yb):0;}
+  function guessKey(p){
+    const M=meter(p), h=[0,0,0,0,0,0,0,0,0,0,0,0];let last=null;
+    (p.mel||[]).forEach(function(n){if(n.s<0&&!p.pick)return;h[((n.p%12)+12)%12]+=Math.min(4,n.l/480)*(n.s%M.bt===0?1.5:1);if(!last||n.s>=last.s)last=n;});
+    if(last)h[((last.p%12)+12)%12]+=2;
+    const mw=h.reduce(function(a,b){return a+b;},0);
+    if(!mw)return [];
+    /* chords (as they sound now) count for a third of the evidence */
+    const ch=[0,0,0,0,0,0,0,0,0,0,0,0];
+    if(p.secs)layout(p).forEach(function(sl){secView(p,sl.id).chords.forEach(function(c){if(c==null)return;const t=chordInfo(c,p.key,p.scale).tones;t.slice(0,3).forEach(function(x){ch[(p.key+x)%12]+=1;});});});
+    const cw=ch.reduce(function(a,b){return a+b;},0);
+    const v=h.map(function(x,i){return x/mw+(cw?ch[i]/cw*0.5:0);});
+    const out=[];
+    for(let k=0;k<12;k++){
+      const rot=function(pr){const r=[];for(let i=0;i<12;i++)r.push(pr[((i-k)%12+12)%12]);return r;};
+      out.push({key:k,scale:'major',r:corr(v,rot(KK_MAJ))});
+      /* minor: harmonic minor when the leading tone outweighs the lowered 7th */
+      out.push({key:k,scale:v[(k+11)%12]>v[(k+10)%12]?'harm':'minor',r:corr(v,rot(KK_MIN))});
+    }
+    out.sort(function(a,b){return b.r-a.r;});
+    return out.slice(0,3);
+  }
+  /* Rename the key without moving anything: the melody stays, every chord keeps its sound and is written again in
+     the new key (a chord outside the new scale becomes a More chord). Returns how many chords could not be kept exactly. */
+  function recode(code,k0,s0,k1,s1){
+    const inf=chordInfo(code,k0,s0), t=inf.tones, sev=inf.sev, iv=[t[1]-t[0],t[2]-t[0],sev?t[3]-t[0]:null];
+    const rootAbs=(k0+t[0])%12, rel=((rootAbs-k1)%12+12)%12, bassAbs=(k0+inf.bassTone)%12;
+    /* bass degree in the new scale (slash chords) */
+    let bd=0;
+    if(inf.slash){const br=((bassAbs-k1)%12+12)%12, i=SCALES[s1].indexOf(br);if(i>=0)bd=i+1;}
+    const same=function(c){const t2=chordInfo(c,k1,s1).tones;return t2[1]-t2[0]===iv[0]&&t2[2]-t2[0]===iv[1]&&(!sev||t2[3]-t2[0]===iv[2]);};
+    const d=SCALES[s1].indexOf(rel);
+    if(d>=0){const c=(bd&&bd-1!==d?bd*14:0)+d*2+(sev?1:0);if(same(c))return {c:c,ok:!inf.slash||bd>0};}
+    let q=-1;
+    if(iv[0]===4&&iv[1]===7)q=sev?(iv[2]===11?3:iv[2]===10?0:-1):0;
+    else if(iv[0]===3&&iv[1]===7)q=!sev||iv[2]===10?1:-1;
+    else if(iv[0]===3&&iv[1]===6)q=!sev||iv[2]===10?2:iv[2]===9?4:-1;
+    if(q>=0){const c=xcode(rel,q,sev,bd&&SCALES[s1][bd-1]!==rel?bd:0);return {c:c,ok:!inf.slash||bd>0};}
+    /* no exact spelling (augmented, minor-major 7th): the nearest scale degree */
+    let best=0,bdst=99;SCALES[s1].forEach(function(x,i){const dd=Math.min((x-rel+12)%12,(rel-x+12)%12);if(dd<bdst){bdst=dd;best=i;}});
+    return {c:best*2+(sev?1:0),ok:false};
+  }
+  function rekey(p,k1,s1){
+    let lost=0;
+    storeCur(p);
+    p.secs.forEach(function(x){x.chords=x.chords.map(function(c){if(c==null)return null;const r=recode(c,p.key,p.scale,k1,s1);if(!r.ok)lost++;return r.c;});});
+    p.key=k1;p.scale=s1;loadCur(p);
+    return lost;
   }
 
   /* ---- chord suggestions from a melody ----
@@ -1761,7 +1818,7 @@ const Core=(function(){
   return {SCALES:SCALES,SCALE_NAMES:SCALE_NAMES,KEY_NAMES:KEY_NAMES,chordInfo:chordInfo,voicing:voicing,
     noteName:noteName,bassNote:bassNote,notesFor:notesFor,
     COMPS:COMPS,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,
-    POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM,suggestChords:suggestChords,SEC_IDS:SEC_IDS,ROLES:ROLES,SECF:SECF,normSec:normSec,copySec:copySec,secOf:secOf,curId:curId,storeCur:storeCur,loadCur:loadCur,layout:layout,formTicks:formTicks,secView:secView,secDrums:secDrums,songAt:songAt,melInsert:melInsert,melDelete:melDelete,melSlice:melSlice,melPaste:melPaste,resizeSec:resizeSec,xcode:xcode,isX:isX,xWith:xWith,extraPalette:extraPalette};
+    POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM,suggestChords:suggestChords,guessKey:guessKey,rekey:rekey,recode:recode,SEC_IDS:SEC_IDS,ROLES:ROLES,SECF:SECF,normSec:normSec,copySec:copySec,secOf:secOf,curId:curId,storeCur:storeCur,loadCur:loadCur,layout:layout,formTicks:formTicks,secView:secView,secDrums:secDrums,songAt:songAt,melInsert:melInsert,melDelete:melDelete,melSlice:melSlice,melPaste:melPaste,resizeSec:resizeSec,xcode:xcode,isX:isX,xWith:xWith,extraPalette:extraPalette};
 })();
 
 /* SoundFont 2 reader + sample player. Pure (no DOM): parse(ArrayBuffer) and createPlayer(ctx). */
@@ -2633,6 +2690,7 @@ const TIPS={
 /* ---------- controls ---------- */
 (function(){
   const ks=$('#keySel'), ss=$('#scaleSel');
+  {const o=document.createElement('option');o.value='guess';o.textContent='Guess from melody…';ks.appendChild(o);}
   Core.KEY_NAMES.forEach(function(n,i){const o=document.createElement('option');o.value=i;o.textContent=n;ks.appendChild(o);});
   Object.keys(Core.SCALE_NAMES).forEach(function(k){const o=document.createElement('option');o.value=k;o.textContent=Core.SCALE_NAMES[k];ss.appendChild(o);});
   const ts=$('#tsSel');
@@ -2650,7 +2708,10 @@ const TIPS={
     K.cur=Math.max(0,K.cur-K.cur%barTk());showCursor();
     if(dropped)toast('Removed '+dropped+(dropped>1?' melody notes':' melody note')+' on beats that '+ts.value+' does not have. Undo brings '+(dropped>1?'them':'it')+' back.');
   });
-  ks.addEventListener('change',function(){edit(function(){P.mel=Core.shiftMelKey(P.mel,P.key,+ks.value);P.key=+ks.value;});});
+  ks.addEventListener('change',function(){
+    if(ks.value==='guess'){ks.value=String(P.key);openKeyGuess();return;}
+    edit(function(){P.mel=Core.shiftMelKey(P.mel,P.key,+ks.value);P.key=+ks.value;});
+  });
   ss.addEventListener('change',function(){edit(function(){P.mel=Core.mapMelScale(P.mel,P.key,P.scale,ss.value);P.scale=ss.value;});});
 })();
 $('#playBtn').addEventListener('click',togglePlay);
@@ -4697,6 +4758,32 @@ function importFrom(o){
   });
   closeForm();K.cur=slotRange().t0;
   toast('Imported as section '+id+(n>1?' ('+n+' slots)':'')+(src.scale!==P.scale?'. Chords follow this song\'s scale.':'.'));
+}
+
+/* ---------- key from the melody (Key menu: Guess from melody…) ---------- */
+function keyName(k,sc){return Core.KEY_NAMES[k]+' '+(sc==='major'?'major':sc==='harm'?'harm. minor':'minor');}
+function openKeyGuess(){
+  const g=Core.guessKey(P);
+  if(!g.length){toast('Write some melody first.');return;}
+  const body=$('#formBody');body.innerHTML='';
+  $('#formTitle').textContent='Key of the melody';
+  const n=document.createElement('p');n.className='note';n.style.margin='0';
+  n.textContent='Applying renames the key only: the melody stays where it is and the chords keep their sound.';body.appendChild(n);
+  g.forEach(function(x,i){
+    const r=document.createElement('div');r.className='sfbar';
+    const t=document.createElement('span');t.className='sfname';
+    const b=document.createElement('b');b.textContent=keyName(x.key,x.scale)+(x.key===P.key&&x.scale===P.scale?' (now)':'');
+    const sm=document.createElement('small');sm.textContent='Match '+Math.max(0,Math.round(x.r*100))+'%'+(i===0?' · best':'');
+    t.appendChild(b);t.appendChild(sm);r.appendChild(t);
+    const o=document.createElement('button');o.type='button';o.className='btn'+(i===0?' primary':'');o.textContent='Apply';
+    o.disabled=x.key===P.key&&x.scale===P.scale;
+    o.addEventListener('click',function(){
+      let lost=0;edit(function(){lost=Core.rekey(P,x.key,x.scale);});
+      closeForm();toast('Key: '+keyName(x.key,x.scale)+(lost?' · '+lost+' chord'+(lost>1?'s':'')+' could not be kept exactly':''));
+    });
+    r.appendChild(o);body.appendChild(r);
+  });
+  $('#formDlg').hidden=false;formOpenAt=Date.now();
 }
 
 /* ---------- recent projects: the last 10, kept on this device ---------- */
