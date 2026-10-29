@@ -299,8 +299,7 @@ body{font-family:'Noto Sans CJK KR','Noto Sans KR','DejaVu Sans',sans-serif;colo
 .cover p{font-size:12pt;color:#b9c0c9;margin:0;max-width:140mm}
 .cover .ver{font:700 11pt 'DejaVu Sans Mono',monospace;color:#34d3a6}
 .cover .row{display:flex;gap:5mm;margin-top:8mm;align-items:center;justify-content:center}
-.cover .row img{width:42mm;border-radius:4mm;box-shadow:0 6mm 14mm rgba(0,0,0,.5)}
-.cover .row img.mid{width:52mm}
+.cover .row img{width:46mm;border-radius:4mm;box-shadow:0 6mm 14mm rgba(0,0,0,.5)}
 .part{break-before:page;margin:0 0 6mm;padding:3mm 0 2mm;border-bottom:.6mm solid #34d3a6;font-size:11pt;font-weight:800;color:#1f8f70;letter-spacing:.04em}
 h2{font-size:14.5pt;margin:0 0 1.5mm;display:flex;align-items:center;gap:3mm}
 h2 i{font-style:normal;display:inline-grid;place-items:center;width:8mm;height:8mm;border-radius:2mm;background:#1b1f26;color:#34d3a6;font-size:11pt}
@@ -326,7 +325,7 @@ b{font-weight:700}
 def build(L):
     out = ['<!doctype html><html lang="%s"><head><meta charset="utf-8"><title>%s</title><style>%s</style></head><body>' % (L['lang'], L['title'], CSS)]
     t = L['title'].split(' ', 1)
-    out.append('<section class="cover"><div class="ver">PhraseNote %s</div><h1><span>%s</span> %s</h1><p>%s</p><div class="row"><img src="img/main.png"><img class="mid" src="img/cover_roll.png"><img src="img/audio.png"></div></section>' % (
+    out.append('<section class="cover"><div class="ver">PhraseNote %s</div><h1><span>%s</span> %s</h1><p>%s</p><div class="row"><img src="img/main.png"><img src="img/cover_roll.png"><img src="img/cover_audio.png"></div></section>' % (
         VER, html.escape(t[0]), html.escape(t[1] if len(t) > 1 else ''), html.escape(L['sub'])))
     out.append('<section class="start"><h2><i>0</i>%s</h2><ol class="plain">%s</ol>' % (L['install'][0], ''.join('<li>%s</li>' % x for x in L['install'][1])))
     toc, n = [], 0

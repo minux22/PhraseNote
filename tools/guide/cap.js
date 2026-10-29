@@ -94,6 +94,8 @@ await pg.evaluate(()=>{const c=document.getElementById('recCv'),r=c.getBoundingC
 await pg.fill('#recA','1');await pg.press('#recA','Tab');await pg.fill('#recB','4');await pg.press('#recB','Tab');await pg.waitForTimeout(400);
 await pg.evaluate(()=>scrollTo(0,0));
 await pg.evaluate(()=>document.querySelectorAll('#recDev option').forEach(o=>o.textContent='Microphone'));
+await pg.evaluate(()=>{scrollTo(0,0);document.getElementById('toast').classList.remove('show');});await pg.waitForTimeout(200);
+await pg.screenshot({path:OUT+'cover_audio.png'});META.push({name:'cover_audio',w:360,h:780,marks:[]});
 await shot('audio',['#panelMelody .ctl','#takeList'],[[1,'#viewSeg','tl'],[2,'#recDev','tl'],[3,'#recCal','tl'],[4,'#recGain','tl'],[5,'#recModeSw','tl'],[6,'#recRng','tl'],[7,'#recBtn','tl'],[8,'#recWrap','tl'],[9,'#takeList .thead','tl']]);
 // 12 loop growth (roll with ghost) : project with only A? use current: chord tab loop + slot A followed by B -> no ghost. Make a single-slot copy view: select B (last) and show roll
 await pg.click('#viewSeg button >> nth=0');await pg.waitForTimeout(400);
