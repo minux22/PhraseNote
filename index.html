@@ -810,7 +810,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.14.2</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.14.3</p>
   </div>
 </section>
 
@@ -4982,7 +4982,9 @@ function openKeyGuess(){
 /* ---------- save folder: a PhraseNote folder the user picks once (browsers with folder access only) ----------
    Project, MIDI and WAV files go into <PhraseNote>/<project name>/, sound presets into <PhraseNote>/. Without folder access
    (older browser, claude.ai preview) files are downloaded as before. */
-const FS={ok:typeof window.showDirectoryPicker==='function'&&window.top===window, root:null};
+/* on hold: Samsung Internet cannot write into a chosen folder; kept for a future wrapped app */
+const FS_ON=false;
+const FS={ok:FS_ON&&typeof window.showDirectoryPicker==='function'&&window.top===window, root:null};
 function fsSafe(n){return String(n||'').replace(/[\\\/:*?"<>|\u0000-\u001f]/g,'').replace(/\s+/g,' ').trim().replace(/^\.+/,'').slice(0,80);}
 function fsProjName(){return fsSafe(P.name)||'Untitled';}
 function fsShow(){
