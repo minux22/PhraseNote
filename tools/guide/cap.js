@@ -57,8 +57,11 @@ await pg.click('#drumPick');await pg.waitForTimeout(200);await pg.click('#patLis
 await pg.evaluate(()=>{const d=document.getElementById('patDlg');if(!d.hidden)document.getElementById('patClose').click();});
 // 6 melody roll
 await pg.click('#tabMelody');await pg.waitForTimeout(600);await pg.evaluate(()=>scrollTo(0,0));
+await pg.evaluate(()=>{const ns=[...document.querySelectorAll('#rPlane .nt')];const top=Math.min(...ns.map(n=>n.offsetTop)),bot=Math.max(...ns.map(n=>n.offsetTop));const r=document.getElementById('roll');r.scrollTop=Math.max(0,(top+bot)/2-120);});
 const rt=await box('#panelMelody .ctl'), rr=await box('#roll');
 await shot('roll',{x:0,y:rt.y-8,w:360,h:rr.y-rt.y+300},[[1,'#viewSeg','tl'],[2,'#togPick','tl'],[3,'#melAmt','tl'],[4,'#toolSeg','tl'],[5,'#lenSel','tl'],[6,'#rLaneP','tl']]);
+await pg.evaluate(()=>{scrollTo(0,0);document.getElementById('toast').classList.remove('show');const ns=[...document.querySelectorAll('#rPlane .nt')];const top=Math.min(...ns.map(n=>n.offsetTop)),bot=Math.max(...ns.map(n=>n.offsetTop));const r=document.getElementById('roll');r.scrollTop=Math.max(0,(top+bot)/2-200);});await pg.waitForTimeout(300);
+await pg.screenshot({path:OUT+'cover_roll.png'});META.push({name:'cover_roll',w:360,h:780,marks:[]});
 // 7 staff
 await pg.click('#viewSeg button >> nth=1');await pg.waitForTimeout(700);
 await shot('staff',['#panelMelody .ctl','#stWrap'],[[1,'#toolSeg2','tl'],[2,'#nvSeg','tl'],[3,'#dotSeg','tl'],[4,'#accSeg','tl']]);
@@ -76,9 +79,9 @@ await pg.evaluate(()=>{document.getElementById('qHead').click();scrollTo(0,0);})
 // 10 suggest chords (palette with melody) + key guess
 await pg.click('#tabChord');await pg.waitForTimeout(400);
 await pg.evaluate(()=>document.querySelector('#palette').scrollIntoView({block:'start'}));
-await shot('suggest',['#togBass','#palette'],[[1,'#btnRand','tl']]);
+await shot('suggest',['#togBass','#palette'],[[2,'#btnRand','tl']]);
 await pg.evaluate(()=>scrollTo(0,0));await pg.selectOption('#keySel','guess');await pg.waitForTimeout(400);
-await shot('keyguess','#formDlg .dlg',[[4,'#formBody .sfbar >> nth=0','tl']],{pad:0});
+await shot('keyguess','#formDlg .dlg',[[1,'#formBody .sfbar >> nth=0','tl']],{pad:0});
 await pg.evaluate(()=>{const d=document.getElementById('formDlg');d.hidden=true;});
 // 11 audio mode: record takes on A loop (2 passes), then on B
 await pg.click('#tabMelody');await pg.click('#viewSeg button >> nth=2');await pg.waitForTimeout(1500);
