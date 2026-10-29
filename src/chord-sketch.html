@@ -191,6 +191,8 @@ body.aud .velc{visibility:hidden}
 #recCv{display:block}
 .rph{position:absolute; top:0; bottom:0; width:2px; background:var(--rec); pointer-events:none; left:0}
 .takes{display:flex; flex-direction:column; gap:6px; margin-top:6px}
+/* anything marked hidden stays hidden, whatever display its class gives it */
+[hidden]{display:none!important}
 .take{display:flex; align-items:center; gap:6px; border:1px solid var(--line); border-radius:10px; padding:5px 8px; background:var(--panel-2)}
 .thead{display:flex; align-items:baseline; gap:8px; padding:2px 2px 0}
 .thead b{font-size:13px}
@@ -804,7 +806,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.15.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.15.1</p>
   </div>
 </section>
 
