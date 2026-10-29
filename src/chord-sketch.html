@@ -71,6 +71,10 @@ h1::before{content:'♪'; display:inline-flex; align-items:center; justify-conte
 .plist{max-height:60vh; overflow:auto; display:flex; flex-direction:column; gap:2px; margin:0 -4px}
 .plist .gh{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--mint); padding:8px 6px 2px}
 .plist button{text-align:left; border:0; background:transparent; color:var(--text); font-size:14px; padding:0 10px; min-height:38px; border-radius:8px}
+.dlg.dsdlg{width:min(560px,calc(100vw - 28px)); max-width:none; padding:12px 10px}
+.dsdlg .dseq{margin:0}
+/* the slot copy waiting after the song (Chord Track on Loop): draw into it and it becomes real */
+.cb.gcopy{opacity:.38; outline:1.5px dashed currentColor; outline-offset:-3px}
 .plist .prow{display:flex; gap:6px; align-items:center}
 .plist .prow button[data-p]{flex:1}
 .plist button.pedit{flex:none; text-align:center; min-height:32px; padding:0 14px; border:1px solid var(--line); background:var(--panel-2); font-weight:700; font-size:13px}
@@ -199,6 +203,11 @@ body.aud .velc{visibility:hidden}
 .recin{position:relative; width:max-content}
 #recCv{display:block}
 .rph{position:absolute; top:0; bottom:0; width:2px; background:var(--rec); pointer-events:none; left:0}
+/* playhead styles: a white line with a head (a, b), or coral with a head (c) */
+.recwrap[data-sk="a"] .rph,.recwrap[data-sk="b"] .rph{background:#f2f4f7; width:1.5px; box-shadow:0 0 0 .5px rgba(0,0,0,.5)}
+.recwrap .rph::before{content:""; position:absolute; top:0; left:50%; transform:translateX(-50%); border:6px solid transparent; border-top:8px solid currentColor; border-bottom:0}
+.recwrap[data-sk="a"] .rph,.recwrap[data-sk="b"] .rph{color:#f2f4f7}
+.recwrap[data-sk="c"] .rph{color:var(--rec)}
 .takes{display:flex; flex-direction:column; gap:6px; margin-top:6px}
 /* anything marked hidden stays hidden, whatever display its class gives it */
 [hidden]{display:none!important}
@@ -796,12 +805,6 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
         <div class="sfrow tr"><span class="lbl">Bass</span><select class="fs" id="sfBf" aria-label="Bass SoundFont"></select><select id="sfB" aria-label="Bass sound"></select></div>
         <div class="sfrow tr drow"><span class="lbl">Drums</span><select class="fs" id="sfDf" aria-label="Drums SoundFont"></select><select id="sfD" aria-label="Drums sound"></select></div>
         <div class="sfrow sub"><span class="lbl">Pattern</span><select id="dPat" aria-label="Drum pattern"></select><button class="btn" id="dEdit" type="button" aria-expanded="false" aria-controls="dSlide" aria-label="Edit pattern">Edit</button></div>
-        <div class="slide" id="dSlide" inert><div>
-          <div class="dseq">
-            <div class="dtop"><div class="seg" id="dRes"></div><button class="btn" id="dTest" type="button">&#9654; Test</button><button class="btn" id="dCopy" type="button">From preset</button><button class="btn" id="dClr" type="button">Clear</button></div>
-            <div class="dscroll"><div class="dgrid" id="dGrid"></div></div>
-          </div>
-        </div></div>
       </div>
       <div class="sbox" id="spBox"><div class="sfpre"><button class="btn" id="spSave" type="button">Save preset</button><button class="btn" id="spOpen" type="button">Load preset</button></div><input id="spIn" type="file" hidden></div>
       <div class="sbox" style="margin-top:10px">
@@ -823,7 +826,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.2</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.3</p>
   </div>
 </section>
 
@@ -883,6 +886,16 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
   </div>
 </div>
 <input id="impIn" type="file" hidden>
+<div class="dlgback" id="dSlide" hidden>
+  <div class="dlg dsdlg" role="dialog" aria-labelledby="dsTitle">
+    <h3 id="dsTitle">My pattern</h3>
+    <div class="dseq">
+            <div class="dtop"><div class="seg" id="dRes"></div><button class="btn" id="dTest" type="button">&#9654; Test</button><button class="btn" id="dCopy" type="button">From preset</button><button class="btn" id="dClr" type="button">Clear</button></div>
+            <div class="dscroll"><div class="dgrid" id="dGrid"></div></div>
+          </div>
+    <div class="dlgrow"><button class="btn" type="button" id="dsClose">Done</button></div>
+  </div>
+</div>
 <div class="dlgback" id="patDlg" hidden>
   <div class="dlg" role="dialog" aria-label="Drum pattern">
     <h3>Drum pattern</h3>
@@ -2140,7 +2153,18 @@ try{const raw=localStorage.getItem(LS); if(raw)P=Core.normalize(JSON.parse(raw))
 
 /* ---------- state helpers ---------- */
 const serialize=function(){Core.storeCur(P);return JSON.stringify(P);};
-function persist(){try{localStorage.setItem(LS,serialize());}catch(e){}recentKeep();}
+let growing=false;
+function persist(){
+  /* Chord Track on Loop: notes drawn after the song get copies of the looped slot under them */
+  if(!growing&&inMelody()&&U.cmode==='loop'&&P.mel.length){
+    const ft=Core.formTicks(P);
+    if(P.mel.some(function(n){return n.s>=ft;})&&loopChain().j===P.form.length-1){
+      growing=true;let g=0;try{while(g<64&&P.mel.some(function(n){return n.s>=Core.formTicks(P);})&&insertLoopCopy()!=null)g++;}finally{growing=false;}
+      if(g){setTimeout(renderAll,0);toast(g>1?g+' copies of the slot added.':'A copy of the slot was added.');}
+    }
+  }
+  try{localStorage.setItem(LS,serialize());}catch(e){}recentKeep();
+}
 function pushUndo(snap){undo.push(snap);if(undo.length>100)undo.shift();redo.length=0;persist();renderTop();}
 function applySnap(s){setTimeout(function(){compLoad().then(function(){if(U.view==='rec'){renderTakes();renderRec();}});},0);const sid=Core.curId(P), d={drum:P.drum,dpat:P.dpat};const keep={id:P.id,name:P.name};P=Core.normalize(JSON.parse(s));Object.assign(P,keep);if(Core.curId(P)===sid)Object.assign(P,d);persist();renderAll();}
 function doUndo(){commitLive();if(!undo.length)return;redo.push(serialize());applySnap(undo.pop());}
@@ -2474,7 +2498,8 @@ function shiftFrom(at,d){
 function insertLoopCopy(){
   if(P.form.length>=64)return null;
   const ch=loopChain(), at=ch.t1;
-  Core.storeCur(P);P.form.splice(ch.j+1,0,ch.id);Core.loadCur(P);shiftFrom(at,ch.len);persist();
+  const last=ch.j===P.form.length-1;
+  Core.storeCur(P);P.form.splice(ch.j+1,0,ch.id);Core.loadCur(P);if(!last)shiftFrom(at,ch.len);persist();
   return at;
 }
 function removeCopyAt(at){
@@ -2930,7 +2955,7 @@ $('#drumBtn').addEventListener('click',function(){setDrums(!U.drum);renderTop();
   dlg.addEventListener('click',function(e){if(e.target===dlg)close();});
   list.addEventListener('click',function(e){
     /* My pattern › Edit: the step grid in Setup */
-    if(e.target.closest&&e.target.closest('[data-edit]')){close();setSheet('file');setTimeout(function(){if(!$('#dSlide').classList.contains('open'))$('#dEdit').click();else{try{$('#dTest').scrollIntoView({block:'center',behavior:'smooth'});}catch(x){}}},60);return;}
+    if(e.target.closest&&e.target.closest('[data-edit]')){close();if(window.__dOpen)window.__dOpen(true);return;}
     const b=e.target.closest?e.target.closest('button[data-p]'):null;if(!b)return;
     setDrums(true,b.dataset.p);
     const sel=$('#dPat');if(sel)sel.value=U.dpat;
@@ -3006,7 +3031,7 @@ function showTab(which){
   if(!chord&&!rollInit){rollInit=true;fitRoll();centerRoll();}
   $('#tabChord').setAttribute('aria-selected',chord?'true':'false');
   $('#tabMelody').setAttribute('aria-selected',chord?'false':'true');
-  if(chord){renderForm();renderRandBtn();}
+  if(chord){renderForm();renderRandBtn();}else renderMelody();
   recView();
   kbdRender();
 }
@@ -3057,7 +3082,10 @@ function tickX(t){return (t+pkT())/PPQ*U.zoom;}
 function lenX(l){return l/PPQ*U.zoom;}
 function vis(n){return P.pick||n.s>=0;}
 let playBars=0;
-function mBars(){return Math.min(128,Math.max(Core.melBars(P),playBars));}
+/* Chord Track on Loop with the looped slot last: one more copy is shown after the song (a ghost to draw into) */
+function ghostOn(){if(!(inMelody()&&U.cmode==='loop'))return false;const ch=loopChain();return ch.j===P.form.length-1;}
+function ghostBars(){if(!ghostOn())return 0;const ch=loopChain();return Math.round(ch.len/Core.meter(P).bar);}
+function mBars(){return Math.min(128,Math.max(Core.melBars(P),playBars,Math.round(Core.formTicks(P)/Core.meter(P).bar)+ghostBars()));}
 function totalTicks(){return mBars()*barTk();}
 
 function stepZoom(dir){setZoom(Math.round(U.zoom*(dir>0?1.25:0.8)));}
@@ -3157,7 +3185,7 @@ function renderRoll(){
       while(j<M.bpb&&lc.c[j]===code)j++;
       if(code!=null){
         const info=Core.chordInfo(code,P.key,P.scale), w=(j-i)*btq*z;
-        lh+='<div class="cb" style="left:'+((b*bq+i*btq)*z+1+po)+'px;width:'+(w-2)+'px">'+labelHtml(info)+(w>=90?'<span class="cn">'+info.name+'</span>':'')+'</div>';
+        lh+='<div class="cb'+(lc.ghost?' gcopy':'')+'" style="left:'+((b*bq+i*btq)*z+1+po)+'px;width:'+(w-2)+'px">'+labelHtml(info)+(w>=90?'<span class="cn">'+info.name+'</span>':'')+'</div>';
       }
       i=j;
     }
@@ -4725,12 +4753,15 @@ document.addEventListener('keydown',function(e){
     }
     function dUse(){if(U.dpat!=='custom'){setDrums(U.drum,'custom');$('#dPat').value='custom';}}
     function dOpen(on){
-      dSl.classList.toggle('open',on);if(on)dSl.removeAttribute('inert');else dSl.setAttribute('inert','');
+      dSl.classList.toggle('open',on);dSl.hidden=!on;$('#dsTitle').textContent='My pattern · section '+Core.curId(P);
       $('#dEdit').setAttribute('aria-expanded',on?'true':'false');
-      if(on){if(!P.dp)P.dp=Core.dpFromPreset(P,U.dpat==='custom'?'rock8':U.dpat,16);dUse();persist();dRender();setTimeout(function(){try{$('#dTest').scrollIntoView({block:'center',behavior:'smooth'});}catch(x){}},320);}
+      if(on){if(!P.dp)P.dp=Core.dpFromPreset(P,U.dpat==='custom'?'rock8':U.dpat,16);dUse();persist();dRender();}
       else dStop();
     }
     $('#dEdit').addEventListener('click',function(){dOpen(!dSl.classList.contains('open'));});
+    $('#dsClose').addEventListener('click',function(){dOpen(false);});
+    dSl.addEventListener('click',function(e){if(e.target===dSl)dOpen(false);});
+    window.__dOpen=dOpen;
     dGrid.addEventListener('click',function(e){
       const b=e.target.closest?e.target.closest('.dc'):null;if(!b)return;
       const s0=serialize();const l=b.dataset.l,i=+b.dataset.i,v=P.dp[l][i]?0:1;P.dp[l][i]=v;b.classList.toggle('on',!!v);pushUndo(s0);
@@ -4792,9 +4823,11 @@ document.addEventListener('keydown',function(e){
 /* bars of melody that run past the end of the song form (they have no chords yet) */
 function overBars(){const M=Core.meter(P);let me=0;P.mel.forEach(function(n){if(n.s>=0)me=Math.max(me,n.s+n.l);});return Math.max(0,Math.ceil((me-Core.formTicks(P))/M.bar));}
 function laneBar(b){
-  const M=Core.meter(P), a=Core.songAt(P,b*M.bar/240);if(!a)return null;
+  const M=Core.meter(P);let a=Core.songAt(P,b*M.bar/240), ghost=false;
+  if(!a&&ghostOn()){const ch=loopChain(), ft=Core.formTicks(P), t=b*M.bar;if(t>=ft&&t<ft+ch.len){a=Core.songAt(P,(ch.t1-ch.len+(t-ft))/240);ghost=true;}}
+  if(!a)return null;
   const lb=Math.floor(a.local*240/M.bar), x=Core.secOf(P,a.id);
-  return {c:a.view.chords.slice(lb*M.bpb,(lb+1)*M.bpb),first:lb===0,tag:a.id+(x&&x.role?' '+x.role:''),id:a.id,role:x&&x.role?x.role:''};
+  return {c:a.view.chords.slice(lb*M.bpb,(lb+1)*M.bpb),first:lb===0,tag:a.id+(x&&x.role?' '+x.role:''),id:a.id,role:x&&x.role?x.role:'',ghost:ghost};
 }
 let playSlot=-1;
 function markSlot(i){
@@ -5475,7 +5508,7 @@ $('#recCal').addEventListener('click',function(){
 function recScale(){const M=Core.meter(P), bars=Math.max(mBars(),Math.ceil(Core.formTicks(P)/M.bar))+(P.pick?1:0), w=($('#recWrap').clientWidth||320)-2, beats=bars*M.bar/PPQ;return Math.max(w/beats,28/(M.bar/PPQ));}
 function renderRec(){
   if(U.view!=='rec')return;
-  const cv=$('#recCv'), M=Core.meter(P), z=recScale(), pk=P.pick?M.bar:0;
+  const cv=$('#recCv'), M=Core.meter(P), z=recScale(), pk=P.pick?M.bar:0;$('#recWrap').dataset.sk=U.recSkin||'a';
   let bars=Math.max(mBars(),Math.ceil(Core.formTicks(P)/M.bar));
   (P.takes||[]).forEach(function(t){bars=Math.max(bars,Math.ceil((t.t0+t.n/t.sr/(60/t.bpm/480))/M.bar));});
   const W=Math.ceil((bars*M.bar+pk)/PPQ*z), H=124, dpr=window.devicePixelRatio||1;
@@ -5496,11 +5529,24 @@ function renderRec(){
   }
   g.fillStyle='rgba(128,128,128,.25)';g.fillRect(0,38,W,1);
   /* the selected section is lit; the comp's pieces are drawn as waveforms */
-  const sr0=slotRange();
-  g.fillStyle=col('--rec');g.globalAlpha=.08;g.fillRect(X(sr0.t0),38,X(sr0.t1)-X(sr0.t0),H-38);g.globalAlpha=1;
-  g.fillRect(X(sr0.t0),36,X(sr0.t1)-X(sr0.t0),2);
-  /* Loop: the cycle range as a bar on the top strip */
-  if(U.recMode==='loop'){const lr=recLoop();g.fillStyle=col('--rec');g.globalAlpha=.85;g.fillRect(X(lr.t0)+1,1,X(lr.t1)-X(lr.t0)-2,4);g.globalAlpha=1;}
+  const sr0=slotRange(), sk=U.recSkin||'a';
+  /* the selected section: a light tint (its takes are listed below) */
+  g.fillStyle=col('--rec');g.globalAlpha=sk==='c'?.05:.08;g.fillRect(X(sr0.t0),38,X(sr0.t1)-X(sr0.t0),H-38);g.globalAlpha=1;
+  if(sk==='c'){g.fillRect(X(sr0.t0),37,X(sr0.t1)-X(sr0.t0),1);}
+  /* Loop: the cycle range */
+  if(U.recMode==='loop'){
+    const lr=recLoop(), x0=X(lr.t0), x1=X(lr.t1);
+    if(sk==='a'){
+      g.fillStyle='#f5c542';g.globalAlpha=.28;g.fillRect(x0,0,x1-x0,18);g.globalAlpha=1;
+      g.fillRect(x0,0,x1-x0,2);g.fillRect(x0,0,2,18);g.fillRect(x1-2,0,2,18);
+    }else if(sk==='b'){
+      g.fillStyle='rgba(0,0,0,.45)';g.fillRect(0,18,x0,H-18);g.fillRect(x1,18,W-x1,H-18);
+      g.strokeStyle='#e9ecf1';g.globalAlpha=.7;g.lineWidth=1;g.setLineDash([3,3]);
+      g.beginPath();g.moveTo(x0+.5,0);g.lineTo(x0+.5,H);g.moveTo(x1-.5,0);g.lineTo(x1-.5,H);g.stroke();g.setLineDash([]);g.globalAlpha=1;
+    }else{
+      g.fillStyle=col('--mint');const y=6,h=7,r=3.5;g.beginPath();g.moveTo(x0+r,y);g.lineTo(x1-r,y);g.arc(x1-r,y+r,r,-Math.PI/2,Math.PI/2);g.lineTo(x0+r,y+h);g.arc(x0+r,y+r,r,Math.PI/2,Math.PI*1.5);g.fill();
+    }
+  }
   const comp=P.vcomp||[];
   comp.forEach(function(e){
     const m=takeMeta(e.id), a=takeData[e.id];if(!m)return;
