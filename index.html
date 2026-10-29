@@ -173,7 +173,13 @@ select{font:inherit; font-size:13px; height:32px; border:1px solid var(--line); 
 .seg.mode3 button:last-child{color:var(--rec)}
 .seg.mode3 button:last-child.on{background:var(--rec); color:#fff}
 #recCtl{gap:8px}
-#recModeSeg button{white-space:nowrap}
+#recCtl .msw.am{flex:none; width:100px; height:32px; font-size:12.5px; font-weight:700; border-color:color-mix(in srgb,var(--rec) 55%,var(--line))}
+#recCtl .msw.am .mth{background:var(--rec)}
+#recCtl .msw.am[aria-checked="false"] span:nth-of-type(1),#recCtl .msw.am[aria-checked="true"] span:nth-of-type(2){color:#fff}
+#recCtl .recb{flex:none; padding:0 13px; gap:6px}
+.rng{display:flex; align-items:center; gap:3px; font-size:11px; font-weight:700; color:var(--dim)}
+.rng input{width:34px; height:30px; border-radius:8px; border:1px solid var(--line); background:var(--panel-2); color:var(--text); font:700 13px var(--mono); text-align:center; padding:0; -moz-appearance:textfield}
+.rng input::-webkit-inner-spin-button,.rng input::-webkit-outer-spin-button{-webkit-appearance:none; margin:0}
 .fsrow{display:flex; align-items:center; gap:10px; padding:8px 12px; border:1px solid var(--line); border-radius:12px; background:var(--panel-2)}
 .fsrow[hidden]{display:none}
 .fsn{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
@@ -730,7 +736,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
           <div class="rrow"><select id="recDev" aria-label="Input"></select><button type="button" class="pill" id="recCal">Calibrate</button><span class="rlat" id="recLat"></span></div>
           <div class="rrow"><span class="lbl" style="font-size:10px">Input</span><input type="range" id="recGain" min="0" max="36" step="1" style="flex:1" aria-label="Input boost"><span class="mono" id="recGainV" style="min-width:44px;text-align:right;font-size:11px"></span></div>
         <div class="rmeter" aria-hidden="true"><i id="recMeter"></i></div>
-          <div class="rrow"><div class="seg" id="recModeSeg" role="group" aria-label="Recording range"></div><span class="sp"></span><button type="button" class="recb" id="recBtn" aria-pressed="false"><i></i><span>REC</span></button></div>
+          <div class="rrow"><button type="button" class="msw am" id="recModeSw" role="switch" aria-checked="true" aria-label="Recording: Loop or Song"><i class="mth"></i><span>Loop</span><span>Song</span></button><span class="rng" id="recRng"><span>Bar</span><input type="number" id="recA" inputmode="numeric" min="1" max="999" aria-label="Loop from bar"><span>–</span><input type="number" id="recB" inputmode="numeric" min="1" max="999" aria-label="Loop to bar"></span><span class="sp"></span><button type="button" class="recb" id="recBtn" aria-pressed="false"><i></i><span>REC</span></button></div>
           <p class="note" id="recNote"></p>
         </div>
       </div>
@@ -823,7 +829,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.1</p>
   </div>
 </section>
 
@@ -2440,6 +2446,8 @@ function tick(){
     nextStep=nextStep+1;
     /* recording a slot in a loop: wrap at its end */
     if(REC.run&&REC.run.b!=null&&nextStep>=REC.run.b){nextStep=REC.run.a;takeFrom=nextStep;}
+    /* Audio mode, Loop: the bar range repeats while playing too */
+    else if(!REC.run&&inMelody()&&U.view==='rec'&&U.recMode==='loop'){const r=recLoop();if(nextStep===r.t1/240){nextStep=r.t0/240;takeFrom=nextStep;}}
     /* Chord Track: Loop wraps at the end of the slot, Song at the end of the song */
     if(!inMelody()&&!rec.lead){
       if(U.cmode==='song'){if(nextStep>=songEnd())nextStep=0;}
@@ -4121,7 +4129,7 @@ $('#kBack').addEventListener('click',function(){
 });
 $('#kHome').addEventListener('click',function(){flash2($('#kHome'));K.cur=loTick();showCursor();});
 $('#kQ').addEventListener('change',function(){K.rq=+$('#kQ').value;U.krq=K.rq;saveU();});
-$('#dockKeys').addEventListener('click',function(){K.open=!K.open;U.kbd=K.open;saveU();if(K.open&&MIX.open){MIX.open=false;mixShow();}kbdRender();});
+$('#dockKeys').addEventListener('click',function(){K.open=!K.open;U.kbd=K.open;saveU();if(K.open&&MIX.open){MIX.open=false;mixShow();}if(K.open&&openSheet)setSheet(null);kbdRender();});
 buildKeys();
 
 
@@ -4169,10 +4177,11 @@ function abufNote(){
 $('#abuf').addEventListener('change',function(e){U.abuf=e.target.value;saveU();toast('Reloading to apply…');setTimeout(function(){location.reload();},500);});
 function setSheet(name){
   openSheet=name;
+  /* one panel at a time: Setup puts the keyboard and the mixer away */
+  if(name){if(typeof MIX!=='undefined'&&MIX.open){MIX.open=false;mixShow();}if(K.open){K.open=false;U.kbd=false;saveU();kbdRender();}}
   $('#sheetFile').hidden=name!=='file';
   $('#sheetBack').hidden=!name;
   if(name==='file'){abufNote();renderRecent();}
-  $('#kbd').style.visibility=name?'hidden':'';
   $('#dockFile').setAttribute('aria-expanded',name==='file'?'true':'false');
 }
 $('#dockFile').addEventListener('click',function(){setSheet(openSheet==='file'?null:'file');});
@@ -5086,7 +5095,7 @@ function mixShow(){
   fitRoll();
 }
 $('#dockMix').addEventListener('click',function(){
-  MIX.open=!MIX.open;
+  MIX.open=!MIX.open;if(MIX.open&&openSheet)setSheet(null);
   if(MIX.open&&K.open){K.open=false;U.kbd=false;saveU();kbdRender();}
   mixShow();
 });
@@ -5319,7 +5328,7 @@ function recNote(msg){
   const n=$('#recNote');if(!n)return;
   if(msg)REC.err=msg;
   n.classList.toggle('warn',!!REC.err);
-  n.textContent=REC.err||('Wear wired earphones: the backing must not reach the microphone. Bluetooth adds a delay, so press Calibrate once (earphones out, volume up).'+(U.recMode==='loop'?' Loop: every pass of the selected slot becomes a take.':' Song: records from the playhead\'s bar until Stop.'));
+  n.textContent=REC.err||(U.recMode==='loop'?'Loop: the bars above repeat; every pass becomes a take.':'Song: records from the playhead\'s bar until Stop.');
 }
 /* shown REC view = microphone on; anything else = off */
 function recView(){
@@ -5329,7 +5338,9 @@ function recView(){
   else micOff();
 }
 function renderRecCtl(){
-  mkSeg($('#recModeSeg'),[['song','Song'],['loop','Loop slot']],function(){return U.recMode;},function(v){U.recMode=v;saveU();renderRecCtl();});
+  $('#recModeSw').setAttribute('aria-checked',U.recMode==='loop'?'false':'true');
+  const lr=recLoop();$('#recRng').hidden=U.recMode!=='loop';
+  if(document.activeElement!==$('#recA'))$('#recA').value=lr.a;if(document.activeElement!==$('#recB'))$('#recB').value=lr.b;
   $('#recGain').value=U.recGain;$('#recGainV').textContent='+'+U.recGain+' dB';
   $('#recLat').textContent=U.recLat?'Delay '+Math.round(U.recLat*1000)+' ms':'Not calibrated';
   $('#recBtn').setAttribute('aria-pressed',REC.run?'true':'false');
@@ -5337,23 +5348,29 @@ function renderRecCtl(){
 }
 $('#recGain').addEventListener('input',function(e){U.recGain=+e.target.value;$('#recGainV').textContent='+'+U.recGain+' dB';saveU();});
 $('#recBtn').addEventListener('click',function(){if(REC.run){stopPlay();return;}recStart();});
+/* Loop: bars a..b (both included) repeat, for playback and recording, like a DAW's cycle */
+function recLoop(){const M=Core.meter(P), nb=Math.max(1,Math.ceil(Core.formTicks(P)/M.bar));let a=U.recA||1,b=U.recB||Math.min(nb,4);a=Math.max(1,Math.min(999,a|0));b=Math.max(a,Math.min(999,b|0));return {a:a,b:b,t0:(a-1)*M.bar,t1:b*M.bar};}
+$('#recModeSw').addEventListener('click',function(){if(REC.run)return;U.recMode=U.recMode==='loop'?'song':'loop';saveU();renderRecCtl();renderRec();if(playing)seekPlay();});
+['recA','recB'].forEach(function(id){$('#'+id).addEventListener('change',function(){
+  let a=+$('#recA').value||1, b=+$('#recB').value||a;if(id==='recA'&&b<a)b=a;if(id==='recB'&&a>b)a=b;
+  U.recA=Math.max(1,Math.min(999,Math.round(a)));U.recB=Math.max(U.recA,Math.min(999,Math.round(b)));saveU();renderRecCtl();renderRec();
+});});
 function recStart(){
   if(!REC.stream){micOn().then(function(ok){if(ok)toast('Microphone ready. Press REC again.');});return;}
   if(playing)stopPlay();
   const M=Core.meter(P), bar=M.bar;
   let a,b=null;
-  if(U.recMode==='loop'){const r=slotRange();a=r.t0;b=r.t1;}
+  if(U.recMode==='loop'){const r=recLoop();a=r.t0;b=r.t1;}
   else a=Math.max(0,Math.floor(Math.max(0,K.cur)/bar)*bar);
-  /* the take's name: Song-Bar01-1st or Slot-A Verse-Bar01-2nd-Loop1 */
-  const b0=Math.floor(a/bar), bs='Bar'+(b0+1<10?'0':'')+(b0+1);
-  let key='Song-'+bs;
-  if(U.recMode==='loop'){const lc=laneBar(b0);key='Slot-'+(lc?lc.id+(lc.role?' '+lc.role:''):'?')+'-'+bs;}
+  /* the take's name: Song-Bar01-1st, or Loop-Bar01-16-2nd (every pass of a loop counts) */
+  const two=function(n){return (n<10?'0':'')+n;}, b0=Math.floor(a/bar);
+  const key=U.recMode==='loop'?'Loop-Bar'+two(b0+1)+'-'+two(Math.round(b/bar)):'Song-Bar'+two(b0+1);
   REC.run={a:a/240,b:b!=null?b/240:null,ta:a,tb:b,mode:U.recMode,bpm:P.bpm,key:key};
   REC.cap={chunks:[],first:null};
   K.cur=a-bar;
   startPlay();
   const q=queue[0];REC.run.tStart=q?q.t+(a/240-q.step)*30/P.bpm:Aud.ctx().currentTime+0.08+bar/240*30/P.bpm;
-  renderRecCtl();toast(U.recMode==='loop'?'Recording the slot: every pass is a take. Stop when done.':'Recording after one bar of backing…');
+  renderRecCtl();toast(U.recMode==='loop'?'Recording the loop: every pass is a take. Stop when done.':'Recording after one bar of backing…');
 }
 function ordinal(n){const t=n%100, u=n%10;return n+(t>=11&&t<=13?'th':u===1?'st':u===2?'nd':u===3?'rd':'th');}
 function recFinish(){
@@ -5379,10 +5396,10 @@ function recFinish(){
     const id='t'+Date.now().toString(36)+i+Math.random().toString(36).slice(2,5);
     takeData[id]=pc.a;
     const b=ctx.createBuffer(1,pc.a.length,sr),d=b.getChannelData(0);for(let j=0;j<pc.a.length;j++)d[j]=pc.a[j]/32768;takeBufs[id]=b;
-    return {id:id,t0:pc.t0,sr:sr,n:pc.a.length,bpm:run.bpm,made:Date.now(),name:key+'-'+ordinal(rn)+(pc.pass?'-Loop'+pc.pass:'')};
+    return {id:id,t0:pc.t0,sr:sr,n:pc.a.length,bpm:run.bpm,made:Date.now(),name:key+'-'+ordinal(rn+i)};
   });
   Promise.all(metas.map(function(m){return tput(m.id,takeData[m.id].buffer);})).catch(function(){toast('The recording could not be stored on this device.');});
-  edit(function(){P.recN=P.recN||{};P.recN[key]=rn;P.takes=(P.takes||[]).concat(metas);const last=metas[metas.length-1];P.vcomp=compSet(P.vcomp||[],last.t0,run.tb!=null?run.tb:last.t0+takeTicks(last),last.id);});
+  edit(function(){P.recN=P.recN||{};P.recN[key]=rn+metas.length-1;P.takes=(P.takes||[]).concat(metas);const last=metas[metas.length-1];P.vcomp=compSet(P.vcomp||[],last.t0,run.tb!=null?run.tb:last.t0+takeTicks(last),last.id);});
   renderTakes();renderRec();
   toast(metas.length>1?metas.length+' takes recorded.':'Take recorded.');
 }
@@ -5441,6 +5458,8 @@ function renderRec(){
   const sr0=slotRange();
   g.fillStyle=col('--rec');g.globalAlpha=.08;g.fillRect(X(sr0.t0),38,X(sr0.t1)-X(sr0.t0),H-38);g.globalAlpha=1;
   g.fillRect(X(sr0.t0),36,X(sr0.t1)-X(sr0.t0),2);
+  /* Loop: the cycle range as a bar on the top strip */
+  if(U.recMode==='loop'){const lr=recLoop();g.fillStyle=col('--rec');g.globalAlpha=.85;g.fillRect(X(lr.t0)+1,1,X(lr.t1)-X(lr.t0)-2,4);g.globalAlpha=1;}
   const comp=P.vcomp||[];
   comp.forEach(function(e){
     const m=takeMeta(e.id), a=takeData[e.id];if(!m)return;
