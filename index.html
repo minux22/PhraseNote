@@ -810,7 +810,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.14.4</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.14.5</p>
   </div>
 </section>
 
@@ -5217,8 +5217,8 @@ function recStart(){
   let a,b=null;
   if(U.recMode==='loop'){const r=slotRange();a=r.t0;b=r.t1;}
   else a=Math.max(0,Math.floor(Math.max(0,K.cur)/bar)*bar);
-  /* the take's name: Song-bar01 or Slot-A Verse-bar01, then rec and loop numbers */
-  const b0=Math.floor(a/bar), bs='bar'+(b0+1<10?'0':'')+(b0+1);
+  /* the take's name: Song-Bar01-1st or Slot-A Verse-Bar01-2nd-Loop1 */
+  const b0=Math.floor(a/bar), bs='Bar'+(b0+1<10?'0':'')+(b0+1);
   let key='Song-'+bs;
   if(U.recMode==='loop'){const lc=laneBar(b0);key='Slot-'+(lc?lc.id+(lc.role?' '+lc.role:''):'?')+'-'+bs;}
   REC.run={a:a/240,b:b!=null?b/240:null,ta:a,tb:b,mode:U.recMode,bpm:P.bpm,key:key};
@@ -5228,6 +5228,7 @@ function recStart(){
   const q=queue[0];REC.run.tStart=q?q.t+(a/240-q.step)*30/P.bpm:Aud.ctx().currentTime+0.08+bar/240*30/P.bpm;
   renderRecCtl();toast(U.recMode==='loop'?'Recording the slot: every pass is a take. Stop when done.':'Recording after one bar of backing…');
 }
+function ordinal(n){const t=n%100, u=n%10;return n+(t>=11&&t<=13?'th':u===1?'st':u===2?'nd':u===3?'rd':'th');}
 function recFinish(){
   const run=REC.run, cap=REC.cap;REC.run=null;REC.cap=null;
   renderRecCtl();
@@ -5245,13 +5246,13 @@ function recFinish(){
   if(!pieces.length){toast('Nothing long enough was recorded.');return;}
   const key=run.key||'Song';
   let rn=(P.recN&&P.recN[key])||0;
-  (P.takes||[]).forEach(function(t){const m=t.name.indexOf(key+'-rec')===0?/^-rec(\d+)/.exec(t.name.slice(key.length)):null;if(m)rn=Math.max(rn,+m[1]);});
+  (P.takes||[]).forEach(function(t){const m=t.name.indexOf(key+'-')===0?/^-(\d+)(st|nd|rd|th)\b/.exec(t.name.slice(key.length)):null;if(m)rn=Math.max(rn,+m[1]);});
   rn++;
   const metas=pieces.map(function(pc,i){
     const id='t'+Date.now().toString(36)+i+Math.random().toString(36).slice(2,5);
     takeData[id]=pc.a;
     const b=ctx.createBuffer(1,pc.a.length,sr),d=b.getChannelData(0);for(let j=0;j<pc.a.length;j++)d[j]=pc.a[j]/32768;takeBufs[id]=b;
-    return {id:id,t0:pc.t0,sr:sr,n:pc.a.length,bpm:run.bpm,made:Date.now(),name:key+'-rec'+rn+(pc.pass?'-loop'+pc.pass:'')};
+    return {id:id,t0:pc.t0,sr:sr,n:pc.a.length,bpm:run.bpm,made:Date.now(),name:key+'-'+ordinal(rn)+(pc.pass?'-Loop'+pc.pass:'')};
   });
   Promise.all(metas.map(function(m){return tput(m.id,takeData[m.id].buffer);})).catch(function(){toast('The recording could not be stored on this device.');});
   edit(function(){P.recN=P.recN||{};P.recN[key]=rn;P.takes=(P.takes||[]).concat(metas);P.vtake=metas[metas.length-1].id;});
