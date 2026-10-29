@@ -810,7 +810,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.14.3</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.14.4</p>
   </div>
 </section>
 
@@ -1818,8 +1818,10 @@ const Core=(function(){
     if(Array.isArray(o.takes))o.takes.forEach(function(t){
       if(!t||typeof t.id!=='string'||!/^t[a-z0-9]{2,30}$/.test(t.id)||p.takes.length>=500)return;
       const sr=clamp(t.sr,8000,192000), n=clamp(t.n,1,sr*60*30);
-      p.takes.push({id:t.id,t0:clamp(t.t0,-MB.bar,128*MB.bar),sr:sr,n:n,bpm:clamp(t.bpm==null?p.bpm:t.bpm,40,200),made:+t.made||0,name:typeof t.name==='string'?t.name.slice(0,40):'Take'});
+      p.takes.push({id:t.id,t0:clamp(t.t0,-MB.bar,128*MB.bar),sr:sr,n:n,bpm:clamp(t.bpm==null?p.bpm:t.bpm,40,200),made:+t.made||0,name:typeof t.name==='string'?t.name.slice(0,60):'Take'});
     });
+    /* how many recordings each place has had (names never reuse a number) */
+    p.recN={};if(o.recN&&typeof o.recN==='object')Object.keys(o.recN).slice(0,500).forEach(function(k){const v=Math.round(+o.recN[k]);if(k.length<=60&&v>0&&v<100000)p.recN[k]=v;});
     p.vtake=typeof o.vtake==='string'&&p.takes.some(function(t){return t.id===o.vtake;})?o.vtake:null;
     /* sections and form. Older projects (one loop) become section A played once. The fields of the section being edited
        are also kept at the top level of the project, where the editor and the player read them. */
@@ -4199,7 +4201,7 @@ function projectFiles(name){
     if(Object.keys(audio).length)o.audio=audio;
     const files=[{name:name+ownExt('.phrasenote'),data:new TextEncoder().encode(JSON.stringify(o))},
       {name:name+'.mid',data:Core.buildMidi(P,U.drum?U.dpat:null,{prog:soundPrograms(),name:P.name})}];
-    rs.forEach(function(r){if(r.a)files.push({name:name+' - '+fsSafe(r.t.name)+'.wav',data:wavOf(r.t,r.a)});});
+    rs.forEach(function(r){if(r.a)files.push({name:name+'-'+fsSafe(r.t.name)+'.wav',data:wavOf(r.t,r.a)});});
     return files;
   });
 }
@@ -5215,7 +5217,11 @@ function recStart(){
   let a,b=null;
   if(U.recMode==='loop'){const r=slotRange();a=r.t0;b=r.t1;}
   else a=Math.max(0,Math.floor(Math.max(0,K.cur)/bar)*bar);
-  REC.run={a:a/240,b:b!=null?b/240:null,ta:a,tb:b,mode:U.recMode,bpm:P.bpm};
+  /* the take's name: Song-bar01 or Slot-A Verse-bar01, then rec and loop numbers */
+  const b0=Math.floor(a/bar), bs='bar'+(b0+1<10?'0':'')+(b0+1);
+  let key='Song-'+bs;
+  if(U.recMode==='loop'){const lc=laneBar(b0);key='Slot-'+(lc?lc.id+(lc.role?' '+lc.role:''):'?')+'-'+bs;}
+  REC.run={a:a/240,b:b!=null?b/240:null,ta:a,tb:b,mode:U.recMode,bpm:P.bpm,key:key};
   REC.cap={chunks:[],first:null};
   K.cur=a-bar;
   startPlay();
@@ -5237,14 +5243,18 @@ function recFinish(){
     for(let p=0;k0+p*pl<all.length;p++){if(all.length-(k0+p*pl)<pl*0.5)break;pieces.push({a:cut(k0+p*pl,pl),t0:run.ta,pass:p+1});}
   }else{if(all.length-k0>sr*0.5)pieces.push({a:cut(k0,all.length-k0),t0:run.ta});}
   if(!pieces.length){toast('Nothing long enough was recorded.');return;}
-  const base=(P.takes||[]).length, metas=pieces.map(function(pc,i){
+  const key=run.key||'Song';
+  let rn=(P.recN&&P.recN[key])||0;
+  (P.takes||[]).forEach(function(t){const m=t.name.indexOf(key+'-rec')===0?/^-rec(\d+)/.exec(t.name.slice(key.length)):null;if(m)rn=Math.max(rn,+m[1]);});
+  rn++;
+  const metas=pieces.map(function(pc,i){
     const id='t'+Date.now().toString(36)+i+Math.random().toString(36).slice(2,5);
     takeData[id]=pc.a;
     const b=ctx.createBuffer(1,pc.a.length,sr),d=b.getChannelData(0);for(let j=0;j<pc.a.length;j++)d[j]=pc.a[j]/32768;takeBufs[id]=b;
-    return {id:id,t0:pc.t0,sr:sr,n:pc.a.length,bpm:run.bpm,made:Date.now(),name:'Take '+(base+i+1)+(pc.pass?' (pass '+pc.pass+')':'')};
+    return {id:id,t0:pc.t0,sr:sr,n:pc.a.length,bpm:run.bpm,made:Date.now(),name:key+'-rec'+rn+(pc.pass?'-loop'+pc.pass:'')};
   });
   Promise.all(metas.map(function(m){return tput(m.id,takeData[m.id].buffer);})).catch(function(){toast('The recording could not be stored on this device.');});
-  edit(function(){P.takes=(P.takes||[]).concat(metas);P.vtake=metas[metas.length-1].id;});
+  edit(function(){P.recN=P.recN||{};P.recN[key]=rn;P.takes=(P.takes||[]).concat(metas);P.vtake=metas[metas.length-1].id;});
   renderTakes();renderRec();
   toast(metas.length>1?metas.length+' takes recorded.':'Take recorded.');
 }
@@ -5347,7 +5357,7 @@ $('#takeList').addEventListener('click',function(e){
 function exportWav(m){
   loadTake(m.id).then(function(a){
     if(!a){toast('This take is missing on this device.');return;}
-    const u8=wavOf(m,a), stem=(fsSafe(P.name)||Core.fileStem(P))+' - '+fsSafe(m.name);
+    const u8=wavOf(m,a), stem=(fsSafe(P.name)||Core.fileStem(P))+'-'+fsSafe(m.name);
     askName('Export WAV',stem,dl?'.zip':'.wav',function(name){outSave(name+'.wav',u8,'project',function(){if(dl)saveFile(name+'.zip',Core.zip(name+'.wav',u8));else localSave(name+'.wav',u8);});});
   });
 }
