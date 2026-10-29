@@ -835,7 +835,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.3</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.4</p>
   </div>
 </section>
 
@@ -2952,9 +2952,7 @@ $('#drumBtn').addEventListener('click',function(){setDrums(!U.drum);renderTop();
     list.innerHTML='';let gn=null;
     Core.DPATS.forEach(function(d){
       if(d[2]!==gn){gn=d[2];const h=document.createElement('div');h.className='gh';h.textContent=gn==='Basic'?'Basic':gn;list.appendChild(h);}
-      const b=document.createElement('button');b.type='button';b.textContent=d[1];b.dataset.p=d[0];if(d[0]===U.dpat)b.className='on';
-      if(d[0]==='custom'){const r=document.createElement('div');r.className='prow';r.appendChild(b);const e=document.createElement('button');e.type='button';e.className='pedit';e.textContent='Edit';e.dataset.edit='1';r.appendChild(e);list.appendChild(r);}
-      else list.appendChild(b);
+      const b=document.createElement('button');b.type='button';b.textContent=d[1];b.dataset.p=d[0];if(d[0]===U.dpat)b.className='on';list.appendChild(b);
     });
   }
   function open(){build();dlg.querySelector('h3').textContent='Drum pattern · section '+Core.curId(P);dlg.hidden=false;const on=list.querySelector('.on');if(on)setTimeout(function(){on.scrollIntoView({block:'center'});},0);}
@@ -2963,9 +2961,9 @@ $('#drumBtn').addEventListener('click',function(){setDrums(!U.drum);renderTop();
   $('#patClose').addEventListener('click',close);
   dlg.addEventListener('click',function(e){if(e.target===dlg)close();});
   list.addEventListener('click',function(e){
-    /* My pattern › Edit: the step grid in Setup */
-    if(e.target.closest&&e.target.closest('[data-edit]')){close();if(window.__dOpen)window.__dOpen(true);return;}
     const b=e.target.closest?e.target.closest('button[data-p]'):null;if(!b)return;
+    /* My pattern: straight into its step grid */
+    if(b.dataset.p==='custom'){close();setDrums(true,'custom');const sel=$('#dPat');if(sel)sel.value='custom';renderTop();if(window.__dOpen)window.__dOpen(true);return;}
     setDrums(true,b.dataset.p);
     const sel=$('#dPat');if(sel)sel.value=U.dpat;
     renderTop();build();Aud.ensure();if(!playing)Aud.audition('d');
@@ -5517,7 +5515,7 @@ $('#recCal').addEventListener('click',function(){
 function recScale(){const M=Core.meter(P), bars=Math.max(mBars(),Math.ceil(Core.formTicks(P)/M.bar))+(P.pick?1:0), w=($('#recWrap').clientWidth||320)-2, beats=bars*M.bar/PPQ;return Math.max(w/beats,28/(M.bar/PPQ));}
 function renderRec(){
   if(U.view!=='rec')return;
-  const cv=$('#recCv'), M=Core.meter(P), z=recScale(), pk=P.pick?M.bar:0;$('#recWrap').dataset.sk=U.recSkin||'a';
+  const cv=$('#recCv'), M=Core.meter(P), z=recScale(), pk=P.pick?M.bar:0;$('#recWrap').dataset.sk=U.recSkin||'b';
   let bars=Math.max(mBars(),Math.ceil(Core.formTicks(P)/M.bar));
   (P.takes||[]).forEach(function(t){bars=Math.max(bars,Math.ceil((t.t0+t.n/t.sr/(60/t.bpm/480))/M.bar));});
   const W=Math.ceil((bars*M.bar+pk)/PPQ*z), H=124, dpr=window.devicePixelRatio||1;
@@ -5538,7 +5536,7 @@ function renderRec(){
   }
   g.fillStyle='rgba(128,128,128,.25)';g.fillRect(0,38,W,1);
   /* the selected section is lit; the comp's pieces are drawn as waveforms */
-  const sr0=slotRange(), sk=U.recSkin||'a';
+  const sr0=slotRange(), sk=U.recSkin||'b';
   /* the selected section: a light tint (its takes are listed below) */
   g.fillStyle=col('--rec');g.globalAlpha=sk==='c'?.05:.08;g.fillRect(X(sr0.t0),38,X(sr0.t1)-X(sr0.t0),H-38);g.globalAlpha=1;
   if(sk==='c'){g.fillRect(X(sr0.t0),37,X(sr0.t1)-X(sr0.t0),1);}
