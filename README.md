@@ -1,9 +1,31 @@
 # PhraseNote
 
-Phone-first composition sketch app (PWA): paint a chord progression, write a melody, hear it with accompaniment and drums, export MIDI.
+Phone-first composition sketch app (PWA): paint a chord progression, write or sing a melody, hear it with accompaniment and drums, balance it in the mixer, and save the project with its MIDI and WAV files.
 
 - App: https://minux22.github.io/PhraseNote/
 - User guide: [English](docs/PhraseNote_UserGuide_EN.pdf) · [한국어](docs/PhraseNote_UserGuide_KO.pdf)
+
+## Tip: install it as an app / 앱으로 설치하기
+
+Open the app address in the browser once, then add it to the home screen. It then opens full screen like an installed app, and works offline after the first visit.
+앱 주소를 브라우저에서 한 번 연 다음 홈 화면에 추가하면, 설치한 앱처럼 전체 화면으로 열리고 처음 방문 이후에는 인터넷 없이도 열려요.
+
+**Samsung Internet (삼성 인터넷)**
+1. Open https://minux22.github.io/PhraseNote/
+2. Tap the menu (☰, bottom right) → **Add page to** → **Home screen** → **Add**.
+   메뉴(☰, 오른쪽 아래) → **페이지 추가** → **홈 화면** → **추가**
+   (If an install icon appears in the address bar, tapping it does the same. 주소창에 설치 아이콘이 보이면 그걸 눌러도 돼요.)
+
+**Chrome**
+1. Open https://minux22.github.io/PhraseNote/
+2. Tap the menu (⋮, top right) → **Install app** or **Add to Home screen** (the name differs by Chrome version) → **Install**.
+   메뉴(⋮, 오른쪽 위) → **앱 설치** 또는 **홈 화면에 추가**(크롬 버전에 따라 이름이 달라요) → **설치**
+
+Updates arrive by themselves: after a new version is published, close the app completely and open it twice (the first opening downloads it, the second uses it). The version is shown at the bottom of the app.
+업데이트는 자동이에요. 새 버전이 나온 뒤 앱을 완전히 닫았다가 두 번 열면 반영돼요(첫 번째에 내려받고 두 번째에 적용). 앱 맨 아래에 버전이 표시돼요.
+
+Recording needs microphone permission. Allow it when asked; if it was refused, allow it again in the browser's site settings.
+녹음하려면 마이크 권한이 필요해요. 물어볼 때 허용하고, 거부했다면 브라우저의 사이트 설정에서 다시 허용하세요.
 
 ## Repository layout
 
