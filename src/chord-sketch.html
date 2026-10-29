@@ -836,7 +836,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.8</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.9</p>
   </div>
 </section>
 
@@ -2243,6 +2243,8 @@ const Aud=(function(){
       let hint='balanced';try{hint=U.abuf||'balanced';}catch(e){}
       try{ctx=new AC({latencyHint:hint});}catch(e){ctx=new AC();}
       master=ctx.createGain(); master.gain.value=masterAmt;
+      /* headroom: everything enters the output chain 10 dB lower, so the default mix peaks around −10 dBFS */
+      const trim=ctx.createGain();trim.gain.value=0.316;
       const c=ctx.createDynamicsCompressor();
       c.threshold.value=-18;c.knee.value=20;c.ratio.value=4;c.attack.value=0.004;c.release.value=0.2;
       const mk=ctx.createGain();mk.gain.value=1.35;
@@ -2253,7 +2255,7 @@ const Aud=(function(){
       const sh=ctx.createWaveShaper(),cv=new Float32Array(4097);
       for(let i=0;i<4097;i++){const x=(i-2048)/2048,a=Math.abs(x);cv[i]=a<0.8?x:Math.sign(x)*(0.8+0.2*Math.tanh((a-0.8)/0.2));}
       sh.curve=cv;
-      master.connect(c);c.connect(mk);mk.connect(lim);lim.connect(sh);sh.connect(ctx.destination);
+      master.connect(trim);trim.connect(c);c.connect(mk);mk.connect(lim);lim.connect(sh);sh.connect(ctx.destination);
       /* level meter on what actually goes out */
       mtr=ctx.createAnalyser();mtr.fftSize=1024;sh.connect(mtr);
       mkRev();
@@ -2482,11 +2484,12 @@ function tick(){
     else if(!REC.run&&inMelody()&&U.view==='rec'&&U.recMode==='loop'){const r=recLoop();if(nextStep===r.t1/240){nextStep=r.t0/240;takeFrom=nextStep;}}
     /* Melody Track with the Chord Track on Loop: wrap at the end of the chain, or grow it while recording */
     if(melLoopOn()&&!rec.lead){
-      const ch=loopChain();
-      if(nextStep===ch.t1/240){
-        if((REC.run&&REC.run.b==null)||rec.on){const at=insertLoopCopy();if(at!=null){if(rec.on)(rec.grown=rec.grown||[]).push(at);setTimeout(renderAll,0);}else{nextStep=ch.t0/240;takeFrom=nextStep;}}
-        else{nextStep=ch.t0/240;takeFrom=nextStep;}
-      }else if(!REC.run&&!rec.on&&nextStep>ch.t1/240){nextStep=ch.t0/240;takeFrom=nextStep;}
+      const ch=loopChain(), growing=(REC.run&&REC.run.b==null)||rec.on;
+      /* recording: the next copy is made a whole slot ahead, so nothing happens at the seam */
+      if(growing&&nextStep*240>=ch.t1-ch.len&&nextStep*240<ch.t1){const at=insertLoopCopy();if(at!=null){if(rec.on)(rec.grown=rec.grown||[]).push(at);else (REC.grown=REC.grown||[]).push(at);growPaint();}}
+      const c2=growing?loopChain():ch;
+      if(nextStep===c2.t1/240){nextStep=c2.t0/240;takeFrom=nextStep;}
+      else if(!growing&&!REC.run&&!rec.on&&nextStep>c2.t1/240){nextStep=c2.t0/240;takeFrom=nextStep;}
     }
     /* Chord Track: Loop wraps at the end of the slot, Song at the end of the song */
     if(!inMelody()&&!rec.lead){
@@ -2520,6 +2523,8 @@ function removeCopyAt(at){
   const L=Core.layout(P), x=L.filter(function(l){return l.start===at;})[0];if(!x||x.i===P.slot)return false;
   Core.storeCur(P);P.form.splice(x.i,1);if(P.slot>x.i)P.slot--;Core.loadCur(P);shiftFrom(at+x.len,-x.len);persist();return true;
 }
+/* repaint only the Melody Track after a copy was added (the full redraw made the playhead stutter) */
+let growT=0;function growPaint(){if(growT)return;growT=setTimeout(function(){growT=0;renderMelody();},0);}
 function melLoopOn(){return inMelody()&&U.cmode==='loop'&&!(U.view==='rec'&&U.recMode==='loop');}
 /* the playhead (K.cur, in ticks) is where playback starts; in the Chord tab it wraps inside the loop */
 function headStep(){
@@ -5480,7 +5485,7 @@ function recStart(){
   const two=function(n){return (n<10?'0':'')+n;}, b0=Math.floor(a/bar);
   const key=U.recMode==='loop'?'Loop-Bar'+two(b0+1)+'-'+two(Math.round(b/bar)):'Song-Bar'+two(b0+1);
   REC.run={a:a/240,b:b!=null?b/240:null,ta:a,tb:b,mode:U.recMode,bpm:P.bpm,key:key};
-  REC.cap={chunks:[],first:null};
+  REC.cap={chunks:[],first:null};REC.grown=[];
   K.cur=a-bar;
   startPlay();
   const q=queue[0];REC.run.tStart=q?q.t+(a/240-q.step)*30/P.bpm:Aud.ctx().currentTime+0.08+bar/240*30/P.bpm;
@@ -5501,6 +5506,12 @@ function recFinish(){
     const pl=Math.round((run.tb-run.ta)*spt*sr);
     for(let p=0;k0+p*pl<all.length;p++){if(all.length-(k0+p*pl)<pl*0.5)break;pieces.push({a:cut(k0+p*pl,pl),t0:run.ta,pass:p+1});}
   }else{if(all.length-k0>sr*0.5)pieces.push({a:cut(k0,all.length-k0),t0:run.ta});}
+  /* copies made ahead (Chord Track on Loop) that the recording never reached go again */
+  if(REC.grown&&REC.grown.length){
+    const endTk=run.ta+(all.length-k0)/sr/spt;
+    REC.grown.slice().reverse().forEach(function(at){if(at>=endTk-1)removeCopyAt(at);});
+    REC.grown=[];setTimeout(renderAll,0);
+  }
   if(!pieces.length){toast('Nothing long enough was recorded.');return;}
   const key=run.key||'Song';
   let rn=(P.recN&&P.recN[key])||0;
