@@ -329,6 +329,19 @@ body.kbd-open{padding-bottom:calc(92px + var(--kbdh,150px) + env(safe-area-inset
 .dbtn{display:flex; align-items:center; justify-content:center; gap:8px; flex:1; height:46px; border-radius:999px; border:1px solid var(--line); background:var(--panel-2); font-weight:700; font-size:14px}
 .dbtn[hidden]{display:none}
 .dbtn[aria-expanded="true"]{background:var(--amber); border-color:var(--amber); color:var(--on-amber)}
+.mixer .mx-in{max-width:560px; margin:0 auto; display:flex; gap:3px; align-items:stretch}
+.mx{flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:3px; padding:4px 0 2px; border-radius:8px; background:#101114}
+.mx.sep{margin-left:5px}
+.mx .mn{font-size:10px; font-weight:800; letter-spacing:.02em; color:var(--dim); white-space:nowrap; text-transform:uppercase}
+.mx .mn small{display:block; font-size:8px; font-weight:700; color:var(--mint); text-align:center}
+.mx .mv{font:600 10px var(--mono); color:var(--text); height:12px}
+.mx .fw{position:relative; width:100%; height:150px; overflow:visible}
+.mx .fw input{position:absolute; width:150px; left:calc(50% - 75px); top:calc(50% - 17px); transform:rotate(-90deg); touch-action:none}
+.mx .ms{display:flex; gap:2px; height:22px}
+.mx .ms button{width:20px; height:22px; border-radius:5px; border:1px solid var(--line); background:var(--panel-2); color:var(--dim); font:800 10px var(--mono); padding:0}
+.mx .ms button.m[aria-pressed="true"]{background:#e8a33b; border-color:#e8a33b; color:#1b1203}
+.mx .ms button.s[aria-pressed="true"]{background:#4d8ff5; border-color:#4d8ff5; color:#fff}
+.mx.off .fw,.mx.off .mv{opacity:.4}
 .dock,.sheet,.kbd,.dlgback{--amber:var(--mint); --on-amber:var(--mint-ink); --blue:var(--mint); --on-blue:var(--mint-ink); --chord:var(--mint); --chord-ink:var(--mint-ink)}
 .dock{border-top:2px solid var(--mint)}
 .sheet{border-top:2px solid var(--mint)}
@@ -631,7 +644,6 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       <div class="sec">
         <span class="lbl">Chords</span>
         <div class="tools">
-          <button class="pill" id="togMel" type="button" aria-pressed="true" aria-label="Hear the melody on the Chord Track">Mel</button>
           <button class="pill" id="togBass" type="button" aria-pressed="true">Bass</button>
           <button class="pill" id="togSev" type="button" aria-pressed="false">7th</button>
 
@@ -709,7 +721,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
           <div class="rrow"><select id="recDev" aria-label="Input"></select><button type="button" class="pill" id="recCal">Calibrate</button><span class="rlat" id="recLat"></span></div>
           <div class="rrow"><span class="lbl" style="font-size:10px">Input</span><input type="range" id="recGain" min="0" max="36" step="1" style="flex:1" aria-label="Input boost"><span class="mono" id="recGainV" style="min-width:44px;text-align:right;font-size:11px"></span></div>
         <div class="rmeter" aria-hidden="true"><i id="recMeter"></i></div>
-          <div class="rrow"><div class="seg" id="recModeSeg" role="group" aria-label="Recording range"></div><label class="kcl">MIDI <button type="button" class="tg" id="recMel" role="switch" aria-checked="false" aria-label="Hear the MIDI melody while recording" style="margin:0"></button></label><span class="sp"></span><button type="button" class="recb" id="recBtn" aria-pressed="false"><i></i><span>REC</span></button></div>
+          <div class="rrow"><div class="seg" id="recModeSeg" role="group" aria-label="Recording range"></div><span class="sp"></span><button type="button" class="recb" id="recBtn" aria-pressed="false"><i></i><span>REC</span></button></div>
           <p class="note" id="recNote"></p>
         </div>
       </div>
@@ -770,10 +782,10 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
         <div id="sfList"></div>
       </div>
       <div id="sfRows">
-        <div class="sfrow tr"><span class="lbl">Melody</span><select class="fs" id="sfMf" aria-label="Melody SoundFont"></select><select id="sfM" aria-label="Melody sound"></select><input id="sfMv" type="range" min="0" max="100" step="1" aria-label="Melody volume"></div>
-        <div class="sfrow tr"><span class="lbl">Chords</span><select class="fs" id="sfCf" aria-label="Chords SoundFont"></select><select id="sfC" aria-label="Chords sound"></select><input id="sfCv" type="range" min="0" max="100" step="1" aria-label="Chords volume"></div>
-        <div class="sfrow tr"><span class="lbl">Bass</span><select class="fs" id="sfBf" aria-label="Bass SoundFont"></select><select id="sfB" aria-label="Bass sound"></select><input id="sfBv" type="range" min="0" max="100" step="1" aria-label="Bass volume"></div>
-        <div class="sfrow tr drow"><span class="lbl">Drums</span><select class="fs" id="sfDf" aria-label="Drums SoundFont"></select><select id="sfD" aria-label="Drums sound"></select><input id="sfDv" type="range" min="0" max="100" step="1" aria-label="Drums volume"></div>
+        <div class="sfrow tr"><span class="lbl">Melody</span><select class="fs" id="sfMf" aria-label="Melody SoundFont"></select><select id="sfM" aria-label="Melody sound"></select></div>
+        <div class="sfrow tr"><span class="lbl">Chords</span><select class="fs" id="sfCf" aria-label="Chords SoundFont"></select><select id="sfC" aria-label="Chords sound"></select></div>
+        <div class="sfrow tr"><span class="lbl">Bass</span><select class="fs" id="sfBf" aria-label="Bass SoundFont"></select><select id="sfB" aria-label="Bass sound"></select></div>
+        <div class="sfrow tr drow"><span class="lbl">Drums</span><select class="fs" id="sfDf" aria-label="Drums SoundFont"></select><select id="sfD" aria-label="Drums sound"></select></div>
         <div class="sfrow sub"><span class="lbl">Pattern</span><select id="dPat" aria-label="Drum pattern"></select><button class="btn" id="dEdit" type="button" aria-expanded="false" aria-controls="dSlide" aria-label="Edit pattern">Edit</button></div>
         <div class="slide" id="dSlide" inert><div>
           <div class="dseq">
@@ -783,10 +795,6 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
         </div></div>
       </div>
       <div class="sbox" id="spBox"><div class="sfpre"><button class="btn" id="spSave" type="button">Save preset</button><button class="btn" id="spOpen" type="button">Load preset</button></div><input id="spIn" type="file" hidden></div>
-      <div class="sbox">
-        <div class="sfrow" id="sfRevRow"><span class="lbl">Reverb</span><span></span><input id="sfRv" type="range" min="0" max="100" step="1" aria-label="Reverb amount"></div>
-        <div class="sfrow"><span class="lbl">Master</span><span style="font-size:11px;color:var(--dim)">50 = normal</span><input id="sfMaster" type="range" min="0" max="100" step="1" aria-label="Master volume"></div>
-      </div>
       <div class="sbox" style="margin-top:10px">
         <div class="sfrow"><span class="lbl">Buffer</span><select id="abuf" aria-label="Audio buffer"><option value="interactive">Low latency</option><option value="balanced">Balanced</option><option value="playback">Stable</option></select><span></span></div>
       <p class="note" id="abufNote"></p>
@@ -806,16 +814,20 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.15.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.0</p>
   </div>
 </section>
 
 <nav class="dock" aria-label="Tools">
   <div class="dock-in">
     <button class="dbtn" id="dockKeys" type="button" aria-expanded="false" hidden><svg viewBox="0 0 93.7 51.5" width="34" height="19" aria-hidden="true"><path fill="currentColor" d="M0 4.8 A4.8 4.8 0 0 1 4.8 0 H8.8 V24.3 A4 4 0 0 0 12.8 28.3 V48.8 A2.7 2.7 0 0 1 10.1 51.5 H4.8 A4.8 4.8 0 0 1 0 46.7 Z M18.7 0 H23.5 V24.3 A4 4 0 0 0 27.5 28.3 V48.8 A2.7 2.7 0 0 1 24.8 51.5 H17.4 A2.7 2.7 0 0 1 14.7 48.8 V28.3 A4 4 0 0 0 18.7 24.3 Z M33.5 0 H41.2 V48.8 A2.7 2.7 0 0 1 38.5 51.5 H32.2 A2.7 2.7 0 0 1 29.5 48.8 V28.3 A4 4 0 0 0 33.5 24.3 Z M43.7 0 H49.5 V24.3 A4 4 0 0 0 53.5 28.3 V48.8 A2.7 2.7 0 0 1 50.8 51.5 H46.4 A2.7 2.7 0 0 1 43.7 48.8 Z M59.2 0 H63 V24.3 A4 4 0 0 0 67 28.3 V48.8 A2.7 2.7 0 0 1 64.3 51.5 H57.9 A2.7 2.7 0 0 1 55.2 48.8 V28.3 A4 4 0 0 0 59.2 24.3 Z M72.2 0 H76 V24.3 A4 4 0 0 0 80 28.3 V48.8 A2.7 2.7 0 0 1 77.3 51.5 H70.9 A2.7 2.7 0 0 1 68.2 48.8 V28.3 A4 4 0 0 0 72.2 24.3 Z M85.5 0 H88.9 A4.8 4.8 0 0 1 93.7 4.8 V46.7 A4.8 4.8 0 0 1 88.9 51.5 H84.2 A2.7 2.7 0 0 1 81.5 48.8 V28.3 A4 4 0 0 0 85.5 24.3 Z"/></svg><span>Keys</span></button>
+    <button class="dbtn" id="dockMix" type="button" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 3v18M12 3v18M18 3v18"/></g><g fill="currentColor"><rect x="3.5" y="13" width="5" height="3.2" rx="1"/><rect x="9.5" y="6" width="5" height="3.2" rx="1"/><rect x="15.5" y="10" width="5" height="3.2" rx="1"/></g></svg><span>Mixer</span></button>
     <button class="dbtn" id="dockFile" type="button" aria-expanded="false"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 13.5a7.6 7.6 0 0 0 0-3l1.9-1.5-1.9-3.3-2.3.9a7.5 7.5 0 0 0-2.6-1.5L14 2.5h-3.9l-.5 2.6a7.5 7.5 0 0 0-2.6 1.5l-2.3-.9-1.9 3.3L4.6 10.5a7.6 7.6 0 0 0 0 3L2.8 15l1.9 3.3 2.3-.9a7.5 7.5 0 0 0 2.6 1.5l.5 2.6H14l.5-2.6a7.5 7.5 0 0 0 2.6-1.5l2.3.9 1.9-3.3z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg><span>Setup</span></button>
   </div>
 </nav>
+<div class="kbd mixer" id="mixer" hidden aria-label="Mixer">
+  <div class="mx-in" id="mxIn"></div>
+</div>
 <div class="kbd" id="kbd" hidden>
   <div class="kbd-in">
     <div class="krow">
@@ -1620,6 +1632,8 @@ const Core=(function(){
   function meta(type,bytes){return [0,0xFF,type,bytes.length].concat(bytes);}
 
   /* o.prog = {c,b,m} General MIDI program numbers (default EP 1, Finger Bass, Square Lead); o.name = song title */
+  /* fader position (0..100) to decibels: 75 = 0 dB, 100 = +12 dB, 0 = silent */
+  function faderDb(v){if(v<=0)return -Infinity;if(v>=75)return (v-75)*12/25;return -50*Math.pow(1-v/75,1.5);}
   function buildMidi(p,dpat,o){
     o=o||{};const prog=Object.assign({c:4,b:33,m:80},o.prog||{});
     if(!p.form)p=normalize(p);
@@ -1677,11 +1691,13 @@ const Core=(function(){
       .concat(meta(0x59,[sf&255,mi]));
     const t0=track([],head0);
     const pc=function(x){return Math.max(0,Math.min(127,x|0));};
-    const t1=track(ce,meta(0x03,strBytes('Chords')).concat([0,0xC0,pc(prog.c)]));
-    const t2=track(be,meta(0x03,strBytes('Bass')).concat([0,0xC1,pc(prog.b)]));
+    /* track volume (CC7) from the mixer: 0 dB = 100, as in General MIDI's 40·log10 curve */
+    const cc7=function(k,ch){if(!p.mix||!p.mix[k])return [];const db=faderDb(p.mix[k].v);return [0,0xB0|ch,7,db===-Infinity?0:pc(Math.round(100*Math.pow(10,db/40)))];};
+    const t1=track(ce,meta(0x03,strBytes('Chords')).concat([0,0xC0,pc(prog.c)]).concat(cc7('c',0)));
+    const t2=track(be,meta(0x03,strBytes('Bass')).concat([0,0xC1,pc(prog.b)]).concat(cc7('b',1)));
     const tl=[t0,t1,t2];
-    if(de.length)tl.push(track(de,meta(0x03,strBytes('Drums'))));
-    if(me.length)tl.push(track(me,meta(0x03,strBytes('Melody')).concat([0,0xC2,pc(prog.m)])));
+    if(de.length)tl.push(track(de,meta(0x03,strBytes('Drums')).concat(cc7('d',9))));
+    if(me.length)tl.push(track(me,meta(0x03,strBytes('Melody')).concat([0,0xC2,pc(prog.m)]).concat(cc7('m',2))));
     const bytes=[0x4D,0x54,0x68,0x64,0,0,0,6,0,1,0,tl.length,(PPQ>>8)&255,PPQ&255];
     tl.forEach(function(t){
       bytes.push(0x4D,0x54,0x72,0x6B,(t.length>>>24)&255,(t.length>>>16)&255,(t.length>>>8)&255,t.length&255);
@@ -1816,6 +1832,10 @@ const Core=(function(){
       const sr=clamp(t.sr,8000,192000), n=clamp(t.n,1,sr*60*30);
       p.takes.push({id:t.id,t0:clamp(t.t0,-MB.bar,128*MB.bar),sr:sr,n:n,bpm:clamp(t.bpm==null?p.bpm:t.bpm,40,200),made:+t.made||0,name:typeof t.name==='string'?t.name.slice(0,60):'Take'});
     });
+    /* mixer: fader 0..100 per channel (75 = 0 dB), mute, solo; reverb 0..100; master fader */
+    const mx=o.mix&&typeof o.mix==='object'?o.mix:{};
+    p.mix={};['m','a','c','b','d'].forEach(function(k){const c=mx[k]&&typeof mx[k]==='object'?mx[k]:{};p.mix[k]={v:c.v==null?75:clamp(Math.round(+c.v),0,100),mu:!!c.mu,so:!!c.so};});
+    p.mix.rev=mx.rev==null?35:clamp(Math.round(+mx.rev),0,100);p.mix.mst=mx.mst==null?75:clamp(Math.round(+mx.mst),0,100);
     /* how many recordings each place has had (names never reuse a number) */
     p.recN={};if(o.recN&&typeof o.recN==='object')Object.keys(o.recN).slice(0,500).forEach(function(k){const v=Math.round(+o.recN[k]);if(k.length<=60&&v>0&&v<100000)p.recN[k]=v;});
     /* the comp: which take plays where (ticks a..b), at most one take at any moment. Older projects had one take in use. */
@@ -1921,7 +1941,7 @@ const Core=(function(){
   }
   return {SCALES:SCALES,SCALE_NAMES:SCALE_NAMES,KEY_NAMES:KEY_NAMES,chordInfo:chordInfo,voicing:voicing,
     noteName:noteName,bassNote:bassNote,notesFor:notesFor,
-    COMPS:COMPS,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,
+    COMPS:COMPS,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,
     POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM,suggestChords:suggestChords,guessKey:guessKey,rekey:rekey,recode:recode,SEC_IDS:SEC_IDS,ROLES:ROLES,SECF:SECF,normSec:normSec,copySec:copySec,secOf:secOf,curId:curId,storeCur:storeCur,loadCur:loadCur,layout:layout,formTicks:formTicks,secView:secView,secDrums:secDrums,songAt:songAt,melInsert:melInsert,melDelete:melDelete,melSlice:melSlice,melPaste:melPaste,resizeSec:resizeSec,xcode:xcode,isX:isX,xWith:xWith,extraPalette:extraPalette};
 })();
 
@@ -2142,6 +2162,10 @@ const Aud=(function(){
   const fonts={}; let rev=null, revOut=null, revAmt=0.35;
   const trk={c:{fid:null,pi:-1,vol:2.9},b:{fid:null,pi:-1,vol:2.5},m:{fid:null,pi:-1,vol:1.2},d:{fid:null,pi:-1,vol:0.8}};
   let clickVol=0.6, nbuf=null, openHat=null;const chokeSf={};
+  /* mixer: one bus per channel (m MIDI melody, a audio takes, c chords, b bass, d drums) into the master; SoundFont reverb sends follow each channel's fader */
+  const bus={}, brev={}, mixLin={m:1,a:1,c:1,b:1,d:1};let OUTB=null;
+  function dst(){return OUTB||master;}
+  function mkRev(){if(rev)return;rev=ctx.createConvolver();rev.buffer=impulse();revOut=ctx.createGain();revOut.gain.value=revAmt*3;rev.connect(revOut);revOut.connect(master);}
   function impulse(){
     const n=Math.floor(ctx.sampleRate*1.3), b=ctx.createBuffer(1,n,ctx.sampleRate);
     for(let c=0;c<1;c++){const d=b.getChannelData(c);for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*Math.pow(1-i/n,3.2);}
@@ -2149,10 +2173,7 @@ const Aud=(function(){
   }
   function getP(fid){
     const F=fonts[fid];if(!F||!ctx)return null;
-    if(!rev){
-      rev=ctx.createConvolver();rev.buffer=impulse();
-      revOut=ctx.createGain();revOut.gain.value=revAmt*3;rev.connect(revOut);revOut.connect(master);
-    }
+    mkRev();
     if(!F.p){F.p=Sf2.createPlayer(F.sf,ctx);recap();}
     return F.p;
   }
@@ -2161,7 +2182,7 @@ const Aud=(function(){
   function sfv(k,m,vel,t,dur,mul,zv){
     const T=trk[k];if(T.pi<0||!T.fid)return null;
     const p=getP(T.fid);if(!p)return null;
-    const r=p.play(T.pi,m,vel,t,dur,master,T.vol*(mul||1),rev,zv);if(!r)return null;
+    const r=p.play(T.pi,m,vel,t,dur,bus[k]||master,T.vol*(mul||1),brev[k]||rev,zv);if(!r)return null;
     r.g._srcs=r.srcs;
     /* exclusive class (SoundFont): a new hit cuts the ringing one of the same class, e.g. closed hat stops the open hat */
     if(k==='d'&&r.ex){const o=chokeSf[r.ex];if(o&&o.t<t&&o.stop>t){try{o.g.gain.setTargetAtTime(0,t,0.012);(o.g._srcs||[]).forEach(function(x){try{x.stop(t+0.12);}catch(e){}});}catch(e){}}chokeSf[r.ex]={g:r.g,t:t,stop:r.stop};}
@@ -2188,6 +2209,8 @@ const Aud=(function(){
       for(let i=0;i<4097;i++){const x=(i-2048)/2048,a=Math.abs(x);cv[i]=a<0.8?x:Math.sign(x)*(0.8+0.2*Math.tanh((a-0.8)/0.2));}
       sh.curve=cv;
       master.connect(c);c.connect(mk);mk.connect(lim);lim.connect(sh);sh.connect(ctx.destination);
+      mkRev();
+      ['m','a','c','b','d'].forEach(function(k){bus[k]=ctx.createGain();bus[k].gain.value=mixLin[k];bus[k].connect(master);if(k!=='a'){brev[k]=ctx.createGain();brev[k].gain.value=mixLin[k];brev[k].connect(rev);}});
     }
     if(ctx.state!=='running'&&ctx.state!=='closed'){try{ctx.resume();}catch(e){}}
     return ctx;
@@ -2207,7 +2230,7 @@ const Aud=(function(){
     g.gain.setTargetAtTime(amp*0.32,t+0.004,0.6);
     const end=t+Math.max(0.05,dur);
     g.gain.setTargetAtTime(0,end,0.14);
-    car.connect(g);g.connect(master);
+    car.connect(g);g.connect(dst());
     const stop=end+1.0;
     [car,mod,bell].forEach(function(o){o.start(t);o.stop(stop);});
     voices.push({g:g,t:t,stop:stop});
@@ -2221,7 +2244,7 @@ const Aud=(function(){
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(amp,t+0.01);g.gain.setTargetAtTime(amp*0.5,t+0.01,0.5);
     const end=t+Math.max(0.05,dur);
     g.gain.setTargetAtTime(0,end,0.08);
-    o.connect(lp);o2.connect(lp);lp.connect(g);g.connect(master);
+    o.connect(lp);o2.connect(lp);lp.connect(g);g.connect(dst());
     const stop=end+0.6;
     o.start(t);o2.start(t);o.stop(stop);o2.stop(stop);
     voices.push({g:g,t:t,stop:stop});
@@ -2236,7 +2259,7 @@ const Aud=(function(){
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(amp,t+0.012);g.gain.setTargetAtTime(amp*0.7,t+0.012,0.3);
     const end=t+Math.max(0.05,dur);
     g.gain.setTargetAtTime(0,end,0.07);
-    o1.connect(lp);o2.connect(g2);g2.connect(lp);lp.connect(g);g.connect(master);
+    o1.connect(lp);o2.connect(g2);g2.connect(lp);lp.connect(g);g.connect(dst());
     const stop=end+0.6;
     o1.start(t);o2.start(t);o1.stop(stop);o2.stop(stop);
     voices.push({g:g,t:t,stop:stop});
@@ -2266,7 +2289,7 @@ const Aud=(function(){
     const f=ctx.createBiquadFilter();f.type=type;f.frequency.value=freq;f.Q.value=q;
     const g=ctx.createGain();g.gain.setValueAtTime(Math.max(0.0002,amp),t);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
     let out=g;if(choke){const c=ctx.createGain();c.gain.value=1;g.connect(c);out=c;openHat={c:c,s:s,t:t,stop:t+dur};}
-    s.connect(f);f.connect(g);out.connect(master);s.start(t,Math.random()*0.4);s.stop(t+dur+0.02);
+    s.connect(f);f.connect(g);out.connect(dst());s.start(t,Math.random()*0.4);s.stop(t+dur+0.02);
     voices.push({g:g,t:t,stop:t+dur+0.05});
   }
   /* a closed or pedal hat cuts the open hat, as on a real kit */
@@ -2275,7 +2298,7 @@ const Aud=(function(){
     const o=ctx.createOscillator(), g=ctx.createGain();
     o.type=type||'sine';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(f1,t+dur*0.6);
     g.gain.setValueAtTime(Math.max(0.0002,amp),t);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
-    o.connect(g);g.connect(master);o.start(t);o.stop(t+dur+0.02);
+    o.connect(g);g.connect(dst());o.start(t);o.stop(t+dur+0.02);
     voices.push({g:g,t:t,stop:t+dur+0.05});
   }
   function drumSyn(n,vel,t){
@@ -2294,10 +2317,11 @@ const Aud=(function(){
   const DMIX={42:3.2,44:3.2,46:3.2,51:4,53:4,59:4,49:2,57:2,37:1.6,39:2};
   /* kick, side stick and snare always play at velocity 100 so they stay audible on small speakers */
   const DFORCE={35:1,36:1,37:1,38:1,40:1};
-  function drum(n,vel,t,zv){if(!ensure())return;if(DFORCE[n]){vel=100;zv=100;}if(!sfv('d',n,vel,t,0.9,DMIX[n],zv))drumSyn(n,vel,t);}
-  function epV(m,vel,t,dur,zv){if(!sfv('c',m,vel,t,dur,null,zv))ep(m,vel,t,dur);}
-  function bassV(m,vel,t,dur,zv){if(!sfv('b',m,vel,t,dur,null,zv))bass(m,vel,t,dur);}
-  function leadV(m,vel,t,dur,zv){return sfv('m',m,vel,t,dur,null,zv)||lead(m,vel,t,dur);}
+  function via(k,fn){OUTB=bus[k]||null;try{return fn();}finally{OUTB=null;}}
+  function drum(n,vel,t,zv){if(!ensure())return;if(DFORCE[n]){vel=100;zv=100;}if(!sfv('d',n,vel,t,0.9,DMIX[n],zv))via('d',function(){drumSyn(n,vel,t);});}
+  function epV(m,vel,t,dur,zv){if(!sfv('c',m,vel,t,dur,null,zv))via('c',function(){ep(m,vel,t,dur);});}
+  function bassV(m,vel,t,dur,zv){if(!sfv('b',m,vel,t,dur,null,zv))via('b',function(){bass(m,vel,t,dur);});}
+  function leadV(m,vel,t,dur,zv){return sfv('m',m,vel,t,dur,null,zv)||via('m',function(){return lead(m,vel,t,dur);});}
   function tone(m,vel,dur){if(!ensure())return;leadV(m,vel,ctx.currentTime+0.01,dur);}
   function note(k,m,vel,t,dur,zv){if(!ctx)return;if(k==='c')epV(m,vel,t,dur,zv);else if(k==='m')leadV(m,vel,t,dur,zv);else bassV(m,vel,t,dur,zv);}
   function prune(){if(!ctx)return;const n=ctx.currentTime;for(let i=voices.length-1;i>=0;i--)if(voices[i].stop<n)voices.splice(i,1);}
@@ -2326,6 +2350,7 @@ const Aud=(function(){
   function setTrack(k,fid,pi,vol){trk[k].fid=fid;trk[k].pi=pi;trk[k].vol=vol;}
   function setMaster(g){masterAmt=g;if(master)master.gain.value=g;}
   function setReverb(a){revAmt=a;if(revOut)revOut.gain.value=a*3;}
+  function setMix(g){Object.keys(g).forEach(function(k){mixLin[k]=g[k];if(!ctx)return;const n=ctx.currentTime;if(bus[k])bus[k].gain.setTargetAtTime(g[k],n,0.015);if(brev[k])brev[k].gain.setTargetAtTime(g[k],n,0.015);});}
   function warm(k){
     const T=trk[k],p=T.fid?getP(T.fid):null;if(!p||T.pi<0)return;
     if(k==='d'){[35,36,37,38,39,42,44,46,49,51].forEach(function(n){try{p.warm(T.pi,n,n,100,1);}catch(e){}});return;}
@@ -2348,13 +2373,13 @@ const Aud=(function(){
     if(off<0){t-=off;if(dur!=null)dur+=off;off=0;}
     if(off>=buf.duration||(dur!=null&&dur<=0.01))return;
     if(dur==null||dur>buf.duration-off)dur=buf.duration-off;
-    const s=ctx.createBufferSource(), g=ctx.createGain();s.buffer=buf;s.connect(g);g.connect(master);
+    const s=ctx.createBufferSource(), g=ctx.createGain();s.buffer=buf;s.connect(g);g.connect(bus.a||master);
     /* 6 ms fades so cuts between takes do not click */
     const f=Math.min(0.006,dur/3);
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+f);g.gain.setValueAtTime(vol,t+dur-f);g.gain.linearRampToValueAtTime(0,t+dur);
     s.start(t,off,dur+0.01);voices.push({g:g,t:t,stop:t+dur+0.1});g._srcs=[s];
   }
-  return {playBuf:playBuf,lat:lat,ensure:ensure,click:click,note:note,tone:tone,hold:hold,prune:prune,stopAll:stopAll,preview:preview,ctx:function(){return ctx;},
+  return {setMix:setMix,playBuf:playBuf,lat:lat,ensure:ensure,click:click,note:note,tone:tone,hold:hold,prune:prune,stopAll:stopAll,preview:preview,ctx:function(){return ctx;},
     setMaster:setMaster,addFont:addFont,removeFont:removeFont,setTrack:setTrack,setReverb:setReverb,warm:warm,audition:audition,drum:drum,setClick:function(v){clickVol=v;}};
 })();
 
@@ -2380,7 +2405,7 @@ function schedule(step,t){
   const a=step>=0?Core.songAt(P,step,!inMelody()&&U.cmode!=='song'):{view:Core.secView(P,P.form[0]),local:step}, dp=a?Core.secDrums(a.view,null):null;
   /* the first bar after Play or a jump has no pushed chord before it, so it is struck */
   if(a&&step>=0&&Math.floor(step/bs)===Math.floor(tieFrom/bs))a.view._noTie=true;
-  const evs=a&&step>=0?Core.eventsAt(a.view,a.local,dp):[], ms=(inMelody()||U.melc)&&!(REC.run&&!U.recMel)?Core.melAt(P,step):[], dr=dp?Core.drumsAt(a.view,a.local,dp):[];
+  const evs=a&&step>=0?Core.eventsAt(a.view,a.local,dp):[], ms=Core.melAt(P,step), dr=dp?Core.drumsAt(a.view,a.local,dp):[];
   takeAt(step,t);
   if(!evs.length&&!ms.length&&!dr.length)return;
   const spb=60/P.bpm, jc=jit(), jb=jit();
@@ -2563,7 +2588,6 @@ function renderPalette(){
 function renderOpts(){
   $('#togSev').setAttribute('aria-pressed',P.sev?'true':'false');
   $('#togBass').setAttribute('aria-pressed',P.bass?'true':'false');
-  $('#togMel').setAttribute('aria-pressed',U.melc?'true':'false');
   renderRandBtn();
   const MB=Core.meter(P), UN={1:'Beat',2:'2 Beats'};UN[MB.bpb]='Bar';
   mkSeg($('#unitSeg'),Core.unitsFor(MB.bpb).map(function(u){return [u,UN[u]];}),function(){return P.unit;},function(v){P.unit=v;persist();renderOpts();renderGrid();});
@@ -2678,7 +2702,7 @@ function pickSlash(i,btn){
   if(sel!==7)Aud.preview(selCode());
   setTimeout(function(){popOpen=false;renderSlash(true);},220);
 }
-function renderAll(){drumsFromP();renderForm();renderTop();renderPalette();renderOpts();renderGrid();renderVel();renderComp();renderSlash();renderMelody();if(window.__dRender)window.__dRender();}
+function renderAll(){applyMix();if(MIX.open)mixRender();drumsFromP();renderForm();renderTop();renderPalette();renderOpts();renderGrid();renderVel();renderComp();renderSlash();renderMelody();if(window.__dRender)window.__dRender();}
 
 /* ---------- grid painting ---------- */
 let paint=null;
@@ -2874,7 +2898,6 @@ $('#undoBtn').addEventListener('click',doUndo);
 $('#redoBtn').addEventListener('click',doRedo);
 $('#togSev').addEventListener('click',function(){edit(function(){P.sev=!P.sev;});});
 $('#togBass').addEventListener('click',function(){edit(function(){P.bass=!P.bass;});});
-$('#togMel').addEventListener('click',function(){U.melc=!U.melc;saveU();renderOpts();toast(U.melc?'Melody plays on the Chord Track too.':'Melody muted on the Chord Track.');});
 $('#togSlash').addEventListener('click',function(){popOpen=!popOpen;renderSlash();});
 $('#xToggle').addEventListener('click',function(){U.more=!U.more;saveU();renderPalette();});
 document.addEventListener('pointerdown',function(e){
@@ -3828,7 +3851,7 @@ function kbdRender(){
   $('#dockKeys').setAttribute('aria-expanded',K.open&&!aud?'true':'false');
   const show=on&&K.open&&!aud;
   $('#kbd').hidden=!show;
-  document.body.classList.toggle('kbd-open',show);
+  document.body.classList.toggle('kbd-open',show||MIX.open);
   if(show){
     buildKeys();
     $('#kOctVal').textContent=stName();
@@ -4089,7 +4112,7 @@ $('#kBack').addEventListener('click',function(){
 });
 $('#kHome').addEventListener('click',function(){flash2($('#kHome'));K.cur=loTick();showCursor();});
 $('#kQ').addEventListener('change',function(){K.rq=+$('#kQ').value;U.krq=K.rq;saveU();});
-$('#dockKeys').addEventListener('click',function(){K.open=!K.open;U.kbd=K.open;saveU();kbdRender();});
+$('#dockKeys').addEventListener('click',function(){K.open=!K.open;U.kbd=K.open;saveU();if(K.open&&MIX.open){MIX.open=false;mixShow();}kbdRender();});
 buildKeys();
 
 
@@ -4360,7 +4383,9 @@ document.addEventListener('keydown',function(e){
 
 /* ---------- SoundFont (Sound section of the File sheet) ---------- */
 (function(){
-  const KEY='phrasenote-sound', TR=['c','b','m','d'], IDS={c:'sfC',b:'sfB',m:'sfM',d:'sfD'}, VID={c:'sfCv',b:'sfBv',m:'sfMv',d:'sfDv'};
+  const KEY='phrasenote-sound', TR=['c','b','m','d'], IDS={c:'sfC',b:'sfB',m:'sfM',d:'sfD'};
+  /* each SoundFont track's own level (the mixer does the rest) */
+  const TVOL={c:70,b:65,m:45,d:36};
   const DEFP={c:[0,4],b:[0,33],m:[0,73],d:[128,0]};
   /* a track's sound is {f:file id, b:bank, n:program}; null = basic synth */
   function pre(a){return {f:null,b:a[0],n:a[1]};}
@@ -4432,16 +4457,13 @@ document.addEventListener('keydown',function(e){
   function apply(){
     TR.forEach(function(k){
       const r=resolve(k);
-      Aud.setTrack(k,r.fid,r.pi,gain(S.v[k]));
+      Aud.setTrack(k,r.fid,r.pi,gain(TVOL[k]));
       if(r.fid)selFile[k]=r.fid;
       let F=fileById(selFile[k])||files[0]||null;if(F)selFile[k]=F.id;
       const fe=$('#'+IDS[k]+'f');if(F)fe.value=F.id;
       const el=$('#'+IDS[k]);presetOpts(el,F,k);
       el.value=r.fid&&r.fid===(F&&F.id)?String(r.pi):'-1';
-      $('#'+VID[k]).value=S.v[k];
     });
-    $('#sfRv').value=S.rev;Aud.setReverb(S.rev/100*0.6);
-    $('#sfMaster').value=S.mv;Aud.setMaster(mgain(S.mv));
     syncLoaded();
   }
   function mb(n){return (n/1048576).toFixed(n<1048576*10?1:0)+' MB';}
@@ -4454,7 +4476,7 @@ document.addEventListener('keydown',function(e){
     const on=files.length>0, tot=files.reduce(function(a,F){return a+F.size;},0);
     const bas=isBasic();
     $('#modeBasic').classList.toggle('on',bas);$('#modeSf').classList.toggle('on',!bas);
-    $('#sfOnly').hidden=bas;$('#sfNote').hidden=bas;$('#spBox').hidden=bas||!on;$('#sfRevRow').hidden=bas;
+    $('#sfOnly').hidden=bas;$('#sfNote').hidden=bas;$('#spBox').hidden=bas||!on;
     $('#sfRows').classList.toggle('nofont',bas||!on);
     const L=$('#sfList');L.innerHTML='';
     if(!on){const r=document.createElement('div');r.className='sfbar';r.innerHTML='<span class="sfname">No SoundFont loaded</span>';L.appendChild(r);}
@@ -4540,13 +4562,7 @@ document.addEventListener('keydown',function(e){
       const pr=F.m.presets[i];S[k]={f:F.id,b:pr.bank,n:pr.num};
       save();apply();Aud.audition(k);
     });
-    $('#'+VID[k]).addEventListener('input',function(e){S.v[k]=+e.target.value;const r=resolve(k);Aud.setTrack(k,r.fid,r.pi,gain(S.v[k]));});
-    $('#'+VID[k]).addEventListener('change',function(){save();Aud.audition(k);});
   });
-  $('#sfRv').addEventListener('input',function(e){S.rev=+e.target.value;Aud.setReverb(S.rev/100*0.6);});
-  $('#sfRv').addEventListener('change',function(){save();Aud.audition('c');});
-  $('#sfMaster').addEventListener('input',function(e){S.mv=+e.target.value;Aud.setMaster(mgain(S.mv));});
-  $('#sfMaster').addEventListener('change',function(){save();Aud.audition('c');});
   $('#btnSf').addEventListener('click',function(){$('#sfIn').click();});
   $('#sfIn').addEventListener('change',function(e){
     const f=e.target.files&&e.target.files[0];e.target.value='';
@@ -4565,11 +4581,6 @@ document.addEventListener('keydown',function(e){
     tip.style.left=Math.round(r.left+10+v*(r.width-20))+'px';tip.style.top=Math.round(r.top-30)+'px';
     clearTimeout(tipT);tipT=setTimeout(function(){tip.hidden=true;},1100);
   }
-  [['#sfCv','Chords'],['#sfBv','Bass'],['#sfMv','Melody'],['#sfDv','Drums'],['#sfRv','Reverb'],['#sfMaster','Master']].forEach(function(x){
-    const el=$(x[0]);
-    el.addEventListener('input',function(){showTip(el,x[1]+' '+el.value);});
-    ['pointerup','change','blur'].forEach(function(ev){el.addEventListener(ev,function(){clearTimeout(tipT);tipT=setTimeout(function(){tip.hidden=true;},500);});});
-  });
   /* sound presets: the four tracks' file, sound and volume in one .pnsound file */
   const TN={m:'Melody',c:'Chords',b:'Bass',d:'Drums'};
   $('#spSave').addEventListener('click',function(){
@@ -4578,8 +4589,10 @@ document.addEventListener('keydown',function(e){
       const r=resolve(k), F=r.fid?fileById(r.fid):null;
       if(!F){o.tracks[k]=null;return;}
       const pr=F.m.presets[r.pi];
-      o.tracks[k]={file:F.name,size:F.size,bank:pr.bank,num:pr.num,name:pr.name,vol:S.v[k]};
+      o.tracks[k]={file:F.name,size:F.size,bank:pr.bank,num:pr.num,name:pr.name};
     });
+    /* the balance belongs to the sound: the whole mixer goes along */
+    o.mix=JSON.parse(JSON.stringify(P.mix));
     const d=new Date(), z=function(n){return (n<10?'0':'')+n;};
     const nm=z(d.getFullYear()%100)+z(d.getMonth()+1)+z(d.getDate())+'-'+z(d.getHours())+z(d.getMinutes())+'-PhraseNote-Sound';
     const ext=dl?'.json':'.pnsound';
@@ -4604,8 +4617,8 @@ document.addEventListener('keydown',function(e){
             F=null;for(let j=0;j<files.length&&!F;j++)if(files[j].m.indexOf(t.bank,t.num)>=0)F=files[j];
           }
           S[k]={f:F?F.id:null,b:t.bank|0,n:t.num|0};
-          if(typeof t.vol==='number')S.v[k]=Math.max(0,Math.min(100,Math.round(t.vol)));
         });
+        if(o.mix&&typeof o.mix==='object'){const np=Core.normalize({mix:o.mix});P.mix=np.mix;persist();applyMix();if(MIX.open)mixRender();}
         save();apply();
         toast(miss.length?'Preset applied. Missing file: '+miss.join(', '):'Sound preset applied.');
         Aud.audition('m');
@@ -4618,7 +4631,7 @@ document.addEventListener('keydown',function(e){
   function setMode(basic){S.basic=basic;save();refresh();Aud.audition('m');}
   $('#modeBasic').addEventListener('click',function(){setMode(true);});
   $('#modeSf').addEventListener('click',function(){setMode(false);});
-  $('#sfDv').value=S.v.d;Aud.setTrack('d',null,-1,gain(S.v.d));$('#sfMaster').value=S.mv;Aud.setMaster(mgain(S.mv));
+  Aud.setTrack('d',null,-1,gain(TVOL.d));
   /* rhythm: pattern + click level */
   (function(){
     const dp=$('#dPat');
@@ -5013,6 +5026,62 @@ function openKeyGuess(){
   $('#formDlg').hidden=false;formOpenAt=Date.now();
 }
 
+/* ---------- mixer: Melody MIDI, Melody Audio, Chords, Bass, Drums, Reverb, Master (kept in the project) ---------- */
+var MIX={open:false};
+var MXCH=[['m','MIDI','Melody'],['a','Audio','Melody'],['c','Chords'],['b','Bass'],['d','Drums']];
+function mixDbText(v){const d=Core.faderDb(v);return d===-Infinity?'−∞':(d>0?'+':'')+d.toFixed(1);}
+/* fader, mute and solo into the channel buses; reverb and master as before */
+function applyMix(){
+  const mx=P.mix, anySolo=MXCH.some(function(c){return mx[c[0]].so;}), g={};
+  MXCH.forEach(function(c){const k=c[0], ch=mx[k], db=Core.faderDb(ch.v);g[k]=(ch.mu||(anySolo&&!ch.so)||db===-Infinity)?0:Math.pow(10,db/20);});
+  Aud.setMix(g);Aud.setReverb(mx.rev/100*0.6);
+  const dm=Core.faderDb(mx.mst);Aud.setMaster(dm===-Infinity?0:Math.pow(10,dm/20));
+}
+function mixRender(){
+  const host=$('#mxIn');if(!host)return;host.innerHTML='';
+  const mx=P.mix, anySolo=MXCH.some(function(c){return mx[c[0]].so;});
+  const strip=function(k,name,grp,v,val,ms,off,sep){
+    const d=document.createElement('div');d.className='mx'+(off?' off':'')+(sep?' sep':'');d.dataset.k=k;
+    d.innerHTML='<span class="mn">'+(grp?'<small>'+grp+'</small>':'<small>&nbsp;</small>')+name+'</span><span class="mv">'+val+'</span>'+
+      '<div class="fw"><input type="range" min="0" max="100" step="1" aria-label="'+(grp?grp+' ':'')+name+' level"></div>'+
+      '<div class="ms">'+(ms?'<button type="button" class="m" aria-pressed="'+(mx[k].mu?'true':'false')+'" aria-label="Mute '+name+'">M</button><button type="button" class="s" aria-pressed="'+(mx[k].so?'true':'false')+'" aria-label="Solo '+name+'">S</button>':'')+'</div>';
+    host.appendChild(d);const inp=d.querySelector('input');inp.value=v;if(window.__rangeRO)window.__rangeRO.observe(inp);
+  };
+  MXCH.forEach(function(c){const ch=mx[c[0]];strip(c[0],c[1],c[2]||'',ch.v,mixDbText(ch.v),true,ch.mu||(anySolo&&!ch.so),false);});
+  strip('rev','Rev','',mx.rev,mx.rev+'%',false,false,true);
+  strip('mst','Master','',mx.mst,mixDbText(mx.mst),false,false,false);
+}
+let mixSaveT=null;
+function mixSave(){clearTimeout(mixSaveT);mixSaveT=setTimeout(persist,400);}
+$('#mxIn').addEventListener('input',function(e){
+  const st=e.target.closest('.mx');if(!st)return;const k=st.dataset.k, v=+e.target.value;
+  if(k==='rev')P.mix.rev=v;else if(k==='mst')P.mix.mst=v;else P.mix[k].v=v;
+  st.querySelector('.mv').textContent=k==='rev'?v+'%':mixDbText(v);
+  applyMix();mixSave();
+});
+/* double-tap a fader: back to 0 dB (reverb: 35%) */
+$('#mxIn').addEventListener('dblclick',function(e){
+  const st=e.target.closest('.mx');if(!st||e.target.tagName!=='INPUT')return;const k=st.dataset.k, v=k==='rev'?35:75;
+  if(k==='rev')P.mix.rev=v;else if(k==='mst')P.mix.mst=v;else P.mix[k].v=v;
+  applyMix();mixRender();mixSave();
+});
+$('#mxIn').addEventListener('click',function(e){
+  const b=e.target.closest('button');if(!b)return;const k=b.closest('.mx').dataset.k;
+  if(b.classList.contains('m'))P.mix[k].mu=!P.mix[k].mu;else P.mix[k].so=!P.mix[k].so;
+  applyMix();mixRender();mixSave();
+});
+function mixShow(){
+  $('#mixer').hidden=!MIX.open;$('#dockMix').setAttribute('aria-expanded',MIX.open?'true':'false');
+  if(MIX.open){mixRender();document.body.classList.add('kbd-open');document.body.style.setProperty('--kbdh',$('#mixer').offsetHeight+'px');}
+  else if($('#kbd').hidden)document.body.classList.remove('kbd-open');
+  fitRoll();
+}
+$('#dockMix').addEventListener('click',function(){
+  MIX.open=!MIX.open;
+  if(MIX.open&&K.open){K.open=false;U.kbd=false;saveU();kbdRender();}
+  mixShow();
+});
+
 /* ---------- save folder: a PhraseNote folder the user picks once (browsers with folder access only) ----------
    Project, MIDI and WAV files go into <PhraseNote>/<project name>/, sound presets into <PhraseNote>/. Without folder access
    (older browser, claude.ai preview) files are downloaded as before. */
@@ -5168,7 +5237,7 @@ function takeAt(step,t){
     const sa=e.a/240, sb=e.b/240;
     if(step!==Math.round(sa)&&!(step===takeFrom&&step>sa&&step<sb))return;
     const from=Math.max(e.a,step*240);
-    Aud.playBuf(buf,t+(from-step*240)/240*cur,(from-m.t0)*(60/m.bpm/480),U.voxVol/80,(e.b-from)/240*cur);
+    Aud.playBuf(buf,t+(from-step*240)/240*cur,(from-m.t0)*(60/m.bpm/480),1,(e.b-from)/240*cur);
   });
 }
 /* microphone */
@@ -5252,14 +5321,12 @@ function recView(){
 }
 function renderRecCtl(){
   mkSeg($('#recModeSeg'),[['song','Song'],['loop','Loop slot']],function(){return U.recMode;},function(v){U.recMode=v;saveU();renderRecCtl();});
-  $('#recMel').setAttribute('aria-checked',U.recMel?'true':'false');
   $('#recGain').value=U.recGain;$('#recGainV').textContent='+'+U.recGain+' dB';
   $('#recLat').textContent=U.recLat?'Delay '+Math.round(U.recLat*1000)+' ms':'Not calibrated';
   $('#recBtn').setAttribute('aria-pressed',REC.run?'true':'false');
   recNote();
 }
 $('#recGain').addEventListener('input',function(e){U.recGain=+e.target.value;$('#recGainV').textContent='+'+U.recGain+' dB';saveU();});
-$('#recMel').addEventListener('click',function(){U.recMel=!U.recMel;saveU();renderRecCtl();});
 $('#recBtn').addEventListener('click',function(){if(REC.run){stopPlay();return;}recStart();});
 function recStart(){
   if(!REC.stream){micOn().then(function(ok){if(ok)toast('Microphone ready. Press REC again.');});return;}
@@ -5401,9 +5468,6 @@ $('#recIn').addEventListener('click',function(e){
 function fmtDur(s){s=Math.round(s);return Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60);}
 function renderTakes(){
   const host=$('#takeList');if(!host)return;host.innerHTML='';
-  const vol=document.createElement('div');vol.className='rrow';
-  vol.innerHTML='<span class="lbl" style="font-size:10px">Take volume</span><input type="range" id="voxVol" min="0" max="100" step="1" style="flex:1" aria-label="Take volume">';
-  host.appendChild(vol);$('#voxVol').value=U.voxVol;if(window.__rangeRO)window.__rangeRO.observe($('#voxVol'));$('#voxVol').addEventListener('input',function(e){U.voxVol=+e.target.value;saveU();});
   /* only the takes of the selected section; the one chosen for it plays in the comp */
   const M=Core.meter(P), sr0=slotRange(), lc=laneBar(Math.floor(sr0.t0/M.bar));
   const lab=(lc?lc.id+(lc.role?' '+lc.role:''):'Section')+' · bar '+(Math.floor(sr0.t0/M.bar)+1)+'–'+Math.round(sr0.t1/M.bar);
