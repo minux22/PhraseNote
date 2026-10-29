@@ -192,6 +192,9 @@ body.aud .velc{visibility:hidden}
 .rph{position:absolute; top:0; bottom:0; width:2px; background:var(--rec); pointer-events:none; left:0}
 .takes{display:flex; flex-direction:column; gap:6px; margin-top:6px}
 .take{display:flex; align-items:center; gap:6px; border:1px solid var(--line); border-radius:10px; padding:5px 8px; background:var(--panel-2)}
+.thead{display:flex; align-items:baseline; gap:8px; padding:2px 2px 0}
+.thead b{font-size:13px}
+.thead small{font-size:11px; color:var(--dim)}
 .take.on{border-color:var(--rec); box-shadow:inset 3px 0 0 var(--rec)}
 .take .tn{flex:1; min-width:0; display:flex; flex-direction:column; line-height:1.25}
 .take .tn b{font-size:13px}
@@ -752,7 +755,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
     <button class="btn" id="btnLoad" type="button">Open project</button>
     <button class="btn primary" id="btnSave" type="button">Save project</button>
     <button class="btn" id="btnSaveAs" type="button">Save as…</button>
-    <p class="note" id="saveNote">Saves the project file, a MIDI file (Chords, Bass, Melody, plus Drums on channel 10 when the drum button is on) and a WAV of every take, all at once.</p>
+    <p class="note" id="saveNote">Saves the project file, a MIDI file (Chords, Bass, Melody, plus Drums on channel 10 when the drum button is on), the melody's audio (the takes chosen per section, as one WAV) and a WAV of every take, all at once.</p>
     <input id="fileIn" type="file" hidden>
     <div class="sbox" id="recentBox"><span class="lbl">Recent projects</span><div id="recentList"></div><p class="note" id="storeNote"></p></div>
     </div>
@@ -801,7 +804,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.14.5</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.15.0</p>
   </div>
 </section>
 
@@ -1813,7 +1816,18 @@ const Core=(function(){
     });
     /* how many recordings each place has had (names never reuse a number) */
     p.recN={};if(o.recN&&typeof o.recN==='object')Object.keys(o.recN).slice(0,500).forEach(function(k){const v=Math.round(+o.recN[k]);if(k.length<=60&&v>0&&v<100000)p.recN[k]=v;});
-    p.vtake=typeof o.vtake==='string'&&p.takes.some(function(t){return t.id===o.vtake;})?o.vtake:null;
+    /* the comp: which take plays where (ticks a..b), at most one take at any moment. Older projects had one take in use. */
+    const tk={};p.takes.forEach(function(t){tk[t.id]=t;});
+    const tlen=function(t){return Math.round(t.n/t.sr/(60/t.bpm/480));};
+    p.vcomp=[];
+    if(Array.isArray(o.vcomp))o.vcomp.forEach(function(e){
+      if(!e||!tk[e.id]||p.vcomp.length>=500)return;const t=tk[e.id];
+      const a=Math.max(Math.round(+e.a),t.t0), b=Math.min(Math.round(+e.b),t.t0+tlen(t));
+      if(b>a)p.vcomp.push({a:a,b:b,id:e.id});
+    });
+    else if(typeof o.vtake==='string'&&tk[o.vtake])p.vcomp.push({a:tk[o.vtake].t0,b:tk[o.vtake].t0+tlen(tk[o.vtake]),id:o.vtake});
+    p.vcomp.sort(function(x,y){return x.a-y.a;});
+    for(let i=1;i<p.vcomp.length;i++)if(p.vcomp[i].a<p.vcomp[i-1].b){p.vcomp[i].a=p.vcomp[i-1].b;if(p.vcomp[i].b<=p.vcomp[i].a){p.vcomp.splice(i,1);i--;}}
     /* sections and form. Older projects (one loop) become section A played once. The fields of the section being edited
        are also kept at the top level of the project, where the editor and the player read them. */
     const top=normSec(o,MB);
@@ -2097,7 +2111,7 @@ try{const raw=localStorage.getItem(LS); if(raw)P=Core.normalize(JSON.parse(raw))
 const serialize=function(){Core.storeCur(P);return JSON.stringify(P);};
 function persist(){try{localStorage.setItem(LS,serialize());}catch(e){}recentKeep();}
 function pushUndo(snap){undo.push(snap);if(undo.length>100)undo.shift();redo.length=0;persist();renderTop();}
-function applySnap(s){setTimeout(function(){if(P.vtake)loadTake(P.vtake).then(function(){if(U.view==='rec'){renderTakes();renderRec();}});else if(U.view==='rec'){renderTakes();renderRec();}},0);const sid=Core.curId(P), d={drum:P.drum,dpat:P.dpat};const keep={id:P.id,name:P.name};P=Core.normalize(JSON.parse(s));Object.assign(P,keep);if(Core.curId(P)===sid)Object.assign(P,d);persist();renderAll();}
+function applySnap(s){setTimeout(function(){compLoad().then(function(){if(U.view==='rec'){renderTakes();renderRec();}});},0);const sid=Core.curId(P), d={drum:P.drum,dpat:P.dpat};const keep={id:P.id,name:P.name};P=Core.normalize(JSON.parse(s));Object.assign(P,keep);if(Core.curId(P)===sid)Object.assign(P,d);persist();renderAll();}
 function doUndo(){commitLive();if(!undo.length)return;redo.push(serialize());applySnap(undo.pop());}
 function doRedo(){commitLive();if(!redo.length)return;undo.push(serialize());applySnap(redo.pop());}
 function edit(fn){commitLive();const s=serialize();fn();P.sample=false;pushUndo(s);renderAll();}
@@ -2326,12 +2340,17 @@ const Aud=(function(){
     else{leadV(72,100,t,0.5);leadV(76,95,t+0.3,0.5);leadV(79,95,t+0.6,0.7);}
   }
   function lat(){return ctx?Math.round(((ctx.baseLatency||0)+(ctx.outputLatency||0))*1000):null;}
-  function playBuf(buf,t,off,vol){
+  function playBuf(buf,t,off,vol,dur){
     if(!ctx||!buf)return;
-    const s=ctx.createBufferSource(), g=ctx.createGain();s.buffer=buf;g.gain.value=vol;s.connect(g);g.connect(master);
-    const now=ctx.currentTime;if(t<now){off+=now-t;t=now;}
-    if(off>=buf.duration)return;
-    s.start(t,Math.max(0,off));voices.push({g:g,t:t,stop:t+buf.duration-off+0.1});g._srcs=[s];
+    const now=ctx.currentTime;if(t<now){off+=now-t;if(dur!=null)dur-=now-t;t=now;}
+    if(off<0){t-=off;if(dur!=null)dur+=off;off=0;}
+    if(off>=buf.duration||(dur!=null&&dur<=0.01))return;
+    if(dur==null||dur>buf.duration-off)dur=buf.duration-off;
+    const s=ctx.createBufferSource(), g=ctx.createGain();s.buffer=buf;s.connect(g);g.connect(master);
+    /* 6 ms fades so cuts between takes do not click */
+    const f=Math.min(0.006,dur/3);
+    g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+f);g.gain.setValueAtTime(vol,t+dur-f);g.gain.linearRampToValueAtTime(0,t+dur);
+    s.start(t,off,dur+0.01);voices.push({g:g,t:t,stop:t+dur+0.1});g._srcs=[s];
   }
   return {playBuf:playBuf,lat:lat,ensure:ensure,click:click,note:note,tone:tone,hold:hold,prune:prune,stopAll:stopAll,preview:preview,ctx:function(){return ctx;},
     setMaster:setMaster,addFont:addFont,removeFont:removeFont,setTrack:setTrack,setReverb:setReverb,warm:warm,audition:audition,drum:drum,setClick:function(v){clickVol=v;}};
@@ -4183,6 +4202,25 @@ function wavOf(m,a){
   new Int16Array(buf,44+pad*2,a.length).set(a);
   return new Uint8Array(buf);
 }
+/* the comp as one WAV from bar 1: each chosen piece in its place (sample rates matched to the first take) */
+function compWav(rs){
+  const comp=P.vcomp||[];if(!comp.length)return null;
+  const data={};rs.forEach(function(r){if(r.a)data[r.t.id]={t:r.t,a:r.a};});
+  const first=comp.map(function(e){return data[e.id];}).filter(Boolean)[0];if(!first)return null;
+  const sr=first.t.sr, cur=60/P.bpm/480;
+  const end=Math.max.apply(null,comp.map(function(e){return e.b;}));
+  const n=Math.max(1,Math.round(end*cur*sr)), out=new Int16Array(n);
+  comp.forEach(function(e){
+    const d=data[e.id];if(!d)return;
+    const s0=Math.max(0,Math.round(e.a*cur*sr)), s1=Math.min(n,Math.round(e.b*cur*sr)), tsp=60/d.t.bpm/480, k=d.t.sr/sr;
+    const src0=(e.a-d.t.t0)*tsp*d.t.sr, fade=Math.round(sr*0.006);
+    for(let i=s0;i<s1;i++){
+      const j=Math.round(src0+(i-s0)*k);if(j<0||j>=d.a.length)continue;
+      const g=Math.min(1,(i-s0)/fade,(s1-1-i)/fade);out[i]=Math.round(d.a[j]*Math.max(0,g));
+    }
+  });
+  return wavOf({t0:0,sr:sr,bpm:P.bpm},out);
+}
 /* everything a project consists of: <name>.phrasenote (with the takes' sound), <name>.mid, <name> - <take>.wav */
 function projectFiles(name){
   const takes=P.takes||[];
@@ -4193,6 +4231,7 @@ function projectFiles(name){
     const files=[{name:name+ownExt('.phrasenote'),data:new TextEncoder().encode(JSON.stringify(o))},
       {name:name+'.mid',data:Core.buildMidi(P,U.drum?U.dpat:null,{prog:soundPrograms(),name:P.name})}];
     rs.forEach(function(r){if(r.a)files.push({name:name+'-'+fsSafe(r.t.name)+'.wav',data:wavOf(r.t,r.a)});});
+    const mw=compWav(rs);if(mw)files.splice(2,0,{name:name+'-Melody.wav',data:mw});
     return files;
   });
 }
@@ -5103,13 +5142,32 @@ function loadTake(id){
     return a;
   }).catch(function(){return null;});
 }
-/* playback: the take in use starts at its first step (or part-way when Play starts inside it) */
+/* ---------- comp: one chosen take per section, together they are the melody's audio ---------- */
+function takeTicks(t){return Math.round(t.n/t.sr/(60/t.bpm/480));}
+function compLoad(){return Promise.all((P.vcomp||[]).map(function(e){return loadTake(e.id);}));}
+/* put take id (or nothing) on a..b; what was there is cut away */
+function compSet(c,a,b,id){
+  const out=[];
+  c.forEach(function(e){
+    if(e.b<=a||e.a>=b){out.push(e);return;}
+    if(e.a<a)out.push({a:e.a,b:a,id:e.id});
+    if(e.b>b)out.push({a:b,b:e.b,id:e.id});
+  });
+  if(id){const t=takeMeta(id);if(t){const x=Math.max(a,t.t0), y=Math.min(b,t.t0+takeTicks(t));if(y>x)out.push({a:x,b:y,id:id});}}
+  return out.sort(function(x,y){return x.a-y.a;});
+}
+function compIn(a,b){return (P.vcomp||[]).filter(function(e){return e.b>a&&e.a<b;});}
+/* playback: every comp piece starts at its first step (or part-way when Play starts inside it) */
 function takeAt(step,t){
-  if(REC.run||!P.vtake)return;
-  const m=takeMeta(P.vtake), buf=takeBufs[P.vtake];if(!m||!buf)return;
-  const sec=30/m.bpm, s0=Math.round(m.t0/240), steps=buf.duration/sec;
-  if(step===s0)Aud.playBuf(buf,t,0,U.voxVol/80);
-  else if(step===takeFrom&&step>s0&&step<s0+steps)Aud.playBuf(buf,t,(step-s0)*sec,U.voxVol/80);
+  if(REC.run||!P.vcomp||!P.vcomp.length)return;
+  const cur=30/P.bpm;
+  P.vcomp.forEach(function(e){
+    const m=takeMeta(e.id), buf=takeBufs[e.id];if(!m||!buf)return;
+    const sa=e.a/240, sb=e.b/240;
+    if(step!==Math.round(sa)&&!(step===takeFrom&&step>sa&&step<sb))return;
+    const from=Math.max(e.a,step*240);
+    Aud.playBuf(buf,t+(from-step*240)/240*cur,(from-m.t0)*(60/m.bpm/480),U.voxVol/80,(e.b-from)/240*cur);
+  });
 }
 /* microphone */
 function micOn(){
@@ -5187,7 +5245,7 @@ function recNote(msg){
 function recView(){
   kbdRender();
   document.body.classList.toggle('aud',inMelody()&&U.view==='rec');
-  if(inMelody()&&U.view==='rec'){micOn();renderRecCtl();renderTakes();if(P.vtake)loadTake(P.vtake).then(function(){renderRec();});}
+  if(inMelody()&&U.view==='rec'){micOn();renderRecCtl();renderTakes();compLoad().then(function(){renderRec();});}
   else micOff();
 }
 function renderRecCtl(){
@@ -5246,7 +5304,7 @@ function recFinish(){
     return {id:id,t0:pc.t0,sr:sr,n:pc.a.length,bpm:run.bpm,made:Date.now(),name:key+'-'+ordinal(rn)+(pc.pass?'-Loop'+pc.pass:'')};
   });
   Promise.all(metas.map(function(m){return tput(m.id,takeData[m.id].buffer);})).catch(function(){toast('The recording could not be stored on this device.');});
-  edit(function(){P.recN=P.recN||{};P.recN[key]=rn;P.takes=(P.takes||[]).concat(metas);P.vtake=metas[metas.length-1].id;});
+  edit(function(){P.recN=P.recN||{};P.recN[key]=rn;P.takes=(P.takes||[]).concat(metas);const last=metas[metas.length-1];P.vcomp=compSet(P.vcomp||[],last.t0,run.tb!=null?run.tb:last.t0+takeTicks(last),last.id);});
   renderTakes();renderRec();
   toast(metas.length>1?metas.length+' takes recorded.':'Take recorded.');
 }
@@ -5277,7 +5335,8 @@ $('#recCal').addEventListener('click',function(){
   },3200);
 });
 /* the REC timeline: bar strip, chords, the waveform of the take in use */
-function recScale(){const M=Core.meter(P), bars=Math.max(mBars(),Math.ceil(Core.formTicks(P)/M.bar))+(P.pick?1:0);return Math.min(U.zoom,30000/(bars*M.bar/PPQ));}
+/* the whole song fits the width, so every section's chosen take is in view (scrolls only when bars would get narrower than 28 px) */
+function recScale(){const M=Core.meter(P), bars=Math.max(mBars(),Math.ceil(Core.formTicks(P)/M.bar))+(P.pick?1:0), w=($('#recWrap').clientWidth||320)-2, beats=bars*M.bar/PPQ;return Math.max(w/beats,28/(M.bar/PPQ));}
 function renderRec(){
   if(U.view!=='rec')return;
   const cv=$('#recCv'), M=Core.meter(P), z=recScale(), pk=P.pick?M.bar:0;
@@ -5299,14 +5358,28 @@ function renderRec(){
         if(lc.first){g.strokeStyle=col('--text');g.lineWidth=1;g.strokeRect(x+16.5,3.5,13,12);g.fillStyle=col('--text');g.fillText(lc.id[0],x+19,13);}}
     }
   }
-  g.fillStyle='rgba(128,128,128,.25)';g.fillRect(0,38,W,1);g.fillRect(0,81,W,1);
-  const m=P.vtake?takeMeta(P.vtake):null, a=m?takeData[m.id]:null;
-  if(m&&a){
-    const spt=60/m.bpm/480, x0=X(m.t0), px=Math.ceil(m.n/m.sr/spt/PPQ*z), per=a.length/px;
+  g.fillStyle='rgba(128,128,128,.25)';g.fillRect(0,38,W,1);
+  /* the selected section is lit; the comp's pieces are drawn as waveforms */
+  const sr0=slotRange();
+  g.fillStyle=col('--rec');g.globalAlpha=.08;g.fillRect(X(sr0.t0),38,X(sr0.t1)-X(sr0.t0),H-38);g.globalAlpha=1;
+  g.fillRect(X(sr0.t0),36,X(sr0.t1)-X(sr0.t0),2);
+  const comp=P.vcomp||[];
+  comp.forEach(function(e){
+    const m=takeMeta(e.id), a=takeData[e.id];if(!m)return;
+    const x0=X(e.a), x1=X(e.b);
+    g.strokeStyle=col('--rec');g.globalAlpha=.5;g.lineWidth=1;g.strokeRect(x0+.5,42.5,x1-x0-1,H-46);g.globalAlpha=1;
+    g.fillStyle=col('--dim');g.font='10px sans-serif';g.save();g.beginPath();g.rect(x0,40,x1-x0,14);g.clip();g.fillText(m.name,x0+4,51);g.restore();
+    if(!a)return;
+    const spt=60/m.bpm/480, perTick=spt*m.sr;
     g.fillStyle=col('--rec');
-    for(let i=0;i<px;i++){let mn=0,mx=0;const s0=Math.floor(i*per),s1=Math.min(a.length,Math.floor((i+1)*per));for(let j=s0;j<s1;j+=Math.max(1,Math.floor((s1-s0)/64))){const v=a[j]/32768;if(v<mn)mn=v;if(v>mx)mx=v;}
-      g.fillRect(x0+i,81-mx*40,1,Math.max(1,(mx-mn)*40));}
-  }else{g.fillStyle=col('--dim');g.font='12px sans-serif';g.fillText(P.takes&&P.takes.length?'Tap a take below to show and play it.':'No takes yet. Press REC: one bar of backing, then sing.',10,86);}
+    for(let x=Math.floor(x0);x<x1;x++){
+      const tk0=(x-X(0))/z*PPQ, tk1=(x+1-X(0))/z*PPQ;
+      const s0=Math.max(0,Math.floor((tk0-m.t0)*perTick)), s1=Math.min(a.length,Math.floor((tk1-m.t0)*perTick));
+      let mn=0,mx=0;for(let j=s0;j<s1;j+=Math.max(1,Math.floor((s1-s0)/64))){const v=a[j]/32768;if(v<mn)mn=v;if(v>mx)mx=v;}
+      g.fillRect(x,86-mx*32,1,Math.max(1,(mx-mn)*32));
+    }
+  });
+  if(!comp.length){g.fillStyle=col('--dim');g.font='12px sans-serif';g.fillText(P.takes&&P.takes.length?'Pick a take below for the lit section.':'No takes yet. Press REC: one bar of backing, then sing.',10,90);}
   movePhRec(K.cur/PPQ);
 }
 function movePhRec(beat){
@@ -5317,7 +5390,10 @@ function movePhRec(beat){
 $('#recIn').addEventListener('click',function(e){
   if(REC.run)return;
   const r=$('#recCv').getBoundingClientRect(), M=Core.meter(P), z=recScale(), pk=P.pick?M.bar:0;
-  K.cur=Math.max(loTick(),snapBeat((e.clientX-r.left)/z*PPQ-pk));movePhRec(K.cur/PPQ);if(playing)seekPlay();
+  const tk=Math.max(loTick(),snapBeat((e.clientX-r.left)/z*PPQ-pk));
+  const sl=Core.layout(P).filter(function(x){return tk>=x.start&&tk<x.start+x.len;})[0];
+  if(sl&&sl.i!==P.slot){Core.storeCur(P);P.slot=sl.i;Core.loadCur(P);persist();renderAll();}
+  K.cur=tk;movePhRec(K.cur/PPQ);renderTakes();renderRec();if(playing)seekPlay();
 });
 /* takes list */
 function fmtDur(s){s=Math.round(s);return Math.floor(s/60)+':'+(s%60<10?'0':'')+(s%60);}
@@ -5326,24 +5402,34 @@ function renderTakes(){
   const vol=document.createElement('div');vol.className='rrow';
   vol.innerHTML='<span class="lbl" style="font-size:10px">Take volume</span><input type="range" id="voxVol" min="0" max="100" step="1" style="flex:1" aria-label="Take volume">';
   host.appendChild(vol);$('#voxVol').value=U.voxVol;if(window.__rangeRO)window.__rangeRO.observe($('#voxVol'));$('#voxVol').addEventListener('input',function(e){U.voxVol=+e.target.value;saveU();});
-  const M=Core.meter(P);
-  (P.takes||[]).slice().reverse().forEach(function(t){
-    const r=document.createElement('div');r.className='take'+(t.id===P.vtake?' on':'');r.dataset.id=t.id;
-    const dur=t.n/t.sr, b0=Math.floor(t.t0/M.bar)+1, b1=Math.ceil((t.t0+dur/(60/t.bpm/480))/M.bar);
+  /* only the takes of the selected section; the one chosen for it plays in the comp */
+  const M=Core.meter(P), sr0=slotRange(), lc=laneBar(Math.floor(sr0.t0/M.bar));
+  const lab=(lc?lc.id+(lc.role?' '+lc.role:''):'Section')+' · bar '+(Math.floor(sr0.t0/M.bar)+1)+'–'+Math.round(sr0.t1/M.bar);
+  const here=(P.takes||[]).filter(function(t){return t.t0<sr0.t1&&t.t0+takeTicks(t)>sr0.t0;});
+  const inUse={};compIn(sr0.t0,sr0.t1).forEach(function(e){inUse[e.id]=1;});
+  const hd=document.createElement('div');hd.className='thead';
+  hd.innerHTML='<b>'+lab+'</b><small>'+(here.length?here.length+' take'+(here.length>1?'s':'')+' · tap one to use it here':'no takes here yet')+'</small>';
+  host.appendChild(hd);
+  here.slice().reverse().forEach(function(t){
+    const on=!!inUse[t.id], r=document.createElement('div');r.className='take'+(on?' on':'');r.dataset.id=t.id;
+    const dur=t.n/t.sr, b0=Math.floor(t.t0/M.bar)+1, b1=Math.ceil((t.t0+takeTicks(t))/M.bar);
     const d=new Date(t.made), hh=(d.getHours()<10?'0':'')+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
-    r.innerHTML='<span class="tn"><b>'+t.name+(t.id===P.vtake?' · in use':'')+'</b><small>bar '+b0+'–'+b1+' · '+fmtDur(dur)+' · '+hh+(t.bpm!==P.bpm?' · recorded at '+t.bpm+' BPM':'')+'</small></span>'+
-      '<button type="button" data-a="play" aria-label="Play from its start">▶</button><button type="button" data-a="wav">WAV</button><button type="button" data-a="del" class="del" aria-label="Delete">✕</button>';
+    r.innerHTML='<span class="tn"><b>'+t.name+(on?' · in use':'')+'</b><small>bar '+b0+'–'+b1+' · '+fmtDur(dur)+' · '+hh+(t.bpm!==P.bpm?' · recorded at '+t.bpm+' BPM':'')+'</small></span>'+
+      '<button type="button" data-a="play" aria-label="Play this section with it">▶</button><button type="button" data-a="wav">WAV</button><button type="button" data-a="del" class="del" aria-label="Delete">✕</button>';
     host.appendChild(r);
   });
+  const others=(P.takes||[]).length-here.length;
+  if(others>0){const n=document.createElement('p');n.className='note';n.style.margin='2px 0 0';n.textContent=others+' more take'+(others>1?'s':'')+' in other sections: tap a section on the timeline above.';host.appendChild(n);}
 }
 $('#takeList').addEventListener('click',function(e){
   const row=e.target.closest?e.target.closest('.take'):null;if(!row)return;
-  const id=row.dataset.id, m=takeMeta(id), btn=e.target.closest('button'), a=btn?btn.dataset.a:null;
-  if(a==='del'){edit(function(){P.takes=P.takes.filter(function(t){return t.id!==id;});if(P.vtake===id)P.vtake=null;});renderTakes();renderRec();toast(m.name+' deleted (Undo brings it back).');return;}
+  const id=row.dataset.id, m=takeMeta(id), btn=e.target.closest('button'), a=btn?btn.dataset.a:null, sr0=slotRange();
+  if(a==='del'){edit(function(){P.takes=P.takes.filter(function(t){return t.id!==id;});P.vcomp=(P.vcomp||[]).filter(function(x){return x.id!==id;});});renderTakes();renderRec();toast(m.name+' deleted (Undo brings it back).');return;}
   if(a==='wav'){exportWav(m);return;}
-  const use=function(){if(P.vtake!==id){P.vtake=id;persist();}return loadTake(id).then(function(){renderTakes();renderRec();});};
-  if(a==='play'){use().then(function(){if(playing)stopPlay();K.cur=Math.floor(m.t0/240)*240;startPlay();});return;}
-  if(P.vtake===id){P.vtake=null;persist();renderTakes();renderRec();return;}
+  const on=compIn(sr0.t0,sr0.t1).some(function(x){return x.id===id;});
+  const use=function(){if(!on)edit(function(){P.vcomp=compSet(P.vcomp||[],sr0.t0,sr0.t1,id);});return loadTake(id).then(function(){renderTakes();renderRec();});};
+  if(a==='play'){use().then(function(){if(playing)stopPlay();K.cur=Math.max(sr0.t0,Math.floor(m.t0/240)*240);startPlay();});return;}
+  if(on){edit(function(){P.vcomp=compSet(P.vcomp||[],sr0.t0,sr0.t1,null);});renderTakes();renderRec();return;}
   use();
 });
 function exportWav(m){
@@ -5427,7 +5513,7 @@ try{if(!localStorage.getItem('chord-sketch-comp1')){P.comp='beat';localStorage.s
 renderAll();
 requestAnimationFrame(frame);
 setTimeout(takeGc,4000);
-if(P.vtake)loadTake(P.vtake);
+compLoad();
 if(window.claude&&window.claude.use){
   window.claude.use('downloads').then(function(d){dl=d;}).catch(function(){dl=null;});
 }
