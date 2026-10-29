@@ -169,6 +169,7 @@ select{font:inherit; font-size:13px; height:32px; border:1px solid var(--line); 
 .fsrow[hidden]{display:none}
 .fsn{flex:1; min-width:0; display:flex; flex-direction:column; gap:1px}
 .fsn small{font-size:10px; color:var(--dim); letter-spacing:.04em; text-transform:uppercase}
+.fsn .fserr{color:var(--rec); text-transform:none; letter-spacing:0; white-space:normal}
 .fsn b{font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 /* Audio mode: the melody colour turns coral, the MIDI-only Auto-Velocity leaves a blank */
 body.aud{--mel:var(--rec); --mel-ink:#ffffff}
@@ -746,7 +747,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
     <button class="btn danger" id="btnClearMel" type="button">Clear melody</button>
     <div class="snd">
       <div class="sec"><span class="lbl">Project</span></div>
-    <div class="fsrow" id="fsRow" hidden><span class="fsn"><small>Save folder</small><b id="fsName">Not set</b></span><button class="pill" type="button" id="fsPick">Choose</button></div>
+    <div class="fsrow" id="fsRow" hidden><span class="fsn"><small>Save folder</small><b id="fsName">Not set</b><small id="fsErr" class="fserr" hidden></small></span><button class="pill" type="button" id="fsPick">Choose</button></div>
     <button class="btn" id="btnNew" type="button">New project</button>
     <button class="btn" id="btnLoad" type="button">Open project</button>
     <button class="btn primary" id="btnSave" type="button">Save project</button>
@@ -800,7 +801,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.14.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.14.1</p>
   </div>
 </section>
 
@@ -4200,36 +4201,44 @@ let saving=false;
 function saveAll(name,auto){
   if(saving)return Promise.resolve(false);
   saving=true;P.name=name;persist();
-  const sig=saveSig();
-  return projectFiles(name).then(function(files){
-    const folder=FS.ok&&U.fsName;
-    if(!folder){
-      if(auto)return false;
-      const z=Core.zipMany(files.map(function(f){return {name:name+'/'+f.name,data:f.data};}));
-      if(dl)saveFile(name+'.zip',z);else localSave(name+'.zip',z);
-      FS.saved=sig;return true;
-    }
-    const sub=fsSafe(name)||'Untitled';let root=null;
-    return fsRoot().then(function(r){
-      if(!r)throw new Error('none');root=r;
-      if(auto)return r.queryPermission?r.queryPermission({mode:'readwrite'}).then(function(p){return p==='granted';}):true;
-      return fsPerm(r);
-    }).then(function(ok){
-      if(!ok)throw new Error('perm');
-      return root.getDirectoryHandle(sub,{create:true});
-    }).then(function(dir){
-      return files.reduce(function(pr,f){return pr.then(function(){
-        return dir.getFileHandle(f.name,{create:true}).then(function(fh){return fh.createWritable();}).then(function(w){return w.write(f.data).then(function(){return w.close();});});
-      });},Promise.resolve());
-    }).then(function(){
-      FS.saved=sig;toast((auto?'Saved automatically: ':'Saved: ')+root.name+'/'+sub+' ('+files.length+' files)');return true;
-    }).catch(function(){
-      if(auto)return false;
-      toast('The save folder could not be used, so everything is downloaded as one .zip.');
-      const z=Core.zipMany(files.map(function(f){return {name:name+'/'+f.name,data:f.data};}));
-      if(dl)saveFile(name+'.zip',z);else localSave(name+'.zip',z);return true;
+  const sig=saveSig(), folder=FS.ok&&U.fsName, sub=fsSafe(name)||'Untitled';
+  let root=null, step='open the folder';
+  const asZip=function(files){
+    const z=Core.zipMany(files.map(function(f){return {name:name+'/'+f.name,data:f.data};}));
+    if(dl)saveFile(name+'.zip',z);else localSave(name+'.zip',z);
+  };
+  /* the folder permission is asked for first, while the tap still counts as the user's action (browsers refuse later) */
+  const perm=!folder?Promise.resolve(false):fsRoot().then(function(r){
+    if(!r)throw new Error('The folder is no longer known. Choose it again in Setup.');
+    root=r;step='get permission';
+    if(auto)return r.queryPermission?r.queryPermission({mode:'readwrite'}).then(function(p){return p==='granted';}):true;
+    return fsPerm(r);
+  });
+  return perm.then(function(ok){
+    if(folder&&!ok)throw new Error(auto?'no permission yet':'Permission to write to the folder was not given.');
+    step='prepare the files';
+    return projectFiles(name).then(function(files){
+      if(!folder){if(!auto){asZip(files);FS.saved=sig;}return !auto;}
+      step='make the folder '+sub;
+      return root.getDirectoryHandle(sub,{create:true}).then(function(dir){
+        return files.reduce(function(pr,f){return pr.then(function(){
+          step='write '+f.name;
+          return dir.getFileHandle(f.name,{create:true}).then(function(fh){return fh.createWritable();}).then(function(w){return w.write(f.data).then(function(){return w.close();});});
+        });},Promise.resolve());
+      }).then(function(){
+        FS.saved=sig;U.fsErr=null;saveU();fsShow();
+        toast((auto?'Saved automatically: ':'Saved: ')+root.name+'/'+sub+' ('+files.length+' files)');return true;
+      }).catch(function(e){e._files=files;throw e;});
     });
-  }).catch(function(){if(!auto)toast('Saving failed.');return false;}).then(function(r){saving=false;return r;});
+  }).catch(function(e){
+    const why='Could not '+step+(e&&e.name&&e.name!=='Error'?' ('+e.name+(e.message?': '+e.message:'')+')':(e&&e.message?' ('+e.message+')':''));
+    if(auto)return false;
+    if(folder){U.fsErr=why;saveU();fsShow();}
+    const go=function(files){if(folder)asZip(files);toast(why+(folder?' — downloaded as one .zip instead.':''));};
+    if(e&&e._files)go(e._files);else if(folder)return projectFiles(name).then(function(f){go(f);return true;}).catch(function(){return false;});
+    else toast(why);
+    return false;
+  }).then(function(r){saving=false;return r;});
 }
 $('#btnSave').addEventListener('click',function(){
   if(P.name){saveAll(P.name);return;}
@@ -4970,13 +4979,14 @@ function fsProjName(){return fsSafe(P.name)||'Untitled';}
 function fsShow(){
   $('#fsRow').hidden=!FS.ok;if(!FS.ok)return;
   $('#fsName').textContent=U.fsName?U.fsName+' / (project name) /':'Not set (files are downloaded)';
+  $('#fsErr').textContent=U.fsErr?'Last problem: '+U.fsErr:'';$('#fsErr').hidden=!U.fsErr;
   $('#fsPick').textContent=U.fsName?'Change':'Choose';
 }
 function fsPick(){
   return window.showDirectoryPicker({id:'phrasenote',mode:'readwrite',startIn:'documents'}).then(function(h){
     return h.name==='PhraseNote'?h:h.getDirectoryHandle('PhraseNote',{create:true});
   }).then(function(r){
-    FS.root=r;U.fsName=r.name;saveU();fsShow();
+    FS.root=r;U.fsName=r.name;U.fsErr=null;saveU();fsShow();
     return tdo('readwrite',function(st){return st.put(r,'dir:root');}).catch(function(){}).then(function(){toast('Files will be saved in '+r.name+'.');return true;});
   }).catch(function(e){if(e&&e.name!=='AbortError')toast('That folder cannot be used. Try another (for example Documents).');return false;});
 }
