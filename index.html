@@ -810,7 +810,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.14.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.14.2</p>
   </div>
 </section>
 
@@ -4991,13 +4991,38 @@ function fsShow(){
   $('#fsErr').textContent=U.fsErr?'Last problem: '+U.fsErr:'';$('#fsErr').hidden=!U.fsErr;
   $('#fsPick').textContent=U.fsName?'Change':'Choose';
 }
+function fsErrText(e){return e?(e.name&&e.name!=='Error'?e.name+(e.message?': '+e.message:''):(e.message||String(e))):'unknown';}
+/* can this folder take a file? a tiny test file is written and removed */
+function fsProbe(dir){
+  const n='.phrasenote-test';
+  return dir.getFileHandle(n,{create:true}).then(function(fh){return fh.createWritable();}).then(function(w){return w.write('ok').then(function(){return w.close();});})
+    .then(function(){return dir.removeEntry?dir.removeEntry(n).catch(function(){}):null;}).then(function(){return dir;});
+}
 function fsPick(){
-  return window.showDirectoryPicker({id:'phrasenote',mode:'readwrite',startIn:'documents'}).then(function(h){
-    return h.name==='PhraseNote'?h:h.getDirectoryHandle('PhraseNote',{create:true});
+  let picked=null, err1=null;
+  const open=function(){
+    try{return window.showDirectoryPicker({id:'phrasenote',mode:'readwrite',startIn:'documents'});}
+    catch(e){return Promise.reject(e);}
+  };
+  return open().catch(function(e){
+    if(e&&e.name==='AbortError')throw e;
+    /* some browsers refuse the options: try the plain picker */
+    return window.showDirectoryPicker();
+  }).then(function(h){
+    picked=h;
+    if(h.name==='PhraseNote')return fsProbe(h);
+    /* make PhraseNote inside the chosen place; if that is refused, use the chosen folder itself */
+    return h.getDirectoryHandle('PhraseNote',{create:true}).then(fsProbe).catch(function(e){err1=e;return fsProbe(h);});
   }).then(function(r){
     FS.root=r;U.fsName=r.name;U.fsErr=null;saveU();fsShow();
-    return tdo('readwrite',function(st){return st.put(r,'dir:root');}).catch(function(){}).then(function(){toast('Files will be saved in '+r.name+'.');return true;});
-  }).catch(function(e){if(e&&e.name!=='AbortError')toast('That folder cannot be used. Try another (for example Documents).');return false;});
+    return tdo('readwrite',function(st){return st.put(r,'dir:root');}).catch(function(){}).then(function(){
+      toast(err1?'Could not make a PhraseNote folder there, so files go straight into '+r.name+'.':'Files will be saved in '+r.name+'.');return true;
+    });
+  }).catch(function(e){
+    if(e&&e.name==='AbortError')return false;
+    const why=(picked?'"'+picked.name+'" cannot be written to':'The folder picker failed')+' ('+fsErrText(e)+(err1?'; making PhraseNote: '+fsErrText(err1):'')+')';
+    U.fsErr=why;saveU();fsShow();toast(why);return false;
+  });
 }
 function fsPerm(h){
   if(!h.queryPermission)return Promise.resolve(true);
