@@ -758,9 +758,9 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
     <div class="fsrow" id="fsRow" hidden><span class="fsn"><small>Save folder</small><b id="fsName">Not set</b></span><button class="pill" type="button" id="fsPick">Choose</button></div>
     <button class="btn" id="btnNew" type="button">New project</button>
     <button class="btn" id="btnLoad" type="button">Open project</button>
-    <button class="btn" id="btnSave" type="button">Save project</button>
-    <button class="btn primary" id="btnMidi" type="button">Export MIDI</button>
-    <p class="note">Chords, Bass and Melody go out as separate tracks (plus Drums on channel 10 when the drum button is on). Opened from claude.ai the .mid is zipped (unzip it first); a saved copy of the page downloads the plain .mid.</p>
+    <button class="btn primary" id="btnSave" type="button">Save project</button>
+    <button class="btn" id="btnSaveAs" type="button">Save as…</button>
+    <p class="note" id="saveNote">Saves the project file, a MIDI file (Chords, Bass, Melody, plus Drums on channel 10 when the drum button is on) and a WAV of every take, all at once.</p>
     <input id="fileIn" type="file" hidden>
     <div class="sbox" id="recentBox"><span class="lbl">Recent projects</span><div id="recentList"></div><p class="note" id="storeNote"></p></div>
     </div>
@@ -809,7 +809,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.13.11</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.14.0</p>
   </div>
 </section>
 
@@ -1701,6 +1701,31 @@ const Core=(function(){
     return (c^0xFFFFFFFF)>>>0;
   }
   /* store-only ZIP with one file (name must be ASCII) */
+  /* several files in one stored (uncompressed) zip */
+  function zipMany(files){
+    const parts=files.map(function(f){return zip(f.name,f.data);});
+    const out=[], cds=[];let off=0;
+    parts.forEach(function(z,i){
+      const dv=new DataView(z.buffer,z.byteOffset,z.byteLength), cdOff=dv.getUint32(z.length-6,true), cdLen=dv.getUint32(z.length-10,true);
+      out.push(z.subarray(0,cdOff));
+      const cd=z.slice(cdOff,cdOff+cdLen), cv=new DataView(cd.buffer);cv.setUint32(42,off,true);cds.push(cd);off+=cdOff;
+    });
+    let cdl=0;cds.forEach(function(c){cdl+=c.length;});
+    const res=new Uint8Array(off+cdl+22);let o=0;
+    out.forEach(function(b){res.set(b,o);o+=b.length;});cds.forEach(function(c){res.set(c,o);o+=c.length;});
+    const ev=new DataView(res.buffer,o,22);ev.setUint32(0,0x06054b50,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,cdl,true);ev.setUint32(16,off,true);
+    return res;
+  }
+  /* read back a stored zip (the kind zipMany makes) */
+  function unzip(u8){
+    const dv=new DataView(u8.buffer,u8.byteOffset,u8.byteLength), out=[];let i=0;
+    while(i+30<=u8.length&&dv.getUint32(i,true)===0x04034b50){
+      const meth=dv.getUint16(i+8,true), csz=dv.getUint32(i+18,true), nl=dv.getUint16(i+26,true), xl=dv.getUint16(i+28,true);
+      const name=new TextDecoder().decode(u8.subarray(i+30,i+30+nl)), st=i+30+nl+xl;
+      out.push({name:name,method:meth,data:u8.subarray(st,st+csz)});i=st+csz;
+    }
+    return out;
+  }
   function zip(name,data){
     const nb=strBytes(name), crc=crc32(data), n=data.length;
     const d=new Date();
@@ -1886,7 +1911,7 @@ const Core=(function(){
   }
   return {SCALES:SCALES,SCALE_NAMES:SCALE_NAMES,KEY_NAMES:KEY_NAMES,chordInfo:chordInfo,voicing:voicing,
     noteName:noteName,bassNote:bassNote,notesFor:notesFor,
-    COMPS:COMPS,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,
+    COMPS:COMPS,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,
     POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM,suggestChords:suggestChords,guessKey:guessKey,rekey:rekey,recode:recode,SEC_IDS:SEC_IDS,ROLES:ROLES,SECF:SECF,normSec:normSec,copySec:copySec,secOf:secOf,curId:curId,storeCur:storeCur,loadCur:loadCur,layout:layout,formTicks:formTicks,secView:secView,secDrums:secDrums,songAt:songAt,melInsert:melInsert,melDelete:melDelete,melSlice:melSlice,melPaste:melPaste,resizeSec:resizeSec,xcode:xcode,isX:isX,xWith:xWith,extraPalette:extraPalette};
 })();
 
@@ -4152,25 +4177,84 @@ function saveFile(name,data){
     localSave(name,data);
   });
 }
-$('#btnMidi').addEventListener('click',function(){
-  const stem=Core.fileStem(P), mid=Core.buildMidi(P,U.drum?U.dpat:null,{prog:soundPrograms(),name:P.name}), ext=dl?'.zip':'.mid';
-  /* inside claude.ai only a fixed list of file types can be saved (no .mid), so it goes out zipped; elsewhere it is a plain .mid */
-  askName('Export MIDI',stem,ext,function(name){
-    outSave(name+'.mid',mid,'project',function(){if(dl)saveFile(name+'.zip',Core.zip(name+'.mid',mid));else localSave(name+'.mid',mid);});
-  });
-});
 /* project files use their own extension (.phrasenote); inside claude.ai only a fixed list of types can be saved, so there it stays .json */
 function ownExt(ext){return dl?'.json':ext;}
-$('#btnSave').addEventListener('click',function(){
-  const ext=ownExt('.phrasenote');
-  askName('Save project',P.name||Core.fileStem(P),ext,function(name){
-    P.name=name;persist();
-    /* the takes' sound goes into the file too (base64), so a project file is complete on its own */
-    takesAudio(P.takes).then(function(audio){
-      const o=JSON.parse(serialize());if(Object.keys(audio).length)o.audio=audio;
-      const txt=JSON.stringify(o);outSave(name+ext,txt,'project',function(){saveFile(name+ext,txt);});
-    }).catch(function(){toast('Could not read the recordings; saved without them.');const txt=serialize();outSave(name+ext,txt,'project',function(){saveFile(name+ext,txt);});});
+/* a take as WAV; silence first, so that 0:00 is bar 1 (as in the MIDI file) */
+function wavOf(m,a){
+  const M=Core.meter(P), hasPick=P.pick&&P.mel.some(function(n){return n.s<0;}), off=(hasPick?M.bar:0);
+  const pad=Math.max(0,Math.round((m.t0+off)*(60/m.bpm/480)*m.sr)), n=pad+a.length;
+  const buf=new ArrayBuffer(44+n*2), dv=new DataView(buf), w=function(o,s){for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i));};
+  w(0,'RIFF');dv.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);
+  dv.setUint32(24,m.sr,true);dv.setUint32(28,m.sr*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);w(36,'data');dv.setUint32(40,n*2,true);
+  new Int16Array(buf,44+pad*2,a.length).set(a);
+  return new Uint8Array(buf);
+}
+/* everything a project consists of: <name>.phrasenote (with the takes' sound), <name>.mid, <name> - <take>.wav */
+function projectFiles(name){
+  const takes=P.takes||[];
+  return Promise.all(takes.map(function(t){return loadTake(t.id).then(function(a){return {t:t,a:a};});})).then(function(rs){
+    const o=JSON.parse(serialize()), audio={};
+    rs.forEach(function(r){if(r.a)audio[r.t.id]=b64(new Uint8Array(r.a.buffer,r.a.byteOffset,r.a.byteLength));});
+    if(Object.keys(audio).length)o.audio=audio;
+    const files=[{name:name+ownExt('.phrasenote'),data:new TextEncoder().encode(JSON.stringify(o))},
+      {name:name+'.mid',data:Core.buildMidi(P,U.drum?U.dpat:null,{prog:soundPrograms(),name:P.name})}];
+    rs.forEach(function(r){if(r.a)files.push({name:name+' - '+fsSafe(r.t.name)+'.wav',data:wavOf(r.t,r.a)});});
+    return files;
   });
+}
+function saveSig(){return serialize();}
+function saveWhere(){$('#nameExt').textContent=FS.ok&&U.fsName?'Goes into '+U.fsName+'/<name>/: project, MIDI and a WAV per take':'Downloads one .zip with the project, MIDI and a WAV per take';}
+let saving=false;
+/* auto: a silent save when the app is put away (only into the save folder, never as a download) */
+function saveAll(name,auto){
+  if(saving)return Promise.resolve(false);
+  saving=true;P.name=name;persist();
+  const sig=saveSig();
+  return projectFiles(name).then(function(files){
+    const folder=FS.ok&&U.fsName;
+    if(!folder){
+      if(auto)return false;
+      const z=Core.zipMany(files.map(function(f){return {name:name+'/'+f.name,data:f.data};}));
+      if(dl)saveFile(name+'.zip',z);else localSave(name+'.zip',z);
+      FS.saved=sig;return true;
+    }
+    const sub=fsSafe(name)||'Untitled';let root=null;
+    return fsRoot().then(function(r){
+      if(!r)throw new Error('none');root=r;
+      if(auto)return r.queryPermission?r.queryPermission({mode:'readwrite'}).then(function(p){return p==='granted';}):true;
+      return fsPerm(r);
+    }).then(function(ok){
+      if(!ok)throw new Error('perm');
+      return root.getDirectoryHandle(sub,{create:true});
+    }).then(function(dir){
+      return files.reduce(function(pr,f){return pr.then(function(){
+        return dir.getFileHandle(f.name,{create:true}).then(function(fh){return fh.createWritable();}).then(function(w){return w.write(f.data).then(function(){return w.close();});});
+      });},Promise.resolve());
+    }).then(function(){
+      FS.saved=sig;toast((auto?'Saved automatically: ':'Saved: ')+root.name+'/'+sub+' ('+files.length+' files)');return true;
+    }).catch(function(){
+      if(auto)return false;
+      toast('The save folder could not be used, so everything is downloaded as one .zip.');
+      const z=Core.zipMany(files.map(function(f){return {name:name+'/'+f.name,data:f.data};}));
+      if(dl)saveFile(name+'.zip',z);else localSave(name+'.zip',z);return true;
+    });
+  }).catch(function(){if(!auto)toast('Saving failed.');return false;}).then(function(r){saving=false;return r;});
+}
+$('#btnSave').addEventListener('click',function(){
+  if(P.name){saveAll(P.name);return;}
+  askName('Save project',Core.fileStem(P),'',function(name){saveAll(name);});saveWhere();
+});
+/* Save as: the same project under another name, in its own folder (the original folder stays as it was) */
+$('#btnSaveAs').addEventListener('click',function(){
+  askName('Save as',P.name?P.name+' copy':Core.fileStem(P),'',function(name){
+    if(fsSafe(name)===fsSafe(P.name)){toast('Choose a different name.');return;}
+    recentSave();P.id=newId();saveAll(name).then(function(){recentSave();});
+  });saveWhere();
+});
+/* a call, an alarm or switching apps: save the project into its folder if anything changed */
+document.addEventListener('visibilitychange',function(){
+  if(document.visibilityState!=='hidden')return;
+  if(FS.ok&&U.fsName&&P.name&&FS.saved!==saveSig())setTimeout(function(){saveAll(P.name,true);},0);
 });
 /* no extension filter: some phones grey out files whose extension they do not know; the contents are checked instead */
 $('#btnLoad').addEventListener('click',function(){$('#fileIn').click();});
@@ -4179,16 +4263,21 @@ $('#fileIn').addEventListener('change',function(e){
   const rd=new FileReader();
   rd.onload=function(){
     try{
-      const o=JSON.parse(String(rd.result));
+      const u8=new Uint8Array(rd.result);let txt=null;
+      if(u8[0]===0x50&&u8[1]===0x4b){
+        const e=Core.unzip(u8).filter(function(x){return /\.(phrasenote|json)$/i.test(x.name)&&x.method===0;})[0];
+        if(!e)throw new Error('no project in zip');txt=new TextDecoder().decode(e.data);
+      }else txt=new TextDecoder().decode(u8);
+      const o=JSON.parse(txt);
       if(!o||typeof o!=='object'||!Array.isArray(o.chords)||o.kind==='sound')throw new Error('not a project');
       const np=Core.normalize(o);
-      const fin=function(){recentSave();const s=serialize();P=np;if(!P.id)P.id=newId();if(!P.name)P.name=f.name.replace(/\.[^.]*$/,'');pushUndo(s);renderAll();recView();setSheet(null);toast('Project opened.'+(np.takes.length?' '+np.takes.length+' recording'+(np.takes.length>1?'s':'')+' restored.':''));};
+      const fin=function(){recentSave();const s=serialize();P=np;if(!P.id)P.id=newId();if(!P.name)P.name=f.name.replace(/\.[^.]*$/,'');FS.saved=saveSig();pushUndo(s);renderAll();recView();setSheet(null);toast('Project opened.'+(np.takes.length?' '+np.takes.length+' recording'+(np.takes.length>1?'s':'')+' restored.':''));};
       if(o.audio&&typeof o.audio==='object')storeAudio(o.audio,np.takes).then(fin).catch(function(){toast('The recordings could not be stored on this device.');fin();});
       else fin();
     }catch(x){toast('This is not a PhraseNote project file.');}
   };
   if(f.size>600*1048576){toast('This file is too large.');e.target.value='';return;}
-  rd.readAsText(f);e.target.value='';
+  rd.readAsArrayBuffer(f);e.target.value='';
 });
 let clearArmed=false, clearTimer=null;
 $('#btnClear').addEventListener('click',function(){
@@ -5221,14 +5310,7 @@ $('#takeList').addEventListener('click',function(e){
 function exportWav(m){
   loadTake(m.id).then(function(a){
     if(!a){toast('This take is missing on this device.');return;}
-    /* silence before the take, so that 0:00 of the WAV is bar 1 (as in the MIDI file) */
-    const M=Core.meter(P), hasPick=P.pick&&P.mel.some(function(n){return n.s<0;}), off=(hasPick?M.bar:0);
-    const pad=Math.max(0,Math.round((m.t0+off)*(60/m.bpm/480)*m.sr)), n=pad+a.length;
-    const buf=new ArrayBuffer(44+n*2), dv=new DataView(buf), w=function(o,s){for(let i=0;i<s.length;i++)dv.setUint8(o+i,s.charCodeAt(i));};
-    w(0,'RIFF');dv.setUint32(4,36+n*2,true);w(8,'WAVE');w(12,'fmt ');dv.setUint32(16,16,true);dv.setUint16(20,1,true);dv.setUint16(22,1,true);
-    dv.setUint32(24,m.sr,true);dv.setUint32(28,m.sr*2,true);dv.setUint16(32,2,true);dv.setUint16(34,16,true);w(36,'data');dv.setUint32(40,n*2,true);
-    new Int16Array(buf,44+pad*2,a.length).set(a);
-    const stem=Core.fileStem(P)+'-'+m.name.replace(/[^A-Za-z0-9]+/g,'-').replace(/-+$/,''), u8=new Uint8Array(buf);
+    const u8=wavOf(m,a), stem=(fsSafe(P.name)||Core.fileStem(P))+' - '+fsSafe(m.name);
     askName('Export WAV',stem,dl?'.zip':'.wav',function(name){outSave(name+'.wav',u8,'project',function(){if(dl)saveFile(name+'.zip',Core.zip(name+'.wav',u8));else localSave(name+'.wav',u8);});});
   });
 }
