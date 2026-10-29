@@ -836,7 +836,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.9</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.10</p>
   </div>
 </section>
 
@@ -2243,8 +2243,8 @@ const Aud=(function(){
       let hint='balanced';try{hint=U.abuf||'balanced';}catch(e){}
       try{ctx=new AC({latencyHint:hint});}catch(e){ctx=new AC();}
       master=ctx.createGain(); master.gain.value=masterAmt;
-      /* headroom: everything enters the output chain 10 dB lower, so the default mix peaks around −10 dBFS */
-      const trim=ctx.createGain();trim.gain.value=0.316;
+      /* headroom: everything enters the output chain 6 dB lower, so the default mix peaks well under the soft clipper */
+      const trim=ctx.createGain();trim.gain.value=0.5;
       const c=ctx.createDynamicsCompressor();
       c.threshold.value=-18;c.knee.value=20;c.ratio.value=4;c.attack.value=0.004;c.release.value=0.2;
       const mk=ctx.createGain();mk.gain.value=1.35;
