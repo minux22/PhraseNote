@@ -71,6 +71,9 @@ h1::before{content:'♪'; display:inline-flex; align-items:center; justify-conte
 .plist{max-height:60vh; overflow:auto; display:flex; flex-direction:column; gap:2px; margin:0 -4px}
 .plist .gh{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--mint); padding:8px 6px 2px}
 .plist button{text-align:left; border:0; background:transparent; color:var(--text); font-size:14px; padding:0 10px; min-height:38px; border-radius:8px}
+.plist .prow{display:flex; gap:6px; align-items:center}
+.plist .prow button[data-p]{flex:1}
+.plist button.pedit{flex:none; text-align:center; min-height:32px; padding:0 14px; border:1px solid var(--line); background:var(--panel-2); font-weight:700; font-size:13px}
 .plist button.on{background:var(--mint); color:#fff; font-weight:700}
 .tgl[aria-pressed="true"]{background:var(--ctl); border-color:var(--ctl); color:var(--ctl-ink)}
 .bpm input::-webkit-outer-spin-button,.bpm input::-webkit-inner-spin-button{-webkit-appearance:none; margin:0}
@@ -820,7 +823,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.2</p>
   </div>
 </section>
 
@@ -2439,6 +2442,14 @@ function tick(){
     if(REC.run&&REC.run.b!=null&&nextStep>=REC.run.b){nextStep=REC.run.a;takeFrom=nextStep;}
     /* Audio mode, Loop: the bar range repeats while playing too */
     else if(!REC.run&&inMelody()&&U.view==='rec'&&U.recMode==='loop'){const r=recLoop();if(nextStep===r.t1/240){nextStep=r.t0/240;takeFrom=nextStep;}}
+    /* Melody Track with the Chord Track on Loop: wrap at the end of the chain, or grow it while recording */
+    if(melLoopOn()&&!rec.lead){
+      const ch=loopChain();
+      if(nextStep===ch.t1/240){
+        if((REC.run&&REC.run.b==null)||rec.on){const at=insertLoopCopy();if(at!=null){if(rec.on)(rec.grown=rec.grown||[]).push(at);setTimeout(renderAll,0);}else{nextStep=ch.t0/240;takeFrom=nextStep;}}
+        else{nextStep=ch.t0/240;takeFrom=nextStep;}
+      }else if(!REC.run&&!rec.on&&nextStep>ch.t1/240){nextStep=ch.t0/240;takeFrom=nextStep;}
+    }
     /* Chord Track: Loop wraps at the end of the slot, Song at the end of the song */
     if(!inMelody()&&!rec.lead){
       if(U.cmode==='song'){if(nextStep>=songEnd())nextStep=0;}
@@ -2447,6 +2458,30 @@ function tick(){
   }
   Aud.prune();
 }
+/* Chord Track on Loop, working in the Melody Track: the selected slot and the copies of it right after it form a chain that repeats.
+   Recording (audio, or MIDI from the keyboard) does not wrap: it goes on into a new copy, inserted after the chain; whatever came
+   after moves back by one slot. MIDI copies that end up without notes are taken out again when the recording stops. */
+function loopChain(){
+  const L=Core.layout(P), i=Math.max(0,Math.min(P.slot,L.length-1)), id=P.form[i];let j=i;
+  while(j+1<P.form.length&&P.form[j+1]===id)j++;
+  return {i:i,j:j,id:id,t0:L[i].start,t1:L[j].start+L[j].len,len:L[i].len};
+}
+function shiftFrom(at,d){
+  P.mel.forEach(function(n){if(n.s>=at)n.s+=d;});
+  (P.takes||[]).forEach(function(t){if(t.t0>=at)t.t0+=d;});
+  (P.vcomp||[]).forEach(function(e){if(e.a>=at){e.a+=d;e.b+=d;}});
+}
+function insertLoopCopy(){
+  if(P.form.length>=64)return null;
+  const ch=loopChain(), at=ch.t1;
+  Core.storeCur(P);P.form.splice(ch.j+1,0,ch.id);Core.loadCur(P);shiftFrom(at,ch.len);persist();
+  return at;
+}
+function removeCopyAt(at){
+  const L=Core.layout(P), x=L.filter(function(l){return l.start===at;})[0];if(!x||x.i===P.slot)return false;
+  Core.storeCur(P);P.form.splice(x.i,1);if(P.slot>x.i)P.slot--;Core.loadCur(P);shiftFrom(at+x.len,-x.len);persist();return true;
+}
+function melLoopOn(){return inMelody()&&U.cmode==='loop'&&!(U.view==='rec'&&U.recMode==='loop');}
 /* the playhead (K.cur, in ticks) is where playback starts; in the Chord tab it wraps inside the loop */
 function headStep(){
   let h=Math.floor(K.cur/240);
@@ -2883,7 +2918,9 @@ $('#drumBtn').addEventListener('click',function(){setDrums(!U.drum);renderTop();
     list.innerHTML='';let gn=null;
     Core.DPATS.forEach(function(d){
       if(d[2]!==gn){gn=d[2];const h=document.createElement('div');h.className='gh';h.textContent=gn==='Basic'?'Basic':gn;list.appendChild(h);}
-      const b=document.createElement('button');b.type='button';b.textContent=d[1];b.dataset.p=d[0];if(d[0]===U.dpat)b.className='on';list.appendChild(b);
+      const b=document.createElement('button');b.type='button';b.textContent=d[1];b.dataset.p=d[0];if(d[0]===U.dpat)b.className='on';
+      if(d[0]==='custom'){const r=document.createElement('div');r.className='prow';r.appendChild(b);const e=document.createElement('button');e.type='button';e.className='pedit';e.textContent='Edit';e.dataset.edit='1';r.appendChild(e);list.appendChild(r);}
+      else list.appendChild(b);
     });
   }
   function open(){build();dlg.querySelector('h3').textContent='Drum pattern · section '+Core.curId(P);dlg.hidden=false;const on=list.querySelector('.on');if(on)setTimeout(function(){on.scrollIntoView({block:'center'});},0);}
@@ -2892,6 +2929,8 @@ $('#drumBtn').addEventListener('click',function(){setDrums(!U.drum);renderTop();
   $('#patClose').addEventListener('click',close);
   dlg.addEventListener('click',function(e){if(e.target===dlg)close();});
   list.addEventListener('click',function(e){
+    /* My pattern › Edit: the step grid in Setup */
+    if(e.target.closest&&e.target.closest('[data-edit]')){close();setSheet('file');setTimeout(function(){if(!$('#dSlide').classList.contains('open'))$('#dEdit').click();else{try{$('#dTest').scrollIntoView({block:'center',behavior:'smooth'});}catch(x){}}},60);return;}
     const b=e.target.closest?e.target.closest('button[data-p]'):null;if(!b)return;
     setDrums(true,b.dataset.p);
     const sel=$('#dPat');if(sel)sel.value=U.dpat;
@@ -3984,7 +4023,13 @@ function endRec(){
   const t=Aud.ctx()?Aud.ctx().currentTime:0;
   Object.keys(rec.open).forEach(function(id){commitRec(id,t);});
   rec.on=false;rec.lead=false;
-  if(rec.take.length){P.mel=Core.tidy(P.mel);P.sample=false;pushUndo(rec.snap);renderMelody();}
+  if(rec.take.length){P.mel=Core.tidy(P.mel);P.sample=false;}
+  /* copies added while recording stay only where notes were played */
+  let gone=0;(rec.grown||[]).slice().reverse().forEach(function(at){
+    const len=loopChain().len;if(P.mel.some(function(n){return n.s>=at&&n.s<at+len;}))return;if(removeCopyAt(at))gone++;
+  });
+  const grew=(rec.grown||[]).length-gone;rec.grown=[];
+  if(rec.take.length||grew){pushUndo(rec.snap);renderAll();}else if(gone)renderAll();
   rec.take=[];rec.snap=null;
 }
 function commitRec(id,t){
@@ -5353,6 +5398,11 @@ function recStart(){
   let a,b=null;
   if(U.recMode==='loop'){const r=recLoop();a=r.t0;b=r.t1;}
   else a=Math.max(0,Math.floor(Math.max(0,K.cur)/bar)*bar);
+  if(U.cmode==='loop'){
+    const ch=loopChain();
+    if(U.recMode==='loop'){if(b>ch.t0){edit(function(){let g=0;while(b>loopChain().t1&&g<64&&insertLoopCopy()!=null)g++;});}}
+    else if(a<ch.t0||a>=ch.t1)a=ch.t0;
+  }
   /* the take's name: Song-Bar01-1st, or Loop-Bar01-16-2nd (every pass of a loop counts) */
   const two=function(n){return (n<10?'0':'')+n;}, b0=Math.floor(a/bar);
   const key=U.recMode==='loop'?'Loop-Bar'+two(b0+1)+'-'+two(Math.round(b/bar)):'Song-Bar'+two(b0+1);
