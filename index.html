@@ -614,8 +614,9 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 .sbox .sfpre .btn{margin:0}
 .sfpre{display:grid; grid-template-columns:1fr 1fr; gap:8px}
 #sfRows,#sfRows2,#sfRows3{display:flex; flex-direction:column; gap:8px}
-#sfRows .sfrow{grid-template-columns:48px minmax(0,1fr) 116px; gap:6px}
-#sfRows.multi .sfrow{grid-template-columns:48px minmax(0,.75fr) minmax(0,1fr) 100px; gap:6px}
+/* no level column any more (the mixer has it): the sound boxes take the width */
+#sfRows .sfrow{grid-template-columns:52px minmax(0,1fr); gap:6px}
+#sfRows.multi .sfrow{grid-template-columns:52px minmax(0,.8fr) minmax(0,1fr); gap:6px}
 #sfRows .fs{display:none}
 #sfRows.multi .fs{display:block}
 #sfRows select{min-width:0; font-size:12px; padding:0 4px 0 7px; text-overflow:ellipsis}
@@ -835,7 +836,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.5</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.6</p>
   </div>
 </section>
 
@@ -4399,9 +4400,11 @@ $('#btnSave').addEventListener('click',function(){
   if(P.name){saveAll(P.name);return;}
   askName('Save project',Core.fileStem(P),'',function(name){saveAll(name);});saveWhere();
 });
+/* Save as suggests the next version: My Song -> My Song v2, My Song v2 -> My Song v3 */
+function nextVersionName(n){const m=/^(.*?)[ _-]v(\d+)$/i.exec(n);return m?m[1]+' v'+(+m[2]+1):n+' v2';}
 /* Save as: the same project under another name, in its own folder (the original folder stays as it was) */
 $('#btnSaveAs').addEventListener('click',function(){
-  askName('Save as',P.name?P.name+' copy':Core.fileStem(P),'',function(name){
+  askName('Save as',nextVersionName(P.name||Core.fileStem(P)),'',function(name){
     if(fsSafe(name)===fsSafe(P.name)){toast('Choose a different name.');return;}
     recentSave();P.id=newId();saveAll(name).then(function(){recentSave();});
   });saveWhere();
@@ -5552,7 +5555,7 @@ function renderRec(){
     }else if(sk==='b'){
       g.fillStyle='rgba(0,0,0,.45)';g.fillRect(0,18,x0,H-18);g.fillRect(x1,18,W-x1,H-18);
       /* the cycle bar on the bar-number strip, in coral */
-      g.fillStyle=col('--rec');g.globalAlpha=.3;g.fillRect(x0,0,x1-x0,18);g.globalAlpha=1;
+      g.fillStyle=col(U.cycCol==='mint'?'--mint':'--rec');g.globalAlpha=.3;g.fillRect(x0,0,x1-x0,18);g.globalAlpha=1;
       g.fillRect(x0,0,x1-x0,2);g.fillRect(x0,0,2,18);g.fillRect(x1-2,0,2,18);
       g.strokeStyle='#e9ecf1';g.globalAlpha=.7;g.lineWidth=1;g.setLineDash([3,3]);
       g.beginPath();g.moveTo(x0+.5,0);g.lineTo(x0+.5,H);g.moveTo(x1-.5,0);g.lineTo(x1-.5,H);g.stroke();g.setLineDash([]);g.globalAlpha=1;
