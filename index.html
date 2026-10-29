@@ -369,6 +369,15 @@ body.kbd-open{padding-bottom:calc(92px + var(--kbdh,150px) + env(safe-area-inset
 .mx .ms button.m[aria-pressed="true"]{background:#e8a33b; border-color:#e8a33b; color:#1b1203}
 .mx .ms button.s[aria-pressed="true"]{background:#4d8ff5; border-color:#4d8ff5; color:#fff}
 .mx.off .fw,.mx.off .mv{opacity:.4}
+.mx.mst{flex:1.35}
+.mx.mst .fw input{left:calc(50% - 75px - 6px)}
+.led{position:absolute; right:5px; top:2px; bottom:2px; width:7px; display:flex; flex-direction:column; gap:2px}
+.led i{flex:1; border-radius:1.5px; background:#20242a}
+.led i.g.on{background:#34d3a6; box-shadow:0 0 4px rgba(52,211,166,.6)}
+.led i.y.on{background:#f5c542; box-shadow:0 0 4px rgba(245,197,66,.6)}
+.led i.r.on{background:#ff5d50; box-shadow:0 0 5px rgba(255,93,80,.7)}
+.mx .ldb{font:700 10px var(--mono); color:var(--dim); line-height:22px}
+.mx .ldb.hot{color:#ff5d50}
 .dock,.sheet,.kbd,.dlgback{--amber:var(--mint); --on-amber:var(--mint-ink); --blue:var(--mint); --on-blue:var(--mint-ink); --chord:var(--mint); --chord-ink:var(--mint-ink)}
 .dock{border-top:2px solid var(--mint)}
 .sheet{border-top:2px solid var(--mint)}
@@ -836,7 +845,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.7</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.8</p>
   </div>
 </section>
 
@@ -2201,7 +2210,9 @@ function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show'
 
 /* ---------- audio ---------- */
 const Aud=(function(){
-  let ctx=null, master=null, masterAmt=1; const voices=[];
+  let ctx=null, master=null, masterAmt=1, mtr=null, mbuf=null; const voices=[];
+  /* output peak in dBFS (−Infinity when silent) */
+  function level(){if(!mtr)return -Infinity;if(!mbuf)mbuf=new Float32Array(mtr.fftSize);mtr.getFloatTimeDomainData(mbuf);let pk=0;for(let i=0;i<mbuf.length;i++){const a=mbuf[i]<0?-mbuf[i]:mbuf[i];if(a>pk)pk=a;}return pk>0?20*Math.log10(pk):-Infinity;}
   const fonts={}; let rev=null, revOut=null, revAmt=0.35;
   const trk={c:{fid:null,pi:-1,vol:2.9},b:{fid:null,pi:-1,vol:2.5},m:{fid:null,pi:-1,vol:1.2},d:{fid:null,pi:-1,vol:0.8}};
   let clickVol=0.6, nbuf=null, openHat=null;const chokeSf={};
@@ -2252,6 +2263,8 @@ const Aud=(function(){
       for(let i=0;i<4097;i++){const x=(i-2048)/2048,a=Math.abs(x);cv[i]=a<0.8?x:Math.sign(x)*(0.8+0.2*Math.tanh((a-0.8)/0.2));}
       sh.curve=cv;
       master.connect(c);c.connect(mk);mk.connect(lim);lim.connect(sh);sh.connect(ctx.destination);
+      /* level meter on what actually goes out */
+      mtr=ctx.createAnalyser();mtr.fftSize=1024;sh.connect(mtr);
       mkRev();
       ['m','a','c','b','d'].forEach(function(k){bus[k]=ctx.createGain();bus[k].gain.value=mixLin[k];bus[k].connect(master);if(k!=='a'){brev[k]=ctx.createGain();brev[k].gain.value=mixLin[k];brev[k].connect(rev);}});
     }
@@ -2422,7 +2435,7 @@ const Aud=(function(){
     g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol,t+f);g.gain.setValueAtTime(vol,t+dur-f);g.gain.linearRampToValueAtTime(0,t+dur);
     s.start(t,off,dur+0.01);voices.push({g:g,t:t,stop:t+dur+0.1});g._srcs=[s];
   }
-  return {setMix:setMix,playBuf:playBuf,lat:lat,ensure:ensure,click:click,note:note,tone:tone,hold:hold,prune:prune,stopAll:stopAll,preview:preview,ctx:function(){return ctx;},
+  return {level:level,setMix:setMix,playBuf:playBuf,lat:lat,ensure:ensure,click:click,note:note,tone:tone,hold:hold,prune:prune,stopAll:stopAll,preview:preview,ctx:function(){return ctx;},
     setMaster:setMaster,addFont:addFont,removeFont:removeFont,setTrack:setTrack,setReverb:setReverb,warm:warm,audition:audition,drum:drum,setClick:function(v){clickVol=v;}};
 })();
 
@@ -5147,6 +5160,29 @@ function mixRender(){
   MXCH.forEach(function(c){const ch=mx[c[0]];strip(c[0],c[1],c[2]||'',ch.v,mixDbText(ch.v),true,ch.mu||(anySolo&&!ch.so),false);});
   strip('rev','Rev','',mx.rev,mx.rev+'%',false,false,true);
   strip('mst','Master','',mx.mst,mixDbText(mx.mst),false,false,false);
+  const ms=host.querySelector('.mx[data-k=mst]');ms.classList.add('mst');
+  const led=document.createElement('div');led.className='led';led.id='mxLed';led.setAttribute('aria-hidden','true');
+  for(let i=0;i<LEDN;i++){const d=document.createElement('i');const db=LEDTOP-(i+.5)*LEDSTEP;d.className=db>-3?'r':db>-12?'y':'g';led.appendChild(d);}
+  ms.querySelector('.fw').appendChild(led);
+  ms.querySelector('.ms').innerHTML='<span class="ldb" id="mxPk">−∞</span>';
+  mtrStart();
+}
+/* the output meter: 20 LEDs from 0 dBFS down to −40, peak held for a moment; aim for peaks around −6 (yellow) */
+var LEDN=20, LEDTOP=0, LEDSTEP=2;
+let mtrRaf=0, mtrShow=-Infinity, mtrHold=-Infinity, mtrHoldT=0, mtrMax=-Infinity, mtrMaxT=0;
+function mtrStart(){if(!mtrRaf)mtrRaf=requestAnimationFrame(mtrTick);}
+function mtrTick(){
+  mtrRaf=0;if(!MIX.open)return;
+  const led=$('#mxLed');if(!led)return;
+  const now=performance.now(), db=Aud.level();
+  mtrShow=Math.max(db,mtrShow-0.9);
+  if(db>=mtrHold||now-mtrHoldT>1500){mtrHold=db;mtrHoldT=now;}
+  if(db>mtrMax||now-mtrMaxT>3000){mtrMax=db;mtrMaxT=now;}
+  const lit=Math.max(0,Math.min(LEDN,Math.ceil((mtrShow-(LEDTOP-LEDN*LEDSTEP))/LEDSTEP)));
+  const hold=Math.ceil((mtrHold-(LEDTOP-LEDN*LEDSTEP))/LEDSTEP);
+  const c=led.children;for(let i=0;i<LEDN;i++){const k=LEDN-i;c[i].classList.toggle('on',k<=lit||k===hold);}
+  const pk=$('#mxPk');if(pk){pk.textContent=mtrMax===-Infinity?'−∞':(mtrMax>-0.05?'0.0':mtrMax.toFixed(1));pk.classList.toggle('hot',mtrMax>-1);}
+  mtrRaf=requestAnimationFrame(mtrTick);
 }
 let mixSaveT=null;
 function mixSave(){clearTimeout(mixSaveT);mixSaveT=setTimeout(persist,400);}
