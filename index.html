@@ -184,6 +184,16 @@ select{font:inherit; font-size:13px; height:32px; border:1px solid var(--line); 
 #recCtl .msw.am .mth{background:var(--rec)}
 #recCtl .msw.am[aria-checked="false"] span:nth-of-type(1),#recCtl .msw.am[aria-checked="true"] span:nth-of-type(2){color:#fff}
 #recCtl .recb{flex:none; padding:0 13px; gap:6px}
+.iopt{border:1px solid var(--line); border-radius:10px; background:var(--panel-2)}
+.iohead{display:flex; align-items:center; gap:8px; width:100%; height:32px; padding:0 10px; border:0; background:transparent; color:var(--text)}
+.iohead .lbl{font-size:10px}
+.iohead .iosum{flex:1; text-align:right; font-size:11px; color:var(--dim)}
+.iohead svg{transition:transform .2s ease; color:var(--dim)}
+.iohead[aria-expanded="true"] svg{transform:rotate(180deg)}
+.iobody{display:flex; flex-direction:column; gap:8px; padding:2px 10px 10px}
+.iorow{display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:13px; font-weight:600}
+.iorow small{display:block; font-size:10.5px; font-weight:400; color:var(--dim); margin-top:1px}
+.iorow .tg{flex:none}
 .rng{display:flex; align-items:center; gap:3px; font-size:11px; font-weight:700; color:var(--dim)}
 .rng input{width:34px; height:30px; border-radius:8px; border:1px solid var(--line); background:var(--panel-2); color:var(--text); font:700 13px var(--mono); text-align:center; padding:0; -moz-appearance:textfield}
 .rng input::-webkit-inner-spin-button,.rng input::-webkit-outer-spin-button{-webkit-appearance:none; margin:0}
@@ -756,6 +766,13 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
         </div>
         <div id="recCtl" class="ctl" hidden>
           <div class="rrow"><select id="recDev" aria-label="Input"></select><button type="button" class="pill" id="recCal">Calibrate</button><span class="rlat" id="recLat"></span></div>
+          <div class="iopt"><button type="button" class="iohead" id="ioHead" aria-expanded="false" aria-controls="ioBody"><span class="lbl">Input options</span><span class="iosum" id="ioSum"></span><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+            <div class="iobody" id="ioBody" hidden>
+              <div class="iorow"><span>Auto gain<small>Raises a quiet microphone before it is recorded</small></span><button type="button" class="tg" id="ioAgc" role="switch" aria-checked="false" aria-label="Auto gain"></button></div>
+              <div class="iorow"><span>Noise suppression<small>Removes steady background noise; can thin out long notes</small></span><button type="button" class="tg" id="ioNs" role="switch" aria-checked="false" aria-label="Noise suppression"></button></div>
+              <div class="iorow"><span>Echo cancellation<small>Lets you record without earphones; Calibrate does not work with it on</small></span><button type="button" class="tg" id="ioEc" role="switch" aria-checked="false" aria-label="Echo cancellation"></button></div>
+            </div>
+          </div>
           <div class="rrow"><span class="lbl" style="font-size:10px">Input</span><input type="range" id="recGain" min="0" max="36" step="1" style="flex:1" aria-label="Input boost"><span class="mono" id="recGainV" style="min-width:44px;text-align:right;font-size:11px"></span></div>
         <div class="rmeter" aria-hidden="true"><i id="recMeter"></i></div>
           <div class="rrow"><button type="button" class="msw am" id="recModeSw" role="switch" aria-checked="true" aria-label="Recording: Loop or Song"><i class="mth"></i><span>Loop</span><span>Song</span></button><span class="rng" id="recRng"><span>Bar</span><input type="number" id="recA" inputmode="numeric" min="1" max="999" aria-label="Loop from bar"><span>–</span><input type="number" id="recB" inputmode="numeric" min="1" max="999" aria-label="Loop to bar"></span><span class="sp"></span><button type="button" class="recb" id="recBtn" aria-pressed="false"><i></i><span>REC</span></button></div>
@@ -845,7 +862,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.10</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.11</p>
   </div>
 </section>
 
@@ -5329,7 +5346,7 @@ function rangeTick(e){
    every pass becomes a take. The sound is kept on the device (IndexedDB) and goes into saved project files. */
 const REC={heard:0,loud:0,stream:null,src:null,proc:null,sink:null,cap:null,run:null,opening:false};
 const takeData={}, takeBufs={};
-U.recMode=U.recMode==='loop'?'loop':'song';U.recMel=!!U.recMel;U.recLat=Math.max(0,Math.min(0.8,+U.recLat||0));U.recGain=U.recGain==null?12:Math.max(0,Math.min(36,Math.round(+U.recGain)||0));U.voxVol=U.voxVol==null?80:Math.max(0,Math.min(100,+U.voxVol));
+U.recMode=U.recMode==='loop'?'loop':'song';U.recAgc=!!U.recAgc;U.recNs=!!U.recNs;U.recEc=!!U.recEc;U.recMel=!!U.recMel;U.recLat=Math.max(0,Math.min(0.8,+U.recLat||0));U.recGain=U.recGain==null?12:Math.max(0,Math.min(36,Math.round(+U.recGain)||0));U.voxVol=U.voxVol==null?80:Math.max(0,Math.min(100,+U.voxVol));
 function tdb(){return new Promise(function(res,rej){try{const r=indexedDB.open('phrasenote',1);r.onupgradeneeded=function(){r.result.createObjectStore('f');};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};}catch(e){rej(e);}});}
 function tdo(mode,fn){return tdb().then(function(db){return new Promise(function(res,rej){const t=db.transaction('f',mode),q=fn(t.objectStore('f'));t.oncomplete=function(){res(q&&q.result);};t.onerror=t.onabort=function(){rej(t.error);};});});}
 function tput(id,ab){return tdo('readwrite',function(st){return st.put(ab,'take:'+id);});}
@@ -5386,7 +5403,7 @@ function micOn(){
   if(REC.stream||REC.opening)return Promise.resolve(!!REC.stream);
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){recNote('The microphone is not available here. Open PhraseNote from its own web address.');return Promise.resolve(false);}
   REC.opening=true;REC.err=null;
-  const c={echoCancellation:false,noiseSuppression:false,autoGainControl:false,channelCount:1};if(U.recDev)c.deviceId={exact:U.recDev};
+  const c={echoCancellation:!!U.recEc,noiseSuppression:!!U.recNs,autoGainControl:!!U.recAgc,channelCount:1};if(U.recDev)c.deviceId={exact:U.recDev};
   return navigator.mediaDevices.getUserMedia({audio:c}).catch(function(err){
     if(err&&err.name==='NotAllowedError')throw err;
     /* a remembered input that is gone, or a constraint this phone refuses: try the plainest request */
@@ -5461,6 +5478,7 @@ function recView(){
   else micOff();
 }
 function renderRecCtl(){
+  ioRender();
   $('#recModeSw').setAttribute('aria-checked',U.recMode==='loop'?'false':'true');
   const lr=recLoop();$('#recRng').hidden=U.recMode!=='loop';
   if(document.activeElement!==$('#recA'))$('#recA').value=lr.a;if(document.activeElement!==$('#recB'))$('#recB').value=lr.b;
@@ -5473,6 +5491,18 @@ $('#recGain').addEventListener('input',function(e){U.recGain=+e.target.value;$('
 $('#recBtn').addEventListener('click',function(){if(REC.run){stopPlay();return;}recStart();});
 /* Loop: bars a..b (both included) repeat, for playback and recording, like a DAW's cycle */
 function recLoop(){const M=Core.meter(P), nb=Math.max(1,Math.ceil(Core.formTicks(P)/M.bar));let a=U.recA||1,b=U.recB||Math.min(nb,4);a=Math.max(1,Math.min(999,a|0));b=Math.max(a,Math.min(999,b|0));return {a:a,b:b,t0:(a-1)*M.bar,t1:b*M.bar};}
+/* input options: the browser's own processing, each on its own; changing one reopens the microphone */
+function ioRender(){
+  $('#ioAgc').setAttribute('aria-checked',U.recAgc?'true':'false');$('#ioNs').setAttribute('aria-checked',U.recNs?'true':'false');$('#ioEc').setAttribute('aria-checked',U.recEc?'true':'false');
+  const on=[U.recAgc&&'Auto gain',U.recNs&&'Noise',U.recEc&&'Echo'].filter(Boolean);$('#ioSum').textContent=on.length?on.join(' · '):'All off (raw)';
+}
+$('#ioHead').addEventListener('click',function(){const o=$('#ioBody').hidden;$('#ioBody').hidden=!o;$('#ioHead').setAttribute('aria-expanded',o?'true':'false');});
+[['ioAgc','recAgc'],['ioNs','recNs'],['ioEc','recEc']].forEach(function(x){$('#'+x[0]).addEventListener('click',function(){
+  if(REC.run){toast('Stop recording first.');return;}
+  U[x[1]]=!U[x[1]];saveU();ioRender();
+  if(REC.stream){micOff();micOn().then(function(ok){if(ok){const tr=REC.stream&&REC.stream.getAudioTracks()[0], st=tr&&tr.getSettings?tr.getSettings():{};
+    toast('Microphone reopened'+(st.autoGainControl!=null?' (auto gain '+(st.autoGainControl?'on':'off')+')':'')+'.');}});}
+});});
 $('#recModeSw').addEventListener('click',function(){if(REC.run)return;U.recMode=U.recMode==='loop'?'song':'loop';saveU();renderRecCtl();renderRec();if(playing)seekPlay();});
 ['recA','recB'].forEach(function(id){$('#'+id).addEventListener('change',function(){
   let a=+$('#recA').value||1, b=+$('#recB').value||a;if(id==='recA'&&b<a)b=a;if(id==='recB'&&a>b)a=b;
@@ -5540,6 +5570,7 @@ function recFinish(){
 /* Calibrate: four loud clicks from the speaker are recorded back; the time between scheduling and arrival is the delay */
 $('#recCal').addEventListener('click',function(){
   if(!REC.stream){micOn();return;}
+  if(U.recEc){toast('Turn Echo cancellation off to calibrate: it removes the test clicks.');return;}
   if(playing)stopPlay();
   const ctx=Aud.ensure(), t0=ctx.currentTime+0.4, T=[0,1,2,3].map(function(i){return t0+i*0.6;});
   REC.cap={chunks:[],first:null};
