@@ -764,7 +764,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
               <div class="iorow"><span>Echo cancellation<small>Lets you record without earphones; Calibrate does not work with it on</small></span><button type="button" class="tg" id="ioEc" role="switch" aria-checked="false" aria-label="Echo cancellation"></button></div>
             </div>
           </div>
-          <div class="rrow"><span class="lbl" style="font-size:10px">Input</span><input type="range" id="recGain" min="0" max="36" step="1" style="flex:1" aria-label="Input boost"><span class="mono" id="recGainV" style="min-width:44px;text-align:right;font-size:11px"></span></div>
+          <div class="rrow"><span class="lbl" style="font-size:10px">Input</span><input type="range" id="recGain" min="0" max="48" step="1" style="flex:1" aria-label="Input boost"><span class="mono" id="recGainV" style="min-width:44px;text-align:right;font-size:11px"></span></div>
         <div class="rmeter" aria-hidden="true"><i id="recMeter"></i></div>
           <div class="rrow"><button type="button" class="msw am" id="recModeSw" role="switch" aria-checked="true" aria-label="Recording: Loop or Song"><i class="mth"></i><span>Loop</span><span>Song</span></button><span class="rng" id="recRng"><span>Bar</span><input type="number" id="recA" inputmode="numeric" min="1" max="999" aria-label="Loop from bar"><span>–</span><input type="number" id="recB" inputmode="numeric" min="1" max="999" aria-label="Loop to bar"></span><span class="sp"></span><button type="button" class="recb" id="recBtn" aria-pressed="false"><i></i><span>REC</span></button></div>
           <p class="note" id="recNote"></p>
@@ -853,7 +853,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.11</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.16.12</p>
   </div>
 </section>
 
@@ -5337,7 +5337,8 @@ function rangeTick(e){
    every pass becomes a take. The sound is kept on the device (IndexedDB) and goes into saved project files. */
 const REC={heard:0,loud:0,stream:null,src:null,proc:null,sink:null,cap:null,run:null,opening:false};
 const takeData={}, takeBufs={};
-U.recMode=U.recMode==='loop'?'loop':'song';U.recAgc=!!U.recAgc;U.recNs=!!U.recNs;U.recEc=!!U.recEc;U.recMel=!!U.recMel;U.recLat=Math.max(0,Math.min(0.8,+U.recLat||0));U.recGain=U.recGain==null?12:Math.max(0,Math.min(36,Math.round(+U.recGain)||0));U.voxVol=U.voxVol==null?80:Math.max(0,Math.min(100,+U.voxVol));
+U.recMode=U.recMode==='loop'?'loop':'song';/* tested on a Galaxy: auto gain + noise suppression with a strong boost sounds best */
+U.recAgc=U.recAgc!==false;U.recNs=U.recNs!==false;U.recEc=!!U.recEc;U.recMel=!!U.recMel;U.recLat=Math.max(0,Math.min(0.8,+U.recLat||0));U.recGain=U.recGain==null?36:Math.max(0,Math.min(48,Math.round(+U.recGain)||0));U.voxVol=U.voxVol==null?80:Math.max(0,Math.min(100,+U.voxVol));
 function tdb(){return new Promise(function(res,rej){try{const r=indexedDB.open('phrasenote',1);r.onupgradeneeded=function(){r.result.createObjectStore('f');};r.onsuccess=function(){res(r.result);};r.onerror=function(){rej(r.error);};}catch(e){rej(e);}});}
 function tdo(mode,fn){return tdb().then(function(db){return new Promise(function(res,rej){const t=db.transaction('f',mode),q=fn(t.objectStore('f'));t.oncomplete=function(){res(q&&q.result);};t.onerror=t.onabort=function(){rej(t.error);};});});}
 function tput(id,ab){return tdo('readwrite',function(st){return st.put(ab,'take:'+id);});}
