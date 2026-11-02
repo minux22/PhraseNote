@@ -68,9 +68,13 @@ For every release, update the version in the `PhraseNote vX.Y.Z` footer line of 
 
 ## License / 라이선스
 
-PhraseNote is released under the [MIT License](LICENSE). GeneralUser GS is distributed under its own license; please see [`sf/LICENSE.txt`](sf/LICENSE.txt) and https://www.schristiancollins.com.
+Copyright (C) 2026 Min
 
-PhraseNote는 [MIT 라이선스](LICENSE)로 배포됩니다. GeneralUser GS는 별도의 라이선스를 따르므로 [`sf/LICENSE.txt`](sf/LICENSE.txt)와 https://www.schristiancollins.com 을 참조하십시오.
+PhraseNote is free software: you can redistribute it and/or modify it under the terms of the [GNU General Public License](LICENSE) as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. It is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+GeneralUser GS is distributed under its own license; please see [`sf/LICENSE.txt`](sf/LICENSE.txt) and https://www.schristiancollins.com.
+
+PhraseNote는 [GNU 일반 공중 사용 허가서(GPL) 버전 3](LICENSE) 또는 그 이후 버전에 따라 배포됩니다. 누구나 자유롭게 사용 · 수정 · 재배포할 수 있으나, 수정한 버전을 배포할 때에는 같은 라이선스로 소스 코드를 공개해야 합니다. 이 프로그램은 어떠한 보증도 없이 제공됩니다. GeneralUser GS는 별도의 라이선스를 따르므로 [`sf/LICENSE.txt`](sf/LICENSE.txt)와 https://www.schristiancollins.com 을 참조하십시오.
 
 ## Installing as an app / 앱으로 설치하기
 
