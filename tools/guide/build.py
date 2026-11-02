@@ -105,7 +105,7 @@ KO = dict(
             'Bars. 해당 섹션의 마디 수(2 · 4 · 8 · 16)입니다.',
             'Bass는 베이스 파트의 사용 여부, 7th는 모든 코드의 7화음 적용 여부를 정합니다.',
             '/– (슬래시 코드). 베이스로 사용할 스케일 음을 선택한 뒤 칸에 입력하면 해당 음이 베이스가 됩니다.',
-            'Random. 조와 스케일에 맞는 코드 진행(최신 팝 · 케이발라드 진행 포함)과 함께 반주 스타일과 드럼 패턴도 무작위로 고릅니다. 컬러는 off로 시작하며, 결과는 재생 버튼을 눌러 확인합니다. 해당 슬롯에 멜로디가 있으면 Suggest 버튼으로 바뀌며, 멜로디에 어울리는 진행을 제안합니다(13장 참조).',
+            'Random. 조와 스케일에 맞는 코드 진행과 함께 반주 스타일과 드럼 패턴도 무작위로 고릅니다. 컬러는 off로 시작하며, 결과는 재생 버튼을 눌러 확인합니다. 해당 슬롯에 멜로디가 있으면 Suggest 버튼으로 바뀌며, 멜로디에 어울리는 진행을 제안합니다(13장 참조).',
             'More chords. 스케일 밖의 코드(차용 화음, 세컨더리 도미넌트 등)를 표시합니다.'],
          '생성된 진행이 마음에 들지 않으면 실행 취소로 이전 상태로 되돌릴 수 있습니다.'),
         ('반주 (Accompaniment)', '코드를 연주하는 방식을 정합니다. 섹션마다 다르게 지정할 수 있습니다(예: Verse는 아르페지오, Chorus는 스트럼).', [('accomp', 62)], [
@@ -294,7 +294,7 @@ EN = dict(
             'Bars: length of this section (2 · 4 · 8 · 16).',
             'Bass: bass part on / off. 7th: all chords as sevenths.',
             '/– : slash chords. Pick the scale note for the bass, then paint.',
-            'Dice (Random): a random progression (current pop and K-ballad ones included) plus a random accompaniment style and drum pattern. Color starts off; press Play to hear it. With a melody in the slot it becomes a sparkle button (Suggest) that proposes chords for the melody (chapter 13).',
+            'Dice (Random): a random progression plus a random accompaniment style and drum pattern. Color starts off; press Play to hear it. With a melody in the slot it becomes a sparkle button (Suggest) that proposes chords for the melody (chapter 13).',
             'More chords: chords outside the scale (borrowed chords, secondary dominants …).'],
          'Not happy? Undo brings the previous progression back at any time.'),
         ('Accompaniment', 'How the chords are played. Each section can have its own (e.g. arpeggios in the verse, strumming in the chorus).', [('accomp', 62)], [

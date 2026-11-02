@@ -24,7 +24,7 @@ PhraseNote는 떠오른 악상을 휴대폰에서 바로 기록하고 들어 볼
 
 | Feature | Description | 설명 |
 |---|---|---|
-| Chord progressions | Random progressions in the key, including current pop and K-ballad patterns | 현재 조에 맞는 코드 진행 생성(최신 팝 · 케이발라드 진행 포함) |
+| Chord progressions | Random chord progressions in the key | 현재 조에 맞는 코드 진행 랜덤 생성 |
 | Chords from a melody | Chord suggestions and a key estimate for a melody written first | 먼저 쓴 멜로디에 어울리는 코드 추천과 조 추정 |
 | Song structure | Sections and slots, a song overview, and next-section ideas by role (Intro to Outro) | 섹션 · 슬롯 구성, 곡 전체 보기, 곡의 단계에 맞춘 다음 섹션 제안 |
 | Key and tempo per slot | A key change or a tempo change for a single slot | 슬롯 단위의 전조와 템포 변경 |
