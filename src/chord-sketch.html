@@ -115,6 +115,11 @@ body.kbd-open .zoom{bottom:calc(72px + var(--kbdh,150px) + env(safe-area-inset-b
 .zwrap.st .zoom .zb{bottom:6px}
 .zoom button{width:36px; height:36px; border-radius:50%; border:1px solid var(--line); background:color-mix(in srgb,var(--panel) 88%,transparent); color:var(--text); font-size:20px; line-height:1; padding:0; display:grid; place-items:center; cursor:pointer; touch-action:manipulation}
 .zoom button:active{background:var(--mel); color:#fff}
+.recbox{position:relative}
+.rzb{position:absolute; right:8px; bottom:8px; display:flex; gap:6px; z-index:4}
+.rzb button{width:34px; height:34px; border-radius:50%; border:1px solid var(--line); background:color-mix(in srgb,var(--panel) 88%,transparent); color:var(--text); font-size:20px; line-height:1; padding:0; display:grid; place-items:center; touch-action:manipulation}
+.rzb button:active{background:var(--rec); color:#fff}
+.rzb button:disabled{opacity:.35}
 #keySel{width:50px; flex:none}
 .field{display:flex; flex-direction:row; align-items:center; gap:6px; min-width:0}
 .field .lbl{flex:none}
@@ -878,7 +883,8 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
         </div>
       </div>
       </div>
-      <div class="recwrap" id="recWrap" hidden><div class="recin" id="recIn"><canvas id="recCv"></canvas><div class="clipov" id="clipOv" hidden><i class="ch l"></i><i class="ch r"></i></div><div class="rph" id="recPh"></div></div></div>
+      <div class="recbox"><div class="recwrap" id="recWrap" hidden><div class="recin" id="recIn"><canvas id="recCv"></canvas><div class="clipov" id="clipOv" hidden><i class="ch l"></i><i class="ch r"></i></div><div class="rph" id="recPh"></div></div></div>
+      <div class="rzb" id="recZoom" hidden><button type="button" id="rzOut" aria-label="Zoom out">&minus;</button><button type="button" id="rzIn" aria-label="Zoom in">+</button></div></div>
       <div class="clipbar" id="clipBar" hidden>
         <div class="cbr"><b class="cbn" id="clipName"></b><button type="button" class="pill pri" id="clipDone">Done</button></div>
         <div class="cbr"><button type="button" class="pill" id="clipSplit">✂ Split at playhead</button><button type="button" class="pill dl" id="clipDel">Delete</button></div>
@@ -958,7 +964,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.21.3</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.21.4</p>
   </div>
 </section>
 
@@ -3474,7 +3480,7 @@ function renderMelOpts(){
   const isRec=U.view==='rec';
   $('#rollCtl').hidden=U.view!=='roll';$('#staffCtl').hidden=U.view!=='staff';$('#recCtl').hidden=!isRec;
   roll.hidden=U.view!=='roll';$('#stWrap').hidden=U.view!=='staff';$('.zwrap').classList.toggle('st',U.view==='staff');
-  $('#contBox').hidden=isRec;if(isRec&&CONT)contClose(true);if(!isRec&&CLP)clipClose();$('.zwrap').hidden=isRec;$('#recWrap').hidden=!isRec;$('#takeList').hidden=!isRec;$('.qbox').hidden=isRec;$('#melHint').hidden=isRec;
+  $('#contBox').hidden=isRec;if(isRec&&CONT)contClose(true);if(!isRec&&CLP)clipClose();$('.zwrap').hidden=isRec;$('#recWrap').hidden=!isRec;$('#recZoom').hidden=!isRec;$('#takeList').hidden=!isRec;$('.qbox').hidden=isRec;$('#melHint').hidden=isRec;
   mkSeg($('#nvSeg'),[[16,'Whole',noteIco(16)],[8,'Half',noteIco(8)],[4,'Quarter',noteIco(4)],[2,'Eighth',noteIco(2)],[1,'16th',noteIco(1)]],function(){return U.nv;},function(v){U.nv=v;if(v===1)U.dot=false;saveU();renderMelOpts();});
   mkSeg($('#dotSeg'),[[true,'Dotted','<b style="font-size:16px;line-height:1">•</b>']],function(){return U.dot;},function(){if(U.nv>1){U.dot=!U.dot;saveU();}renderMelOpts();});
   mkSeg($('#accSeg'),[[1,'Sharp','♯'],[-1,'Flat','♭'],[2,'Natural','♮']],function(){return U.acc;},function(v){U.acc=U.acc===v?0:v;saveU();renderMelOpts();});
@@ -6177,7 +6183,23 @@ $('#recCal').addEventListener('click',function(){
 });
 /* the REC timeline: bar strip, chords, the waveform of the take in use */
 /* the whole song fits the width, so every section's chosen take is in view (scrolls only when bars would get narrower than 28 px) */
-function recScale(){const M=Core.meter(P), bars=Math.max(mBars(),Math.ceil(Core.formTicks(P)/M.bar))+(P.pick?1:0), w=($('#recWrap').clientWidth||320)-26, beats=bars*M.bar/PPQ;return Math.max(w/beats,28/(M.bar/PPQ));}
+/* 1x = the whole song fits the width (bars at least 28 px); the zoom buttons multiply that, up to about 120 px per beat */
+function recFit(){const M=Core.meter(P), bars=Math.max(mBars(),Math.ceil(Core.formTicks(P)/M.bar))+(P.pick?1:0), w=($('#recWrap').clientWidth||320)-26, beats=bars*M.bar/PPQ;return Math.max(w/beats,28/(M.bar/PPQ));}
+function recZmax(){return Math.max(1,120/recFit());}
+function recScale(){return recFit()*Math.min(U.recZoom||1,recZmax());}
+function recZoomBy(f){
+  const w=$('#recWrap'), M=Core.meter(P), pk=P.pick?M.bar:0, z0=recScale();
+  /* keep the playhead where it is on screen (or the middle, when it is out of view) */
+  let x0=12+(K.cur+pk)/PPQ*z0-w.scrollLeft;if(x0<0||x0>w.clientWidth)x0=w.clientWidth/2;
+  const anchor=(w.scrollLeft+x0-12)/z0*PPQ;
+  U.recZoom=Math.max(1,Math.min(recZmax(),(U.recZoom||1)*f));if(Math.abs(U.recZoom-1)<0.01)U.recZoom=1;saveU();
+  renderRec();
+  w.scrollLeft=Math.max(0,12+anchor/PPQ*recScale()-x0);
+  rzUI();
+}
+function rzUI(){const zz=U.recZoom||1;$('#rzOut').disabled=zz<=1;$('#rzIn').disabled=zz>=recZmax()-0.01;}
+$('#rzOut').addEventListener('click',function(){recZoomBy(1/1.6);});
+$('#rzIn').addEventListener('click',function(){recZoomBy(1.6);});
 function renderRec(){
   if(U.view!=='rec')return;
   const cv=$('#recCv'), M=Core.meter(P), z=recScale(), pk=P.pick?M.bar:0;$('#recWrap').dataset.sk=U.recSkin||'b';
@@ -6240,7 +6262,7 @@ function renderRec(){
   if(GAP){const x0=X(GAP.a), x1=X(GAP.b);g.fillStyle=col('--mint');g.globalAlpha=.12;g.fillRect(x0,42,x1-x0,H-46);g.globalAlpha=1;
     g.strokeStyle=col('--mint');g.lineWidth=1.5;g.setLineDash([4,3]);g.strokeRect(x0+1,42.5,x1-x0-2,H-46);g.setLineDash([]);}
   movePhRec(K.cur/PPQ);
-  clipUI();
+  clipUI();rzUI();
 }
 /* ---------- clip editing: long press a clip on the timeline ----------
    A clip is one piece of the comp ({a,b,id,o}). Split it at the playhead, delete it, move it (o follows, so the same sound
