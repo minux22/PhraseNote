@@ -51,7 +51,7 @@ KO = dict(
         '<b>슬롯별 조 · 템포</b> — 마지막 후렴의 전조나 특정 구간의 템포 변화를 슬롯 단위로 지정합니다.',
         '<b>멜로디 이어 쓰기</b> — 앞 프레이즈를 변형한 다음 두 마디를 점선으로 제안합니다.',
         '<b>오디오 클립 편집</b> — 녹음한 클립을 분할 · 삭제 · 이동 · 길이 조절하고, 빈 구간을 다른 테이크로 채웁니다.',
-        '<b>내장 음원</b> — 별도의 파일 없이도 GeneralUser GS 음원으로 실제 악기에 가까운 소리를 들을 수 있습니다.',
+        '<b>SoundFont 음원</b> — 내장된 GeneralUser GS 또는 원하는 SoundFont(.sf2) 파일을 불러와 재생할 수 있습니다.',
     ]),
     install=('시작하기', [
         '<b>앱 주소</b> https://minux22.github.io/PhraseNote/',
@@ -195,7 +195,7 @@ KO = dict(
             '레벨 미터. 실제 출력 레벨을 표시합니다. 노란색 구간 이내가 적정하며, 상단의 빨간색이 자주 켜지면 Master를 낮추십시오. 하단 수치는 최근 최대 레벨입니다.'],
          '저장되는 MIDI 파일에는 각 트랙의 페이더 값이 볼륨 정보로 기록됩니다.'),
         ('음원 (SoundFont)', 'Setup의 Sound에서 악기 음원을 선택합니다.', [('setup_sound', 66)], [
-            'Basic Synth는 별도 파일 없이 동작하는 기본 음원이며, SoundFont는 실제 악기 샘플을 사용하는 음원입니다.',
+            'Basic Synth는 별도 파일 없이 동작하는 기본 음원이며, SoundFont는 .sf2 파일의 샘플로 재생하는 음원입니다.',
             '불러온 음원 목록. 내장 음원 GeneralUser GS가 기본으로 들어 있습니다. 목록에서 지운 경우 “Use the built-in GeneralUser GS”로 다시 받을 수 있습니다.',
             'Add SoundFont. 다른 .sf2 파일을 추가하면 Melody · Chords · Bass · Drums 트랙별로 악기를 선택할 수 있습니다. 불러온 파일은 기기에 보관됩니다. Save / Load preset으로 악기 구성과 믹서 설정을 함께 저장하고 불러올 수 있습니다.',
             '드럼 패턴 선택과 편집(7장의 편집 창).'], None),
@@ -239,7 +239,7 @@ EN = dict(
         '<b>Key and tempo per slot</b> — lift the last chorus or slow one part down, slot by slot.',
         '<b>Continue the melody</b> — a dashed two-bar idea grown from your last phrase.',
         '<b>Audio clip editing</b> — split, delete, move and trim recorded clips, and fill gaps with another take.',
-        '<b>Built-in sounds</b> — the GeneralUser GS bank gives realistic instruments without loading any file.',
+        '<b>SoundFont playback</b> — play with the built-in GeneralUser GS or any SoundFont (.sf2) file you load.',
     ]),
     toc='Contents',
     install=('Getting started', [
@@ -384,7 +384,7 @@ EN = dict(
             'Level meter: what actually comes out. Inside yellow is right; if the top red lights often, lower Master. The number is the recent peak.'],
          'MIDI files carry each track’s fader as its volume.'),
         ('Sound (SoundFont)', 'In Setup → Sound.', [('setup_sound', 66)], [
-            'Basic Synth works without files; SoundFont plays sampled instruments.',
+            'Basic Synth works without files; SoundFont plays the samples in a .sf2 file.',
             'Loaded banks. The built-in GeneralUser GS is there from the start. If removed, “Use the built-in GeneralUser GS” fetches it again.',
             'Add SoundFont: add other .sf2 files and pick an instrument for Melody · Chords · Bass · Drums. Loaded files stay on the phone. Save / Load preset stores the instruments together with the mixer balance.',
             'Drum pattern and Edit (the editor from chapter 7).'], None),
