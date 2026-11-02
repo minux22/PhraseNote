@@ -997,7 +997,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.22.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.22.1</p>
   </div>
 </section>
 
@@ -4405,7 +4405,8 @@ function buildKeys(){
     kws[i<7?1:0].appendChild(b);K.keyEls['w'+i]=b;
   }
   for(let i=0;i<NK-1;i++){
-    if(!hasBlack(i))continue;
+    /* the black key after the last white key of the lower row would hang off its right edge: left out */
+    if(!hasBlack(i)||i%7===6)continue;
     const b=document.createElement('button');b.type='button';b.className='bk';b.dataset.k='b'+i;b.tabIndex=-1;
     b.style.left=((i%7+1)*100/7)+'%';
     b.innerHTML='<span class="kn"></span><span class="kl">'+pcLbl(PC_B[i])+'</span>';
