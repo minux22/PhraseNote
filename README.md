@@ -27,6 +27,11 @@ Updates arrive by themselves: after a new version is published, close the app co
 Recording needs microphone permission. Allow it when asked; if it was refused, allow it again in the browser's site settings.
 녹음하려면 마이크 권한이 필요해요. 물어볼 때 허용하고, 거부했다면 브라우저의 사이트 설정에서 다시 허용하세요.
 
+## Sounds / 기본 사운드
+
+On first launch PhraseNote downloads **GeneralUser GS v2.0.3** by S. Christian Collins (about 31 MB, once) and keeps it on the device, so the sounds match Ardour, which plays MIDI with the same bank. You can still load your own .sf2 files in Setup. License: `sf/LICENSE.txt` · https://www.schristiancollins.com
+처음 실행할 때 S. Christian Collins의 **GeneralUser GS v2.0.3**(약 31MB)을 한 번 내려받아 기기에 보관해요. Ardour가 MIDI 재생에 쓰는 것과 같은 사운드라 소리가 같아요. Setup에서 다른 .sf2 파일도 불러올 수 있어요.
+
 ## Repository layout
 
 | Path | What it is |
@@ -36,6 +41,7 @@ Recording needs microphone permission. Allow it when asked; if it was refused, a
 | `manifest.webmanifest`, `icons/` | PWA install data. |
 | `tests/` | Node regression tests for the pure `Core` logic. |
 | `docs/` | User guides (PDF). |
+| `sf/` | Built-in SoundFont (GeneralUser GS) and its license. |
 
 ## Workflow
 

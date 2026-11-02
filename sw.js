@@ -1,4 +1,4 @@
-const CACHE='phrasenote-v0.19.5';
+const CACHE='phrasenote-v0.20.0';
 const FILES=['./','./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(FILES)).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
@@ -6,7 +6,9 @@ self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.
 // and saved for next time (a new version therefore shows on the next launch).
 self.addEventListener('fetch',e=>{
   const req=e.request;
-  if(req.method!=='GET'||new URL(req.url).origin!==self.location.origin)return;
+  const u=new URL(req.url);
+  // the built-in SoundFont is kept by the app itself (IndexedDB), not in this cache
+  if(req.method!=='GET'||u.origin!==self.location.origin||u.pathname.endsWith('.sf2'))return;
   e.respondWith(caches.open(CACHE).then(c=>c.match(req,{ignoreSearch:true}).then(hit=>{
     const net=fetch(req).then(r=>{if(r&&r.ok)c.put(req,r.clone());return r;}).catch(()=>null);
     if(hit){e.waitUntil(net);return hit;}

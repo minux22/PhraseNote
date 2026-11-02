@@ -935,6 +935,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       <div class="sbox"><div class="seg big" id="sfMode" role="group" aria-label="Sound source"><button type="button" id="modeBasic">Basic Synth</button><button type="button" id="modeSf">SoundFont</button></div></div>
       <div id="sfOnly">
         <button class="btn" id="btnSf" type="button">Load SoundFont</button>
+        <button class="btn" id="btnGu" type="button" hidden>Use the built-in GeneralUser GS</button>
         <input id="sfIn" type="file" hidden>
         <div id="sfList"></div>
       </div>
@@ -965,7 +966,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.19.5</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.20.0</p>
   </div>
 </section>
 
@@ -4984,7 +4985,8 @@ document.addEventListener('keydown',function(e){
       r.appendChild(n);r.appendChild(b);L.appendChild(r);
     });
     const bt=$('#btnSf');bt.textContent=on?'Add SoundFont':'Load SoundFont';bt.hidden=files.length>=MAXF;
-    $('#sfNote').textContent=on?'Saved on this device ('+mb(tot)+' in use, up to '+MAXF+' files). Each track can use a sound from any file.':'Load a .sf2 file (for example GeneralUser GS). It is kept on this device, so you only need to do this again to swap it. You can add more files and give each track its own.';
+    const gb=$('#btnGu');gb.hidden=hasGu()||files.length>=MAXF;gb.disabled=guBusy;if(!guBusy)gb.textContent='Use the built-in GeneralUser GS';
+    $('#sfNote').textContent=on?'Saved on this device ('+mb(tot)+' in use, up to '+MAXF+' files). Each track can use a sound from any file.':'Use the built-in GeneralUser GS (the same bank Ardour plays MIDI with), or load your own .sf2 file. It is kept on this device, so you only need to do this again to swap it. You can add more files and give each track its own.';
   }
   /* the index keeps each file's sound list too, so a file can be listed and chosen without reading it into memory */
   function idxRows(){return files.map(function(F){return {id:F.id,name:F.name,size:F.size,presets:F.m.raw};});}
@@ -5231,7 +5233,32 @@ document.addEventListener('keydown',function(e){
         tx('readwrite',function(st){st.put({name:r.name,buf:r.buf},'sf:f0');return st.put(idxRows(),'sfidx');}).then(function(){return tx('readwrite',function(st){return st.delete('sf2');});}).catch(function(){});
       }
     });
-  }).catch(function(){});
+  }).catch(function(){}).then(function(){
+    /* first launch with nothing chosen yet: fetch the built-in GeneralUser GS once (like Ardour's default MIDI sounds) */
+    if(files.length||S.basic!==undefined||S.gu)return;
+    try{if(navigator.connection&&navigator.connection.saveData)return;}catch(e){}
+    builtin(true);
+  });
+  /* GeneralUser GS v2.0.3 by S. Christian Collins, shipped with the app (sf/GeneralUser-GS.sf2, see sf/LICENSE.txt) */
+  var GU_URL='sf/GeneralUser-GS.sf2', GU_NAME='GeneralUser-GS.sf2', guBusy=false;
+  function hasGu(){return files.some(function(F){return F.name===GU_NAME;});}
+  function builtin(auto){
+    if(guBusy||hasGu())return;guBusy=true;S.gu=1;save();ui();
+    fetch(GU_URL,{cache:'no-store'}).then(function(r){
+      if(!r.ok||!r.body)throw new Error('missing');
+      const tot=+r.headers.get('content-length')||32319396, rd=r.body.getReader(), parts=[];let got=0,last=-1;
+      toast('Downloading the built-in sounds (GeneralUser GS, '+mb(tot)+')…');
+      const pump=function(){return rd.read().then(function(x){
+        if(x.done)return;parts.push(x.value);got+=x.value.length;
+        const pc=Math.floor(got/tot*10)*10;if(pc!==last&&pc<100){last=pc;$('#btnGu').textContent='Downloading GeneralUser GS… '+pc+'%';}
+        return pump();});};
+      return pump().then(function(){const u=new Uint8Array(got);let o=0;parts.forEach(function(p){u.set(p,o);o+=p.length;});return u.buffer;});
+    }).then(function(buf){guBusy=false;load(buf,GU_NAME);ui();}).catch(function(){
+      guBusy=false;ui();
+      if(!auto)toast('The built-in sounds could not be downloaded here. Open PhraseNote from its web address (or load a .sf2 file).');
+    });
+  }
+  $('#btnGu').addEventListener('click',function(){builtin(false);});
 })();
 
 /* ---------- song form: sections and slots ---------- */
