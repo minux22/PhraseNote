@@ -965,7 +965,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.19.3</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.19.4</p>
   </div>
 </section>
 
@@ -6196,7 +6196,7 @@ function clipUI(){
   bar.hidden=false;
   $('#clipName').textContent=m.name+' · '+fmtPos(e.a)+' – '+fmtPos(e.b);
   $('#clipSplit').disabled=!(K.cur>e.a&&K.cur<e.b);
-  mkSeg($('#clipTgt'),[['move','Move'],['l','Start'],['r','End']],function(){return U.clipTgt||'move';},function(v){U.clipTgt=v;saveU();clipUI();});
+  mkSeg($('#clipTgt'),[['move','Clip'],['l','Start'],['r','End']],function(){return U.clipTgt||'move';},function(v){U.clipTgt=v;saveU();clipUI();});
   mkSeg($('#clipStep'),[['beat','Beat'],['s16','1/16'],['t10','10 tick'],['t1','1 tick']],function(){return U.clipStep||'s16';},function(v){U.clipStep=v;saveU();clipUI();});
 }
 $('#clipDone').addEventListener('click',function(){clipClose();renderRec();});
