@@ -16,6 +16,9 @@ const ctx=await b.newContext({viewport:{width:360,height:780},deviceScaleFactor:
 const pg=await ctx.newPage();const errs=[];pg.on('pageerror',e=>errs.push(e.message));
 await pg.addInitScript(([P,U])=>{if(!sessionStorage.getItem('x')){sessionStorage.setItem('x',1);localStorage.clear();localStorage.setItem('phrasenote-init-1','1');localStorage.setItem('chord-sketch-comp1','1');localStorage.setItem('phrasenote-ui',JSON.stringify(U));localStorage.setItem('chord-sketch-v1',JSON.stringify(P));}},[PROJ,UI]);
 await pg.goto('http://localhost:8765/index.html');await pg.waitForTimeout(900);
+// the built-in GeneralUser GS downloads on first launch: wait for it
+await pg.waitForFunction(()=>/GeneralUser/.test(document.getElementById('sfList').textContent),null,{timeout:30000}).catch(()=>console.log('no GU'));
+await pg.waitForTimeout(3200);await pg.evaluate(()=>document.getElementById('toast').classList.remove('show'));
 const box=async sel=>pg.$eval(sel,e=>{const r=e.getBoundingClientRect();return {x:r.left,y:r.top+scrollY,w:r.width,h:r.height};});
 // marks: [n, selector, where('tl'|'tr'|'c'|'l'|'r')]
 async function chrome(on){await pg.evaluate(on=>{let st=document.getElementById('gsty');if(!st){st=document.createElement('style');st.id='gsty';document.body.appendChild(st);}st.textContent=on?'':'.dock,#toast{display:none!important} body.kbd-open{padding-bottom:0!important}';},on);}
@@ -39,7 +42,19 @@ async function shot(name,clipSel,marks,opt={}){
 // 1 main screen
 await shot('main','view',[[1,'#playBtn','tl'],[2,'#rewBtn','tl'],[3,'#bpmVal','tl'],[4,'#drumBtn','tl'],[5,'#drumPick','tr'],[6,'#undoBtn','tl'],[7,'#tsSel','tl'],[8,'#tabChord','tl'],[9,'#dockMix','tl'],[10,'#dockFile','tl']],{view:true});
 // 2 song structure
-await shot('form','#formPanel',[[1,'#formRow .slot >> nth=0','tl'],[2,'#formRow .slot.add','tl'],[3,'#cmodeSw','tl'],[4,'#slotMenuBtn','tl']]);
+await pg.click('#ovBtn');await pg.waitForTimeout(300);
+await shot('form','#formPanel',[[1,'#formRow .slot >> nth=0','tl'],[2,'#formRow .slot.add','tl'],[3,'#cmodeSw','tl'],[4,'#ovBtn','tl'],[5,'#slotMenuBtn','tl'],[6,'#formRow .slot >> nth=0 >> .ovb','l']]);
+await pg.click('#ovBtn');await pg.waitForTimeout(200);
+// 2b next section suggestion (after slot B)
+await pg.click('#formRow .slot >> nth=1');await pg.waitForTimeout(300);
+await pg.click('#formRow .slot.add');await pg.waitForTimeout(300);await pg.click('#formBody .pill >> nth=0');await pg.waitForTimeout(400);
+await shot('nextsec','#formDlg .dlg',[[1,'#formBody .fopt >> nth=0','tl'],[2,'#formBody .nxc >> nth=0','tl'],[3,'#formBody .nxc >> nth=0 >> .nxl','tl'],[4,'#formBody .nxb .btn >> nth=0','tl'],[5,'#formBody .nxb .btn.primary','tl']],{pad:0});
+await pg.click('#formClose');await pg.waitForTimeout(200);
+// 2c slot menu: key and tempo of a slot
+await pg.click('#slotMenuBtn');await pg.waitForTimeout(400);
+await shot('slotmenu','#formDlg .dlg',[[1,'#formBody .fopt >> nth=0','tl'],[2,'#formBody .fopt >> nth=1','tl'],[3,'#formBody .fopt >> nth=2','tl'],[4,'#formBody .tmrow','tl'],[5,'#formBody .fopt >> nth=4','tl']],{pad:0});
+await pg.click('#formClose');await pg.waitForTimeout(200);
+await pg.click('#formRow .slot >> nth=0');await pg.waitForTimeout(300);
 // 3 chords panel
 await pg.evaluate(()=>document.querySelector('#palette').scrollIntoView({block:'start'}));await pg.waitForTimeout(200);
 await shot('chords',['#togBass','#hint'],[[1,'#palette .chip >> nth=0','tl'],[2,'#grid','tl'],[3,'#unitSeg','tl'],[4,'#barsSeg','tl'],[5,'#togBass','tl'],[6,'#togSlash','tl'],[7,'#btnRand','tl'],[8,'#xToggle','tl']]);
@@ -62,6 +77,15 @@ const rt=await box('#panelMelody .ctl'), rr=await box('#roll');
 await shot('roll',{x:0,y:rt.y-8,w:360,h:rr.y-rt.y+300},[[1,'#viewSeg','tl'],[2,'#togPick','tl'],[3,'#melAmt','tl'],[4,'#toolSeg','tl'],[5,'#lenSel','tl'],[6,'#rLaneP','tl']]);
 await pg.evaluate(()=>{scrollTo(0,0);document.getElementById('toast').classList.remove('show');const ns=[...document.querySelectorAll('#rPlane .nt')];const top=Math.min(...ns.map(n=>n.offsetTop)),bot=Math.max(...ns.map(n=>n.offsetTop));const r=document.getElementById('roll');r.scrollTop=Math.max(0,(top+bot)/2-200);});await pg.waitForTimeout(300);
 await pg.screenshot({path:OUT+'cover_roll.png'});META.push({name:'cover_roll',w:360,h:780,marks:[]});
+// 6b continue the melody
+await chrome(false);
+await pg.click('#contBtn');await pg.waitForTimeout(500);
+await pg.evaluate(()=>{const r=document.getElementById('roll');window.scrollTo(0,r.getBoundingClientRect().top+scrollY-128);document.getElementById('toast').classList.remove('show');
+  const ns=[...document.querySelectorAll('#rPlane .nt.sug')];console.log('sug',ns.length);const top=Math.min(...ns.map(n=>n.offsetTop)),bot=Math.max(...ns.map(n=>n.offsetTop));r.scrollTop=Math.max(0,(top+bot)/2-140);});await pg.waitForTimeout(300);
+{const rb=await box('#roll');const cb=await box('#contP');const clip={x:0,y:rb.y,w:360,h:cb.y+cb.h-rb.y+6};
+ const m=[];for(const [n,s,w] of [[1,'#rPlane .nt.sug >> nth=0','c'],[2,'#contModes','tl'],[3,'#contPlay','tl'],[4,'#contMore','tl'],[5,'#contOk','tl']]){const r=await box(s);m.push({n,x:(w==='c'?r.x+r.w/2:r.x)-clip.x,y:(w==='c'?r.y+r.h/2:r.y)-clip.y});}
+ await pg.screenshot({path:OUT+'continue.png',clip:{x:0,y:clip.y,width:360,height:clip.h},fullPage:true});META.push({name:'continue',w:360,h:clip.h,marks:m});}
+await pg.click('#contX');await pg.waitForTimeout(300);await chrome(true);
 // 7 staff
 await pg.click('#viewSeg button >> nth=1');await pg.waitForTimeout(700);
 await shot('staff',['#panelMelody .ctl','#stWrap'],[[1,'#toolSeg2','tl'],[2,'#nvSeg','tl'],[3,'#dotSeg','tl'],[4,'#accSeg','tl']]);
@@ -96,7 +120,17 @@ await pg.evaluate(()=>scrollTo(0,0));
 await pg.evaluate(()=>document.querySelectorAll('#recDev option').forEach(o=>o.textContent='Microphone'));
 await pg.evaluate(()=>{scrollTo(0,0);document.getElementById('toast').classList.remove('show');});await pg.waitForTimeout(200);
 await pg.screenshot({path:OUT+'cover_audio.png'});META.push({name:'cover_audio',w:360,h:780,marks:[]});
-await shot('audio',['#panelMelody .ctl','#takeList'],[[1,'#viewSeg','tl'],[2,'#recDev','tl'],[3,'#recCal','tl'],[4,'#recGain','tl'],[5,'#recModeSw','tl'],[6,'#recRng','tl'],[7,'#recBtn','tl'],[8,'#recWrap','tl'],[9,'#takeList .thead','tl']]);
+await shot('audio',['#panelMelody .ctl','#takeList'],[[1,'#viewSeg','tl'],[2,'#recDev','tl'],[3,'#recCal','tl'],[4,'#recGain','tl'],[5,'#recModeSw','tl'],[6,'#recRng','tl'],[7,'#recBtn','tl'],[8,'#recWrap','tl'],[9,'#rzIn','tl'],[10,'#takeList .tgrp >> nth=0','tl']]);
+// 11b clip editing: long press the first clip
+{await chrome(false);await pg.evaluate(()=>document.getElementById('recWrap').scrollIntoView({block:'center'}));await pg.waitForTimeout(200);
+ const r=await pg.$eval('#recCv',e=>{const b=e.getBoundingClientRect();return {x:b.left,y:b.top,w:b.width};});
+ console.log('cv',r,await pg.evaluate(()=>scrollY));await pg.mouse.move(r.x+r.w*0.06,r.y+85);await pg.mouse.down();await pg.waitForTimeout(650);await pg.mouse.up();await pg.waitForTimeout(400);console.log('clipbar hidden',await pg.evaluate(()=>document.getElementById('clipBar').hidden));
+ await pg.evaluate(()=>{const r=document.getElementById('recCv').getBoundingClientRect();document.getElementById('recIn').dispatchEvent(new MouseEvent('click',{bubbles:true,clientX:r.left+r.width*0.12,clientY:r.top+25}));});await pg.waitForTimeout(300);
+ await pg.evaluate(()=>{const w=document.getElementById('recWrap');window.scrollTo(0,w.getBoundingClientRect().top+scrollY-130);document.getElementById('toast').classList.remove('show');});await pg.waitForTimeout(250);
+ const a=await box('#recWrap'), z=await box('#clipBar');const clip={x:0,y:a.y-6,w:360,h:z.y+z.h-a.y+12};
+ const m=[];for(const [n,s,w] of [[1,'#clipOv .ch.l','tl'],[2,'#clipOv .ch.r','tr'],[3,'#clipSplit','tl'],[4,'#clipDel','tl'],[5,'#clipTgt','tl'],[6,'#clipBar .nb >> nth=0','tl'],[7,'#clipStep','tl'],[8,'#clipDone','tl']]){const r=await box(s);m.push({n,x:(w==='tr'?r.x+r.w:r.x)-clip.x,y:r.y-clip.y});}
+ await pg.screenshot({path:OUT+'clipedit.png',clip:{x:0,y:clip.y,width:360,height:clip.h},fullPage:true});META.push({name:'clipedit',w:360,h:clip.h,marks:m});
+ await pg.click('#clipDone');await pg.waitForTimeout(300);await chrome(true);}
 // 12 loop growth (roll with ghost) : project with only A? use current: chord tab loop + slot A followed by B -> no ghost. Make a single-slot copy view: select B (last) and show roll
 await pg.click('#viewSeg button >> nth=0');await pg.waitForTimeout(400);
 await pg.click('#tabChord');await pg.waitForTimeout(300);await pg.click('#cmodeSw');await pg.waitForTimeout(200);
@@ -121,6 +155,6 @@ const sv=async(name,firstSel,lastSel,marks)=>{
   await pg.screenshot({path:OUT+name+'.png',clip:{x:0,y:clip.y,width:360,height:clip.h}});META.push({name,w:360,h:clip.h,marks:m});};
 await sv('setup_project','#btnNew','#recentBox',[[1,'#btnNew'],[2,'#btnLoad'],[3,'#btnSave'],[4,'#btnSaveAs'],[5,'#recentBox']]);
 await pg.click('#modeSf');await pg.waitForTimeout(400);
-await sv('setup_sound','#modeBasic','#dEdit',[[1,'#modeBasic'],[2,'#btnSf'],[3,'#dPat']]);
+await sv('setup_sound','#modeBasic','#dEdit',[[1,'#modeBasic'],[2,'#sfList'],[3,'#btnSf'],[4,'#dPat']]);
 fs.writeFileSync('guide/meta.json',JSON.stringify(META,null,1));
 console.log('errors',errs);await b.close();})();

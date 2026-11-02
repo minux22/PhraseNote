@@ -47,12 +47,18 @@ KO = dict(
         '<b>Loop 기반 확장</b> — 한 구간을 반복하며 멜로디를 이어 쓰면 곡 구조가 자동으로 늘어납니다.',
         '<b>구간별 테이크 선택</b> — 노래를 여러 번 녹음한 뒤 섹션마다 가장 좋은 테이크를 골라 하나의 멜로디로 완성합니다.',
         '<b>MIDI · WAV 동시 저장</b> — 프로젝트를 저장하면 MIDI 파일과 오디오 파일이 함께 만들어집니다.',
+        '<b>곡 단계별 다음 섹션 제안</b> — Intro · Verse · Pre-chorus · Chorus · Bridge · Outro의 역할에 맞는 코드 진행과 반주 · 드럼의 변화를 제안합니다.',
+        '<b>슬롯별 조 · 템포</b> — 마지막 후렴의 전조나 특정 구간의 템포 변화를 슬롯 단위로 지정합니다.',
+        '<b>멜로디 이어 쓰기</b> — 앞 프레이즈를 변형한 다음 두 마디를 점선으로 제안합니다.',
+        '<b>오디오 클립 편집</b> — 녹음한 클립을 분할 · 삭제 · 이동 · 길이 조절하고, 빈 구간을 다른 테이크로 채웁니다.',
+        '<b>내장 음원</b> — Ardour와 같은 GeneralUser GS 음원을 기본으로 사용하므로 MIDI를 옮겨도 같은 소리로 재생됩니다.',
     ]),
     install=('시작하기', [
         '<b>앱 주소</b> https://minux22.github.io/PhraseNote/',
         '<b>삼성 인터넷에서 설치</b> 앱 주소에 접속한 뒤 메뉴(☰) → 페이지 추가 → 홈 화면 → 추가를 선택합니다. 주소창에 설치 아이콘이 표시되면 해당 아이콘으로도 설치할 수 있습니다.',
         '<b>Chrome에서 설치</b> 앱 주소에 접속한 뒤 메뉴(⋮) → 앱 설치 또는 홈 화면에 추가를 선택합니다.',
         '설치한 앱은 홈 화면 아이콘으로 실행되며 전체 화면으로 표시됩니다. 최초 실행 후에는 인터넷 연결 없이도 사용할 수 있습니다.',
+        '<b>내장 음원</b> 처음 실행할 때 GeneralUser GS 음원(약 31MB)을 한 번 내려받아 기기에 보관합니다. 데이터 절약 모드에서는 자동으로 받지 않으며, Setup에서 직접 받을 수 있습니다.',
         '<b>업데이트</b> 새 버전이 배포되면 앱을 완전히 종료한 뒤 두 번 다시 실행하면 적용됩니다. 첫 실행에서 새 버전을 내려받고, 두 번째 실행에서 적용됩니다. 현재 버전은 화면 하단에 표시됩니다.',
         '<b>자동 보관</b> 작업 내용과 녹음은 편집할 때마다 기기 내부에 자동으로 보관됩니다. 백업하거나 다른 기기로 옮기려면 Setup의 Save project로 파일을 저장하십시오.',
         '<b>기본 작업 순서</b> 코드 트랙에서 코드 진행과 반주·드럼을 구성 → 멜로디 트랙에서 멜로디 입력 또는 노래 녹음 → 믹서에서 음량 균형 조정 → Save project로 저장.',
@@ -64,17 +70,34 @@ KO = dict(
             '처음으로. 재생 위치를 곡의 처음으로 이동합니다.',
             'BPM. − / + 버튼으로 1씩 조정하거나 숫자를 눌러 직접 입력합니다(40~200).',
             '드럼 켜기 / 끄기. 켜면 선택한 드럼 패턴이 함께 연주됩니다.',
-            '드럼 패턴 목록을 엽니다(5장 참조).',
+            '드럼 패턴 목록을 엽니다(7장 참조).',
             '실행 취소 / 다시 실행. 코드, 멜로디, 곡 구조의 편집에 적용됩니다.',
-            '박자, 조, 스케일. 조 목록 맨 위의 “Guess from melody…”는 멜로디로 조를 추정합니다(10장 참조).',
+            '박자, 조, 스케일. 조 목록 맨 위의 “Guess from melody…”는 멜로디로 조를 추정합니다(13장 참조).',
             '코드 트랙 / 멜로디 트랙 전환. 재생 중에 전환해도 재생은 계속됩니다.',
-            '믹서를 엽니다(13장 참조).', 'Setup을 엽니다. 저장, 열기, 음원 설정을 다룹니다(14·15장 참조).'],
+            '믹서를 엽니다(17장 참조).', 'Setup을 엽니다. 저장, 열기, 음원 설정을 다룹니다(18·19장 참조).'],
          '하단의 Keys, Mixer, Setup은 한 번에 하나만 열립니다. 다른 항목을 열면 기존 항목은 닫힙니다.'),
         ('곡 구조 (Song structure)', '곡은 섹션(A, B …)을 담은 슬롯을 순서대로 배열하여 구성합니다. 하나의 섹션을 여러 슬롯에서 반복하여 사용할 수 있습니다.', [('form', 70)], [
             '슬롯. 누르면 선택되며, 아래 코드 그리드에 해당 섹션이 표시됩니다. 길게 누른 상태로 좌우로 끌면 순서를 변경할 수 있습니다.',
-            '+ (슬롯 추가). 새 섹션 생성, 기존 섹션 반복, 다른 프로젝트 파일에서 섹션 가져오기 중 하나를 선택합니다. 새 섹션은 현재 섹션과 같은 길이로 생성됩니다.',
-            'Loop / Song. Loop는 선택한 슬롯만 반복 재생하고, Song은 곡 전체를 재생합니다. 멜로디 트랙에서의 Loop 동작은 12장을 참조하십시오.',
-            'Edit. 선택한 슬롯의 섹션 변경, 역할 지정(Intro · Verse · Pre · Chorus · Bridge · Outro), 이동 · 복제 · 삭제를 수행합니다.'], None),
+            '+ (슬롯 추가). 다음 섹션 제안(3장), 새 섹션 생성, 기존 섹션 반복, 다른 프로젝트 파일에서 섹션 가져오기 중 하나를 선택합니다. 새 섹션은 현재 섹션과 같은 길이로 생성됩니다.',
+            'Loop / Song. Loop는 선택한 슬롯만 반복 재생하고, Song은 곡 전체를 재생합니다. 멜로디 트랙에서의 Loop 동작은 16장을 참조하십시오.',
+            '곡 전체 보기(Overview). 켜면 슬롯마다 막대 세 개가 표시됩니다.',
+            'Edit. 선택한 슬롯의 섹션 변경, 역할 지정, 조 · 템포 지정(4장), 이동 · 복제 · 삭제를 수행합니다.',
+            '막대는 왼쪽부터 Energy(드럼과 반주의 세기), 멜로디 음역(최저음~최고음), 마디당 음표 수입니다. 곡의 기승전결과 변화가 적은 구간을 한눈에 확인할 수 있습니다.'],
+         '조나 템포를 바꾼 슬롯에는 모서리에 +2, ♩90과 같은 표시가 붙습니다.'),
+        ('다음 섹션 제안', '곡 구조의 + 에서 “✦ Suggest the next section…”을 선택하면, 선택한 슬롯 다음에 올 섹션을 곡의 단계에 맞추어 제안합니다. 조와 템포는 곡과 같게 유지하여 흐름이 이어지도록 합니다.', [('nextsec', 62)], [
+            '곡에서의 위치. Intro · Verse · Pre-chorus · Chorus · Bridge · Outro 중 다음 섹션의 역할을 선택합니다. 현재 섹션의 역할에 따라 자연스러운 다음 단계가 미리 선택됩니다(예: Verse 다음은 Pre-chorus).',
+            '제안. 역할에 맞는 코드 진행 두 가지가 표시됩니다. Pre-chorus는 V로 향하고, Chorus는 IV 등 으뜸화음이 아닌 코드에서 시작하는 경우가 많습니다. 태그는 시작 · 끝 코드, 코드가 바뀌는 간격, 반주와 드럼의 변화를 나타냅니다.',
+            'Listen. 제안된 섹션을 반주와 드럼까지 포함하여 미리 들어 봅니다.',
+            'Other ideas. 다른 진행을 제안받습니다.',
+            'Add this section. 선택한 제안을 새 섹션으로 추가합니다. 같은 역할의 섹션이 이미 있으면 “Use A again”으로 그대로 반복할 수도 있습니다.'],
+         '반주와 드럼의 세기는 곡의 Verse를 기준으로 Chorus는 한 단계 강하게, Intro · Bridge · Outro는 한 단계 약하게 조정됩니다. 하단의 멜로디 안내 문구는 참고용이며 음표를 만들지는 않습니다.'),
+        ('슬롯별 조 · 템포', '슬롯 메뉴(Edit)에서 해당 슬롯만의 조와 템포를 지정합니다. 마지막 후렴을 온음 올리거나, 특정 구간만 느리게 하는 등의 변화를 줄 때 사용합니다.', [('slotmenu', 56)], [
+            '이 슬롯에서 재생할 섹션을 선택합니다.',
+            '섹션의 역할(Intro · Verse · Pre · Chorus · Bridge · Outro)을 지정합니다.',
+            'Key of this slot. 곡의 조를 기준으로 −3 ~ +5 반음 범위에서 선택합니다. 코드 이름, 반주, MIDI가 모두 바뀐 조로 재생되고, 이 슬롯의 멜로디도 같은 만큼 이동합니다.',
+            'Tempo of this slot. Song은 곡 템포를 따르며, − / + 또는 직접 입력으로 이 슬롯의 BPM을 정합니다.',
+            '슬롯 이동 · 복제 · 삭제.'],
+         '같은 섹션을 여러 슬롯에서 사용 중이면, 조나 템포를 바꾼 슬롯만 C′와 같은 별도 섹션으로 분리됩니다. 롤과 오선보에도 바뀐 조와 템포가 표시됩니다.'),
         ('코드 입력', '팔레트에서 코드를 선택한 뒤 그리드에 입력합니다. 그리드에는 현재 선택한 섹션이 표시됩니다.', [('chords', 70)], [
             '팔레트. 현재 조와 스케일의 다이어토닉 코드가 로마 숫자와 코드명으로 표시됩니다. 누르면 소리가 나며 선택되고, Erase는 지우기 도구입니다.',
             '그리드. 칸을 누르거나 끌어서 선택한 코드를 입력합니다. 입력된 칸을 다시 누르면 삭제됩니다.',
@@ -82,7 +105,7 @@ KO = dict(
             'Bars. 해당 섹션의 마디 수(2 · 4 · 8 · 16)입니다.',
             'Bass는 베이스 파트의 사용 여부, 7th는 모든 코드의 7화음 적용 여부를 정합니다.',
             '/– (슬래시 코드). 베이스로 사용할 스케일 음을 선택한 뒤 칸에 입력하면 해당 음이 베이스가 됩니다.',
-            'Random. 조와 스케일에 맞는 코드 진행을 무작위로 생성합니다. 해당 슬롯에 멜로디가 있으면 Suggest 버튼으로 바뀌며, 멜로디에 어울리는 진행을 제안합니다(10장 참조).',
+            'Random. 조와 스케일에 맞는 코드 진행(최신 팝 · 케이발라드 진행 포함)과 함께 반주 스타일과 드럼 패턴도 무작위로 고릅니다. 컬러는 off로 시작하며, 결과는 재생 버튼을 눌러 확인합니다. 해당 슬롯에 멜로디가 있으면 Suggest 버튼으로 바뀌며, 멜로디에 어울리는 진행을 제안합니다(13장 참조).',
             'More chords. 스케일 밖의 코드(차용 화음, 세컨더리 도미넌트 등)를 표시합니다.'],
          '생성된 진행이 마음에 들지 않으면 실행 취소로 이전 상태로 되돌릴 수 있습니다.'),
         ('반주 (Accompaniment)', '코드를 연주하는 방식을 정합니다. 섹션마다 다르게 지정할 수 있습니다(예: Verse는 아르페지오, Chorus는 스트럼).', [('accomp', 62)], [
@@ -105,13 +128,21 @@ KO = dict(
             'Auto-Velocity. 멜로디의 세기를 박의 위치에 따라 자동으로 조절합니다(0% = 균일, 100% = 최대).',
             '도구. 펜: 빈 곳을 누르면 음 입력, 끌면 길이와 음높이 조정, 음을 누르면 삭제. 선택: 영역을 지정하여 복사 · 붙여넣기 · 이동 · 옥타브 이동 · 삭제. 손: 편집 없이 화면 이동.',
             'Len · Snap. 새로 입력할 음의 길이와, 음이 맞춰지는 박 단위를 지정합니다.',
-            '코드 줄. 마디별 코드와 섹션 이름이 표시됩니다. 오른쪽 아래 − / + 버튼으로 가로 배율을 조정합니다.'], None),
+            '코드 줄. 마디별 코드와 섹션 이름이 표시됩니다. 오른쪽 아래 − / + 버튼으로 가로 배율을 조정합니다.'],
+         '조가 다른 슬롯에서는 그 조의 음계와 으뜸음 줄이 표시됩니다. 왼쪽 아래의 ✦ Continue는 9장을 참조하십시오.'),
+        ('멜로디 이어 쓰기 (Continue)', '롤 또는 오선보 왼쪽 아래의 ✦ Continue를 누르면, 커서 앞 마지막 프레이즈의 두 마디를 동기로 삼아 바로 다음 두 마디에 점선으로 제안합니다.', [('continue', 62)], [
+            '점선 음표. 제안된 멜로디입니다. 앞 두 마디는 분홍색으로, 이어지는 경계는 초록 선으로 표시됩니다.',
+            '변형 방식. 3도 위(다시 누르면 2도 위 · 5도 위 · 2도 아래 · 3도 아래), 같은 리듬에 그 자리 코드의 구성음, 음정 방향을 위아래로 뒤집기 중에서 선택합니다.',
+            'Listen. 앞 두 마디와 제안을 반주와 함께 들어 봅니다.',
+            'Another. 같은 방식의 다른 제안을 표시합니다.',
+            'Use it. 제안을 멜로디에 추가합니다. Close를 누르거나 직접 입력하면 제안은 무시됩니다.'],
+         '마디의 첫 음은 그 자리의 코드 구성음에 가깝게 맞춰집니다. 다음 섹션의 조가 다르면 제안도 그 조로 옮겨집니다.'),
         ('오선보 (Staff)', '같은 멜로디를 악보 형태로 표시하고 편집합니다.', [('staff', 70)], [
             '도구. 펜 · 선택 · 손(피아노롤과 동일).',
             '음표 길이. 온음표부터 16분음표까지 선택한 뒤 오선을 누릅니다.',
             '점음표. 선택한 음표의 길이를 1.5배로 합니다.',
             '임시표. ♯ · ♭ · ♮를 붙여 입력합니다.'],
-         '오선을 누른 상태로 위아래로 끌면 음높이를 들으며 선택할 수 있으며, 손을 떼면 입력됩니다. 선택 도구로 고른 음은 ▲▼(반음) · ◀▶(16분음표) 버튼으로 이동합니다.'),
+         '오선을 누른 상태로 위아래로 끌면 음높이를 들으며 선택할 수 있으며, 손을 떼면 입력됩니다. 선택 도구로 고른 음은 ▲▼(반음) · ◀▶(16분음표) 버튼으로 이동합니다. 조가 다른 슬롯에서는 겹세로줄과 새 조표가 표시되고, 음표의 임시표도 그 조를 기준으로 붙습니다.'),
         ('건반 입력 (Keys)', '하단의 Keys를 누르면 화면 건반이 열립니다. Roll과 Staff 모드에서 사용할 수 있습니다.', [('keys', 64)], [
             'Live / Step. Live는 연주를 실시간으로 녹음하고, Step은 건반을 누를 때마다 한 음씩 순서대로 입력합니다(음 길이는 Len 설정을 따름).',
             'Rec. 활성화한 뒤 재생하면 1마디 카운트인 후 녹음이 시작됩니다. 카운트인은 Count-in으로 끌 수 있습니다.',
@@ -125,17 +156,28 @@ KO = dict(
         ('멜로디 기반 조 추정 · 코드 추천', '멜로디를 먼저 작성한 경우, 멜로디에 맞는 조와 코드 진행을 제안받을 수 있습니다.', [('keyguess', 56), ('suggest', 62)], [
             '조 추정. 조 목록 맨 위의 “Guess from melody…”를 선택하면 가능성이 높은 조 3개가 표시됩니다. Apply는 조 이름만 변경하며 멜로디와 코드의 실제 소리는 바뀌지 않습니다.',
             'Suggest. 멜로디가 있는 슬롯에서는 코드 트랙의 Random 버튼이 Suggest로 바뀝니다. 누르면 멜로디에 어울리는 코드로 빈칸을 채우며, 다시 누를 때마다 다른 제안(최대 5개)이 표시됩니다.'], None),
-        ('노래 녹음 (Audio)', 'Mode에서 Audio를 선택하면 반주를 들으며 마이크로 녹음할 수 있습니다. 반주가 녹음에 섞이지 않도록 유선 이어폰 사용을 권장합니다.', [('audio', 72)], [
+        ('노래 녹음 (Audio)', 'Mode에서 Audio를 선택하면 반주를 들으며 마이크로 녹음할 수 있습니다. 반주가 녹음에 섞이지 않도록 유선 이어폰 사용을 권장합니다.', [('audio', 70)], [
             'Mode에서 Audio를 선택합니다. 마이크는 이 모드에서만 활성화됩니다.',
             '입력 장치. 일반적으로 기본값을 그대로 사용합니다.',
             'Calibrate. 처음 한 번, 이어폰을 뺀 상태에서 음량을 높이고 실행합니다. 스피커의 클릭음을 마이크로 다시 받아 지연 시간을 측정하고 녹음 위치를 보정합니다.',
-            'Input. 마이크 입력 증폭입니다. 가장 크게 부르는 부분에서 아래 미터가 주황색 부근까지 오도록 조정하고, 수치가 빨간색으로 바뀌면 낮춥니다.',
+            'Input. 마이크 입력 증폭입니다(0~48dB, 기본 +36dB). 가장 크게 부르는 부분에서 아래 미터가 주황색 부근까지 오도록 조정하고, 수치가 빨간색으로 바뀌면 낮춥니다. Input options에서 자동 음량 · 잡음 제거 · 에코 제거를 켜고 끌 수 있습니다.',
             'Loop / Song. Loop는 지정한 마디 구간을 반복하며 한 바퀴마다 테이크를 하나씩 저장하고, Song은 재생 위치부터 Stop을 누를 때까지 한 번에 녹음합니다.',
             '반복 구간. Loop일 때 시작 마디와 끝 마디(끝 마디 포함)를 지정합니다. 재생 시에도 이 구간이 반복되며, 구간 밖은 어둡게 표시됩니다.',
             'REC. 반주 1마디가 재생된 뒤 녹음이 시작됩니다. 다시 누르면 녹음이 종료되고 테이크가 저장됩니다.',
-            '타임라인. 섹션을 누르면 해당 섹션이 선택되고 재생 위치도 이동합니다. 섹션별로 선택한 테이크가 각 위치에 표시되며 함께 재생됩니다.',
-            '선택한 섹션의 테이크 목록. 행을 누르면 해당 테이크를 이 섹션에 사용하며, 다시 누르면 해제됩니다. ▶ 해당 섹션부터 재생 · WAV 내보내기 · ✕ 삭제(실행 취소 가능).'],
+            '타임라인. 섹션을 누르면 해당 섹션이 선택되고 재생 위치도 이동합니다. 섹션별로 선택한 테이크가 각 위치에 표시되며 함께 재생됩니다. 가로로 쓸면 스크롤되고, 클립을 길게 누르면 편집 모드로 들어갑니다(15장).',
+            '− / + . 타임라인의 가로 배율을 조정합니다. 가장 작게 하면 곡 전체가 한 화면에 들어옵니다.',
+            '선택한 섹션의 테이크 목록. Song 테이크와 Loop 테이크가 구분되어 표시됩니다. 행을 누르면 해당 테이크를 이 섹션에 사용하며, 다시 누르면 해제됩니다. ▶ 해당 섹션부터 재생 · WAV 내보내기 · ✕ 삭제(실행 취소 가능).'],
          '테이크 이름은 Song-Bar01-1st, Loop-Bar01-04-2nd와 같이 시작 마디와 순번으로 지정됩니다. 녹음 중 MIDI 멜로디를 듣지 않으려면 믹서에서 MIDI 채널을 뮤트하십시오.'),
+        ('오디오 클립 편집', '타임라인의 클립을 길게 누르면 노란색 테두리의 편집 모드가 됩니다. 클립은 섹션별로 사용 중인 테이크의 한 조각입니다.', [('clipedit', 66)], [
+            '시작 손잡이. 끌어서 클립의 앞부분을 잘라내거나 다시 늘립니다. 손잡이의 안쪽 끝이 편집점입니다.',
+            '끝 손잡이. 끌어서 뒷부분을 잘라내거나 다시 늘립니다. 클립 가운데를 끌면 클립 전체가 이동합니다.',
+            'Split at playhead. 타임라인을 눌러 재생 위치를 클립 안에 놓은 뒤 누르면 그 위치에서 둘로 나뉩니다.',
+            'Delete. 선택한 클립을 삭제합니다. 일부만 지우려면 먼저 분할합니다.',
+            'Nudge. Clip(전체) · Start(시작점) · End(끝점) 중 움직일 대상을 고릅니다.',
+            '◀ ▶. 선택한 대상을 Step 단위로 앞뒤로 이동합니다.',
+            'Step. 드래그와 ◀ ▶의 이동 단위(Beat · 1/16 · 10 tick · 1 tick)입니다.',
+            'Done. 편집 모드를 마칩니다.'],
+         '클립 사이의 빈 구간을 누르면 그 구간이 초록 점선으로 선택되고, 테이크 목록에서 테이크를 누르면 빈 구간만 그 테이크로 채워집니다. 클립을 다른 클립 위로 옮기거나 늘리면 겹친 부분의 클립은 잘립니다. 모든 편집은 실행 취소할 수 있습니다.'),
         ('Loop 기반 확장', '코드 트랙이 Loop 상태이면 멜로디 트랙에서도 선택한 슬롯이 반복됩니다. 이 상태에서 멜로디를 이어 쓰면 곡 구조가 자동으로 확장됩니다.', [('ghost', 70)], [
             '마지막 슬롯을 선택하면 곡 끝에 해당 슬롯의 복사본이 점선으로 표시됩니다. 이 영역에 음을 입력하면 실제 슬롯으로 추가되고, 그 뒤에 새 점선 영역이 다시 표시됩니다.',
             '녹음(노래 또는 Keys의 Live)은 슬롯 끝에서 처음으로 돌아가지 않고, 다음 복사본을 미리 생성하면서 계속 진행됩니다.',
@@ -154,15 +196,16 @@ KO = dict(
          '저장되는 MIDI 파일에는 각 트랙의 페이더 값이 볼륨 정보로 기록됩니다.'),
         ('음원 (SoundFont)', 'Setup의 Sound에서 악기 음원을 선택합니다.', [('setup_sound', 66)], [
             'Basic Synth는 별도 파일 없이 동작하는 기본 음원이며, SoundFont는 실제 악기 샘플을 사용하는 음원입니다.',
-            'Load SoundFont. .sf2 파일(예: GeneralUser GS)을 불러오면 Melody · Chords · Bass · Drums 트랙별로 악기를 선택할 수 있습니다. 불러온 파일은 기기에 보관됩니다. 이후 Save / Load preset으로 악기 구성과 믹서 설정을 함께 저장하고 불러올 수 있습니다.',
-            '드럼 패턴 선택과 편집(5장의 편집 창).'], None),
+            '불러온 음원 목록. 내장 음원 GeneralUser GS(Ardour가 MIDI 재생에 쓰는 것과 같은 음원)가 기본으로 들어 있습니다. 목록에서 지운 경우 “Use the built-in GeneralUser GS”로 다시 받을 수 있습니다.',
+            'Add SoundFont. 다른 .sf2 파일을 추가하면 Melody · Chords · Bass · Drums 트랙별로 악기를 선택할 수 있습니다. 불러온 파일은 기기에 보관됩니다. Save / Load preset으로 악기 구성과 믹서 설정을 함께 저장하고 불러올 수 있습니다.',
+            '드럼 패턴 선택과 편집(7장의 편집 창).'], None),
         ('저장과 열기', 'Setup의 Project에서 수행합니다.', [('setup_project', 66)], [
             'New project. 새 프로젝트를 시작합니다(두 번 눌러 확인).',
             'Open project. 저장한 .zip 또는 .phrasenote 파일을 엽니다. 녹음도 함께 복원됩니다.',
             'Save project. 다운로드 폴더에 .zip 파일 하나로 저장합니다. 이 파일에는 프로젝트 파일, MIDI 파일, Melody.wav(섹션별로 선택한 테이크를 합친 멜로디 오디오), 테이크별 WAV 파일이 포함됩니다. 이름은 최초 저장 시에만 입력하며, 이후에는 같은 이름으로 덮어씁니다.',
             'Save as. 현재 내용을 다른 이름으로 저장합니다. 기본 이름은 My Song v2, v3 …와 같이 제안됩니다.',
             'Recent projects. 최근 작업한 프로젝트 10개가 기기에 보관되며 바로 열 수 있습니다.'],
-         'MIDI 파일은 Chords · Bass · Melody · Drums(드럼 사용 시)가 트랙별로 분리되어 있어 DAW에서 바로 이어서 작업할 수 있습니다.'),
+         'MIDI 파일은 Chords · Bass · Melody · Drums(드럼 사용 시)가 트랙별로 분리되어 있고, 슬롯별 템포와 조의 변경도 기록되므로 DAW에서 바로 이어서 작업할 수 있습니다.'),
     ]),
     ],
     notes=('참고 사항', [
@@ -171,6 +214,8 @@ KO = dict(
         '블루투스 이어폰은 지연이 커서 녹음에 적합하지 않습니다. 유선 이어폰 사용을 권장합니다.',
         '저장 파일은 다운로드 폴더에 .zip 형식으로 저장됩니다. 지정한 폴더에 직접 저장하는 기능은 현재 지원하지 않습니다.',
         '일부 반주 스타일과 장르별 드럼 패턴은 4/4 박자 전용이며, 각 패턴은 해당 장르의 특징을 근사적으로 재현한 것입니다.',
+        '녹음은 녹음 당시의 속도로 보관되므로, 녹음한 뒤 그 구간의 템포를 바꾸면 테이크가 반주와 어긋날 수 있습니다. 이 경우 테이크 목록에 “tempo changed since”가 표시됩니다.',
+        '박자(Time)는 곡 전체에 하나만 지정할 수 있습니다.',
     ]),
 )
 
@@ -190,6 +235,11 @@ EN = dict(
         '<b>Loop-based growth</b> — keep writing over a looping section and the song structure extends itself.',
         '<b>Take selection per section</b> — record several takes and pick the best one for each section to make one melody.',
         '<b>MIDI and WAV together</b> — saving a project also writes the MIDI and audio files.',
+        '<b>Next section by song role</b> — chords, accompaniment and drum changes suited to Intro · Verse · Pre-chorus · Chorus · Bridge · Outro.',
+        '<b>Key and tempo per slot</b> — lift the last chorus or slow one part down, slot by slot.',
+        '<b>Continue the melody</b> — a dashed two-bar idea grown from your last phrase.',
+        '<b>Audio clip editing</b> — split, delete, move and trim recorded clips, and fill gaps with another take.',
+        '<b>Built-in sounds</b> — GeneralUser GS, the bank Ardour plays MIDI with, so your MIDI sounds the same there.',
     ]),
     toc='Contents',
     install=('Getting started', [
@@ -197,6 +247,7 @@ EN = dict(
         '<b>Install with Samsung Internet</b> Open the address, then Menu (☰, bottom right) → Add page to → Home screen → Add. If an install icon shows in the address bar, that works too.',
         '<b>Install with Chrome</b> Open the address, then Menu (⋮, top right) → Install app or Add to Home screen → Install.',
         'Installed, it opens full screen from its home-screen icon and works offline after the first visit.',
+        '<b>Built-in sounds</b> On first launch the GeneralUser GS bank (about 31 MB) is downloaded once and kept on the phone. With Data Saver on it is not fetched automatically; Setup can fetch it.',
         '<b>Updates</b> After a new version is out, close the app completely and open it twice (the first opening downloads it, the second uses it). The version is shown at the bottom.',
         '<b>Auto-save</b> Your work and recordings are kept on the phone as you edit. To back up or move to another device, make a file with Save project in Setup.',
         '<b>The usual flow</b> Build the chords, accompaniment and drums in the Chord Track → write or sing the melody in the Melody Track → balance it in the mixer → Save project.',
@@ -208,17 +259,34 @@ EN = dict(
             'Back to the start of the song.',
             'BPM: − + steps by one, or tap the number to type (40–200).',
             'Drums on / off. On, the chosen pattern plays along.',
-            'Open the drum pattern list (see 5. Drums).',
+            'Open the drum pattern list (chapter 7).',
             'Undo / Redo for chords, melody and song structure.',
-            'Time · Key · Scale. “Guess from melody…” at the top of the Key list guesses the key (chapter 10).',
+            'Time · Key · Scale. “Guess from melody…” at the top of the Key list guesses the key (chapter 13).',
             'Chord Track / Melody Track. Switching does not stop playback.',
-            'Open the mixer (chapter 13).', 'Open Setup: saving, opening, sound (chapters 14 · 15).'],
+            'Open the mixer (chapter 17).', 'Open Setup: saving, opening, sound (chapters 18 · 19).'],
          'The bottom buttons (Keys · Mixer · Setup) open one panel at a time; opening one closes the other.'),
         ('Song structure', 'A song is a row of slots, each playing a section (A, B …). The same section can be used in several slots.', [('form', 70)], [
             'Slot: tap to select; the chord grid below shows its section. Long-press and drag sideways to reorder.',
-            '+ : add a slot — a new section, a repeat of one, or a section imported from another project file. New sections take the current length.',
-            'Loop / Song: Loop repeats the selected slot, Song plays the whole song. For Loop in the Melody Track see chapter 12.',
-            'Edit: change the slot’s section, give it a role (Intro · Verse · Pre · Chorus · Bridge · Outro), move, duplicate or delete.'], None),
+            '+ : add a slot — a suggested next section (chapter 3), a new section, a repeat of one, or a section imported from another project file. New sections take the current length.',
+            'Loop / Song: Loop repeats the selected slot, Song plays the whole song. For Loop in the Melody Track see chapter 16.',
+            'Overview: shows three bars in every slot.',
+            'Edit: change the slot’s section, give it a role, set its key and tempo (chapter 4), move, duplicate or delete.',
+            'The bars, left to right: Energy (drums and accompaniment), melody range (lowest to highest note) and notes per bar — the song’s arc at a glance, and the flat stretches.'],
+         'A slot with its own key or tempo shows +2 or ♩90 in its corner.'),
+        ('Next section', 'In + choose “✦ Suggest the next section…”: ideas for the section after the selected slot, by its role in the song. Key and tempo stay the song’s, so the flow carries on.', [('nextsec', 62)], [
+            'Its place in the song: Intro · Verse · Pre-chorus · Chorus · Bridge · Outro. The natural next step is preselected (after a Verse, the Pre-chorus).',
+            'Ideas: two progressions for that role. A Pre-chorus heads for V; a Chorus often starts away from the tonic (on IV, say). Tags show the first and last chord, how often chords change, and the accompaniment and drum changes.',
+            'Listen: hear the idea with its accompaniment and drums.',
+            'Other ideas: more progressions.',
+            'Add this section: add the chosen idea as a new section. If a section with that role exists, “Use A again” repeats it.'],
+         'Accompaniment and drums follow the song’s Verse: a step up for the Chorus, a step down for Intro · Bridge · Outro. The melody hint at the bottom is advice only; it adds no notes.'),
+        ('Key and tempo per slot', 'In the slot menu (Edit), give a slot its own key and tempo — a lifted last chorus, a slower bridge.', [('slotmenu', 56)], [
+            'The section this slot plays.',
+            'The section’s role (Intro · Verse · Pre · Chorus · Bridge · Outro).',
+            'Key of this slot: −3 to +5 semitones from the song’s key. Chord names, accompaniment and MIDI follow it, and the slot’s melody moves with it.',
+            'Tempo of this slot: Song follows the song’s BPM; − + or typing sets this slot’s own.',
+            'Move · duplicate · delete the slot.'],
+         'If the section is used in other slots, only this slot is split off as its own section (C′). The Roll and Staff show the new key and tempo too.'),
         ('Chords', 'Pick a chord in the palette and paint it on the grid of the selected section.', [('chords', 70)], [
             'Palette: the chords of the key and scale, as numerals and names. Tap to hear and select; Erase is the eraser.',
             'Grid: tap or drag to paint. Tap a painted cell again to clear it.',
@@ -226,7 +294,7 @@ EN = dict(
             'Bars: length of this section (2 · 4 · 8 · 16).',
             'Bass: bass part on / off. 7th: all chords as sevenths.',
             '/– : slash chords. Pick the scale note for the bass, then paint.',
-            'Dice (Random): fill the section with a random progression. With a melody in the slot it becomes a sparkle button (Suggest) that proposes chords for the melody (chapter 10).',
+            'Dice (Random): a random progression (current pop and K-ballad ones included) plus a random accompaniment style and drum pattern. Color starts off; press Play to hear it. With a melody in the slot it becomes a sparkle button (Suggest) that proposes chords for the melody (chapter 13).',
             'More chords: chords outside the scale (borrowed chords, secondary dominants …).'],
          'Not happy? Undo brings the previous progression back at any time.'),
         ('Accompaniment', 'How the chords are played. Each section can have its own (e.g. arpeggios in the verse, strumming in the chorus).', [('accomp', 62)], [
@@ -249,13 +317,21 @@ EN = dict(
             'Auto-Velocity: accents the melody on the beat (0% = flat, 100% = strongest).',
             'Tools — Pen: tap empty space to add, drag to change length or pitch, tap a note to delete. Select: draw a box, then copy · paste · move · octave · delete. Hand: scroll without editing.',
             'Len · Snap: length of new notes, and the grid they snap to.',
-            'Chord lane: chords and section names per bar. − + at the bottom right zoom in and out.'], None),
+            'Chord lane: chords and section names per bar. − + at the bottom right zoom in and out.'],
+         'In a slot with its own key, the rows show that key’s scale and tonic. For ✦ Continue at the bottom left see chapter 9.'),
+        ('Continue the melody', '✦ Continue, at the bottom left of the Roll or Staff, takes the last two bars before the cursor as a motif and shows a dashed idea for the next two bars.', [('continue', 62)], [
+            'Dashed notes: the idea. The two bars it grew from are tinted, the seam is the green line.',
+            'How it varies: up a 3rd (tap again: up a step · a 5th · down a step · a 3rd), the same rhythm on the chord tones there, or the intervals turned upside down.',
+            'Listen: the two bars and the idea, with the backing.',
+            'Another: another idea of the same kind.',
+            'Use it: add it to the melody. Close, or simply writing your own, ignores it.'],
+         'The first note of each bar lands near a chord tone. If the next section is in another key, the idea moves into it.'),
         ('Staff', 'The same melody as notation, written directly.', [('staff', 70)], [
             'Tools: Pen · Select · Hand (as in the roll).',
             'Note value: whole to sixteenth. Pick it, then tap the stave.',
             'Dot: one and a half times as long.',
             'Accidental: ♯ ♭ ♮.'],
-         'Hold on the stave and drag up or down to hear the pitch; let go to place it. Selected notes move with ▲▼ (semitone) and ◀▶ (sixteenth).'),
+         'Hold on the stave and drag up or down to hear the pitch; let go to place it. Selected notes move with ▲▼ (semitone) and ◀▶ (sixteenth). Where a slot is in another key, a double bar and the new key signature appear, and accidentals follow that key.'),
         ('Playing it in (Keys)', 'Keys at the bottom opens an on-screen keyboard (Roll and Staff modes).', [('keys', 64)], [
             'Live / Step: Live records what you play in time; Step adds one note per key press (length = Len).',
             'Rec: arm it, then Play: one bar count-in, then recording (Count-in can be switched off).',
@@ -269,17 +345,28 @@ EN = dict(
         ('Key and chords from the melody', 'Wrote the melody first? The app suggests a key and chords that fit it.', [('keyguess', 56), ('suggest', 62)], [
             'Key guess: “Guess from melody…” at the top of the Key list shows three likely keys. Apply only renames the key; the melody and chords sound the same.',
             'Suggest: in a slot with melody, the Chord Track’s dice becomes a sparkle button. Tap it to fill empty cells with chords that fit the melody; tap again for another option (up to five).'], None),
-        ('Singing (Audio)', 'Choose Audio in Mode to record with the microphone over the backing. Wired earphones keep the backing out of the recording.', [('audio', 72)], [
+        ('Singing (Audio)', 'Choose Audio in Mode to record with the microphone over the backing. Wired earphones keep the backing out of the recording.', [('audio', 70)], [
             'Audio in Mode. The microphone is on in this mode only.',
             'Input device: usually leave as it is.',
             'Calibrate: once, earphones out and volume up. The speaker’s clicks are recorded back to measure the delay, and recordings are placed accordingly.',
-            'Input: microphone boost. Sing your loudest part and aim for the meter below to reach about orange; if the number turns red, lower it.',
+            'Input: microphone boost (0–48 dB, +36 by default). Sing your loudest part and aim for the meter below to reach about orange; if the number turns red, lower it. Input options switch auto gain, noise suppression and echo cancellation.',
             'Loop / Song: Loop repeats the bars you set and keeps every pass as a take; Song records from the playhead until Stop.',
             'Bars to loop: first and last bar (inclusive). Playback loops them too; outside is dimmed.',
             'REC: one bar of backing, then recording. Tap again to stop and keep the take.',
-            'Timeline: tap a section to select it (the playhead moves there too). The take chosen for each section is shown in place, and they play together.',
-            'Takes of the selected section: tap a row to use that take here (tap again to un-use). ▶ listen from this section · WAV export · ✕ delete (Undo brings it back).'],
+            'Timeline: tap a section to select it (the playhead moves there too). The take chosen for each section is shown in place, and they play together. Swipe sideways to scroll; long-press a clip to edit it (chapter 15).',
+            '− + : zoom the timeline. All the way out, the whole song fits.',
+            'Takes of the selected section, grouped as Song takes and Loop takes. Tap a row to use that take here (tap again to un-use). ▶ listen from this section · WAV export · ✕ delete (Undo brings it back).'],
          'Takes are named like Song-Bar01-1st or Loop-Bar01-04-2nd. To silence the MIDI melody while recording, mute MIDI in the mixer.'),
+        ('Editing audio clips', 'Long-press a clip on the timeline: it gets a yellow frame and the edit panel opens. A clip is one piece of the take used in a section.', [('clipedit', 66)], [
+            'Start handle: drag to trim the start, or to bring it back. The handle’s inner edge is the edit point.',
+            'End handle: the same for the end. Drag the middle of the clip to move all of it.',
+            'Split at playhead: tap the timeline to put the playhead inside the clip, then split it there.',
+            'Delete: remove the clip. To remove part of it, split first.',
+            'Nudge: what the arrows move — Clip (all of it) · Start · End.',
+            '◀ ▶: move it by one Step.',
+            'Step: the unit for dragging and the arrows — Beat · 1/16 · 10 tick · 1 tick.',
+            'Done: leave the edit mode.'],
+         'Tap an empty stretch between clips: it is selected (dashed green) and tapping a take in the list fills just that gap. A clip moved or stretched over another cuts it. Every edit can be undone.'),
         ('Keep going with Loop', 'With the Chord Track on Loop, the Melody Track repeats the selected slot too, and the song grows as you keep writing.', [('ghost', 70)], [
             'Select the last slot and a dashed copy of it waits after the song. Draw notes in it and it becomes real, with a new dashed copy after it.',
             'Recording (singing or Keys Live) does not jump back at the end of the slot: the next copy is made ahead of time and recording carries on.',
@@ -298,15 +385,16 @@ EN = dict(
          'MIDI files carry each track’s fader as its volume.'),
         ('Sound (SoundFont)', 'In Setup → Sound.', [('setup_sound', 66)], [
             'Basic Synth works without files; SoundFont plays sampled instruments.',
-            'Load SoundFont: load a .sf2 file (e.g. GeneralUser GS) and pick an instrument for Melody · Chords · Bass · Drums. Loaded files stay on the phone. Then Save / Load preset stores the instruments together with the mixer balance.',
-            'Drum pattern and Edit (the editor from chapter 5).'], None),
+            'Loaded banks. The built-in GeneralUser GS (the bank Ardour plays MIDI with) is there from the start. If removed, “Use the built-in GeneralUser GS” fetches it again.',
+            'Add SoundFont: add other .sf2 files and pick an instrument for Melody · Chords · Bass · Drums. Loaded files stay on the phone. Save / Load preset stores the instruments together with the mixer balance.',
+            'Drum pattern and Edit (the editor from chapter 7).'], None),
         ('Saving and opening', 'In Setup → Project.', [('setup_project', 66)], [
             'New project (tap twice to confirm).',
             'Open project: a saved .zip or .phrasenote file. Recordings come back too.',
             'Save project: one .zip in Downloads with the project file, a MIDI file, Melody.wav (the takes chosen per section, joined) and a WAV per take. Asks for a name only the first time, then saves over it.',
             'Save as: a copy under a new name; it suggests My Song v2, v3 …',
             'Recent projects: the last 10 are kept on the phone and open with one tap.'],
-         'The MIDI file has Chords · Bass · Melody · Drums (when on) as separate tracks, ready to continue in a DAW.'),
+         'The MIDI file has Chords · Bass · Melody · Drums (when on) as separate tracks, with the slots’ tempo and key changes, ready to continue in a DAW.'),
     ]),
     ],
     notes=('Notes', [
@@ -315,6 +403,8 @@ EN = dict(
         'Bluetooth earphones add too much delay for recording; wired ones are recommended.',
         'Files are saved to Downloads as a .zip. Saving straight into a chosen folder is not supported yet.',
         'Some accompaniment styles and genre drums are 4/4 only; patterns approximate a genre’s feel.',
+        'Recordings keep the speed they were recorded at: change a slot’s tempo after recording and its takes may drift (the take list then says “tempo changed since”).',
+        'The time signature is one for the whole song.',
     ]),
 )
 
@@ -344,7 +434,9 @@ ol li::before{content:counter(n);position:absolute;left:0;top:.2mm;width:5.4mm;h
 ol.plain li::before{content:'•';background:none;color:#34d3a6;font-size:12pt}
 .tip{margin-top:3mm;padding:2.5mm 3.5mm;border-left:1mm solid #34d3a6;background:#eefaf6;border-radius:0 2mm 2mm 0;color:#244}
 .start{break-after:page}
-.toc{margin:4mm 0 0}
+.toc{margin:4mm 0 0;columns:2;column-gap:8mm}
+.toc h3{break-after:avoid}
+.toc div{break-inside:avoid}
 .toc h3{font-size:10pt;color:#1f8f70;margin:4mm 0 1mm}
 .toc div{padding:1.1mm 0;border-bottom:.2mm solid #e3e6ea}
 .about p{margin:0 0 3.5mm;font-size:10.4pt;line-height:1.7}
