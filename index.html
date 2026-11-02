@@ -236,20 +236,23 @@ body.aud .velc{visibility:hidden}
 .thead small{font-size:11px; color:var(--dim)}
 .thead.gap b{color:var(--mint)}
 .take.on{border-color:var(--rec); box-shadow:inset 3px 0 0 var(--rec)}
-.clipov{position:absolute; top:40px; height:80px; border:2px solid var(--rec); border-radius:6px; background:rgba(255,93,80,.12); touch-action:none; cursor:grab; z-index:2}
-.clipov .ch{position:absolute; top:-2px; bottom:-2px; width:12px; background:var(--rec); touch-action:none}
+.clipov{position:absolute; top:40px; height:80px; border:2px solid #f5c542; border-radius:6px; background:rgba(245,197,66,.12); touch-action:none; cursor:grab; z-index:2}
+.clipov .ch{position:absolute; top:-2px; bottom:-2px; width:12px; background:#f5c542; touch-action:none}
 .clipov .ch.l{left:-7px; border-radius:6px 0 0 6px}
 .clipov .ch.r{right:-7px; border-radius:0 6px 6px 0}
-.clipov .ch::after{content:""; position:absolute; left:5px; top:30%; bottom:30%; width:2px; border-radius:1px; background:rgba(255,255,255,.85)}
-.clipbar{display:flex; flex-direction:column; gap:6px; margin-top:6px; border:1px solid var(--line); border-top:2px solid var(--rec); border-radius:12px; padding:8px; background:var(--panel)}
+.clipov .ch::after{content:""; position:absolute; left:5px; top:30%; bottom:30%; width:2px; border-radius:1px; background:rgba(0,0,0,.55)}
+.clipbar{display:flex; flex-direction:column; gap:6px; margin-top:6px; border:1px solid var(--line); border-top:2px solid #f5c542; border-radius:12px; padding:8px; background:var(--panel)}
 .clipbar .cbr{display:flex; align-items:center; gap:6px}
 .clipbar .cbn{flex:1; min-width:0; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .clipbar .pill{height:32px; padding:0 12px; font-size:12.5px}
-.clipbar .pill.pri{background:var(--rec); border-color:var(--rec); color:#fff}
+.clipbar .pill.pri{background:#f5c542; border-color:#f5c542; color:#231a00}
 .clipbar .pill.dl{color:var(--rec)}
 .clipbar .pill.nb{width:40px; padding:0}
 .clipbar .pill:disabled{opacity:.4}
-.clipbar .seg{flex:1}
+.clipbar .seg{flex:none; width:auto}
+.clipbar .seg button{flex:none; width:auto; min-width:0; height:30px; padding:0 11px; font-size:12px}
+.clipbar .seg button.on,.clipbar .seg button[aria-pressed="true"]{background:#f5c542; color:#231a00}
+.clipbar .cbr .sp{flex:1}
 .clipbar .note{margin:0; font-size:11px}
 .tgrp{display:flex; align-items:center; gap:8px; margin-top:6px; font-size:10.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--dim)}
 .tgrp::after{content:""; flex:1; height:1px; background:var(--line)}
@@ -959,7 +962,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.19.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.19.2</p>
   </div>
 </section>
 
