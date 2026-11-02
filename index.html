@@ -967,7 +967,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.20.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.21.0</p>
   </div>
 </section>
 
@@ -1411,7 +1411,24 @@ const Core=(function(){
     [[0],[xcode(9,0,1)],[2],[8]],             // I  VI7 ii V
     [[6],[xcode(5,1,0)],[0],[0]],             // IV iv I  I
     [[0],[xcode(8,3,0)],[xcode(10,0,0)],[0]], // I  bVI bVII I
-    [[0],[xcode(2,0,1)],[6],[0]]              // I  II7 IV I
+    [[0],[xcode(2,0,1)],[6],[0]],             // I  II7 IV I
+    /* more from current pop and Korean ballads (slash chords: bassDegree*14 + degree*2) */
+    [[0,106],[10,70],[6,42],[2,8]],           // I V/7 | vi I/5 | IV I/3 | ii V   (descending bass, ballad)
+    [[6],[4,10],[2,8],[0]],                   // IV | iii vi | ii V | I   (royal road to I)
+    [[7,9],[5,11],[3,9],[1,1]],               // IVmaj7 V7 | iii7 vi7 | ii7 V7 | Imaj7
+    [[0],[xcode(0,0,1)],[6],[xcode(5,1,0)]],  // I  I7 IV iv   (ballad)
+    [[0],[6],[xcode(5,1,0)],[0]],             // I  IV iv I
+    [[6],[xcode(5,1,0)],[0],[10]],            // IV iv I  vi
+    [[6],[8],[10],[0]],                       // IV V  vi I   (hopscotch)
+    [[6],[8],[0],[10]],                       // IV V  I  vi
+    [[6],[0],[8],[10]],                       // IV I  V  vi
+    [[0],[10],[2],[8]],                       // I  vi ii V
+    [[1],[11],[3],[9]],                       // Imaj7 vi7 ii7 V7   (R&B)
+    [[1],[5],[11],[3,9]],                     // Imaj7 iii7 vi7 ii7 V7   (city pop)
+    [[7],[5],[3],[1]],                        // IVmaj7 iii7 ii7 Imaj7   (4-3-2-1 step down)
+    [[2],[4],[6],[8]],                        // ii iii IV V   (rising)
+    [[6,8],[4,xcode(9,0,1)],[2,8],[0]],       // IV V | iii VI7 | ii V | I
+    [[0],[xcode(10,0,0)],[6],[0]]             // I  bVII IV I   (Mixolydian)
   ];
   const POOL_MINOR=[
     [[0],[10],[4],[12]],         // i VI III VII
@@ -2120,12 +2137,18 @@ const Core=(function(){
   const NEXT_ROLE={'':'Chorus',Intro:'Verse',Verse:'Pre',Pre:'Chorus',Chorus:'Bridge',Bridge:'Chorus',Outro:'Outro'};
   const RPOOL={
     major:{
-      Intro:[[[3],[4],[0],[0]],[[0],[3],[0],[3]],[[5],[3],[0],[4]],[[3],[3],[0],[0]],[[0],[5],[3],[4]]],
-      Verse:[[[0],[4],[5],[3]],[[0],[5],[3],[4]],[[0],[3],[0],[4]],[[0],[2],[3],[4]],[[0],[0],[3],[3]],[[5],[3],[0],[4]]],
-      Pre:[[[3],[4],[2],[5]],[[1],[3],[4],[4]],[[3],[5],[1],[4]],[[5],[3],[1],[4]],[[3],[0],[1],[4]],[[3],[4],[5],[4]]],
-      Chorus:[[[3],[4],[2],[5]],[[0],[4],[5],[3]],[[3],[4],[0],[5]],[[5],[3],[0],[4]],[[3],[0],[4],[5]],[[0],[3],[5],[4]]],
-      Bridge:[[[5],[2],[3],[4]],[[2],[5],[3],[4]],[['bVI'],['bVII'],[0],[4]],[[1],[2],[3],[4]],[[5],[3],['bVII'],[4]],[[3],['iv'],[0],[4]]],
-      Outro:[[[3],[4],[0],[0]],[[3],['iv'],[0],[0]],[[5],[3],[4],[0]],[[0],[3],[0],[0]],[['bVI'],['bVII'],[0],[0]]]
+      Intro:[[[3],[4],[0],[0]],[[0],[3],[0],[3]],[[5],[3],[0],[4]],[[3],[3],[0],[0]],[[0],[5],[3],[4]],
+        [[0,'4/7'],[5,'0/5'],[3,'0/3'],[1,4]],[[3],['iv'],[0],[0]],[[3],[4],[2],[5]]],
+      Verse:[[[0],[4],[5],[3]],[[0],[5],[3],[4]],[[0],[3],[0],[4]],[[0],[2],[3],[4]],[[0],[0],[3],[3]],[[5],[3],[0],[4]],
+        [[0,'4/7'],[5,'0/5'],[3,'0/3'],[1,4]],[[0],['I7'],[3],['iv']],[[0],[5],[1],[4]],[[0],['III7'],[5],[3]],[[0],[3],[5],[4]],[[0],[3],['iv'],[0]]],
+      Pre:[[[3],[4],[2],[5]],[[1],[3],[4],[4]],[[3],[5],[1],[4]],[[5],[3],[1],[4]],[[3],[0],[1],[4]],[[3],[4],[5],[4]],
+        [[1],[2],[3],[4]],[[3],[2],[1],[4]],[[3],['iv'],[1],[4]],[[3],[4,'III7'],[5],[4]],[[3],['0/3'],[1],[4]]],
+      Chorus:[[[3],[4],[2],[5]],[[0],[4],[5],[3]],[[3],[4],[0],[5]],[[5],[3],[0],[4]],[[3],[0],[4],[5]],[[0],[3],[5],[4]],
+        [[0,'4/7'],[5,'0/5'],[3,'0/3'],[1,4]],[[3,4],[2,5],[1,4],[0]],[[3],[4],[5],[0]],[[3],[4],['III7'],[5]],[[0],['III7'],[5],[3]],[[3],[4],[2,'VI7'],[1,4]]],
+      Bridge:[[[5],[2],[3],[4]],[[2],[5],[3],[4]],[['bVI'],['bVII'],[0],[4]],[[1],[2],[3],[4]],[[5],[3],['bVII'],[4]],[[3],['iv'],[0],[4]],
+        [[5],['III7'],[3],[4]],[[3],[2],[1],[4]],[[1],[4],[2],[5]]],
+      Outro:[[[3],[4],[0],[0]],[[3],['iv'],[0],[0]],[[5],[3],[4],[0]],[[0],[3],[0],[0]],[['bVI'],['bVII'],[0],[0]],
+        [[1],[4],[0],[0]],[[3],[4],['bVI','bVII'],[0]],[[3],[2],[1],[0]]]
     },
     minor:{
       Intro:[[[5],[6],[0],[0]],[[0],[5],[0],[5]],[[3],[3],[0],[0]],[[0],[6],[5],['V']]],
@@ -2151,6 +2174,10 @@ const Core=(function(){
     else if(t==='bVI')c=xcode(8,3,0);
     else if(t==='bVII')c=xcode(10,0,0);
     else if(t==='iv')c=xcode(5,1,0);
+    else if(t==='I7')c=xcode(0,0,1);
+    else if(t==='III7')c=xcode(4,0,1);
+    else if(t==='VI7')c=xcode(9,0,1);
+    else if(typeof t==='string'&&/^\d\/\d$/.test(t))c=(+t[2])*14+(+t[0])*2;  /* '4/7' = V over the 7th degree */
     else if(scale==='harm'&&t===2)c=xcode(3,3,0);
     else if(scale==='harm'&&t===6)c=xcode(10,0,0);
     else c=t*2;
@@ -2170,7 +2197,7 @@ const Core=(function(){
     const cc=function(t){return tokCode(t,p.scale,p.sev);};
     /* order: shuffled, then the ones starting where the previous section started or on its last chord go to the back */
     const idx=pool.map(function(_,i){return {i:i,r:rnd()};});
-    idx.forEach(function(o){const s=cc(pool[o.i][0][0]);o.r+=(s===firstCode?2:0)+(s===lastCode?1:0)+((used||[]).indexOf(o.i)>=0?3:0);});
+    idx.forEach(function(o){const s=cc(pool[o.i][0][0]);o.r+=(s===firstCode?2:0)+(s===lastCode?0.6:0)+((used||[]).indexOf(o.i)>=0?3:0);});
     idx.sort(function(a,b){return a.r-b.r;});
     const pi=idx[Math.min(alt,idx.length-1)].i, prog=pool[pi], prog2=pool[idx[(alt+1)%idx.length].i];
     const bars=role==='Intro'||role==='Outro'?4:Math.max(4,Math.min(8,prev.bars));
