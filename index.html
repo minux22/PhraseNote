@@ -264,11 +264,11 @@ body.aud .velc{visibility:hidden}
 .clipbar .seg button.on,.clipbar .seg button[aria-pressed="true"]{background:#f5c542; color:#231a00}
 .clipbar .cbr .sp{flex:1}
 .clipbar .note{margin:0; font-size:11px}
-.tgrp{display:flex; align-items:center; gap:8px; margin-top:6px; font-size:10.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--dim)}
-.tgrp::after{content:""; flex:1; height:1px; background:var(--line)}
-.tgrp i{font-style:normal; font-weight:700; letter-spacing:0; font-size:10px; padding:1px 6px; border-radius:999px; background:var(--panel-2); border:1px solid var(--line); order:2}
-.tgrp::after{order:3}
-.tgrp span{order:1}
+.tkg{display:flex; align-items:center; gap:8px; margin-top:6px; font-size:10.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--dim)}
+.tkg::after{content:""; flex:1; height:1px; background:var(--line)}
+.tkg i{font-style:normal; font-weight:700; letter-spacing:0; font-size:10px; padding:1px 6px; border-radius:999px; background:var(--panel-2); border:1px solid var(--line); order:2}
+.tkg::after{order:3}
+.tkg span{order:1}
 .take .tn{flex:1; min-width:0; display:flex; flex-direction:column; line-height:1.25}
 .take .tn b{font-size:13px}
 .take .tn small{font-size:11px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
@@ -560,6 +560,16 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 #toolSeg2 button{flex:1; padding:0}
 .stgrid{flex:1; min-width:0; display:grid; grid-template-columns:repeat(3,1fr); gap:5px; padding:6px; border:1.5px solid var(--line); border-radius:14px; background:var(--panel)}
 .stgrid .seg{display:contents}
+/* tablets and desktops: the tool box takes half the row in Roll and Staff; the device list does not stretch */
+@media (min-width:480px){
+  #rollCtl .opts.flush{display:grid; grid-template-columns:calc(50% - 7px) 1fr 1fr; gap:8px 14px}
+  #rollCtl .field{justify-content:flex-end}
+  #rollCtl .field select{flex:1; max-width:110px}
+  .stbox{display:grid; grid-template-columns:calc(50% - 7px) 1fr; gap:14px; align-items:end}
+  .stl{width:auto; margin-bottom:6px}
+  #toolSeg2 button{height:32px}
+  #recDev{flex:0 1 260px}
+}
 #staffCtl .stgrid button{height:32px; padding:0; border:1px solid var(--line); border-radius:10px; background:var(--panel-2); color:var(--text); font-size:18px; display:grid; place-items:center}
 #staffCtl .stgrid button.on{background:var(--blue); border-color:var(--blue); color:var(--on-blue)}
 #staffCtl .stgrid button svg{width:16px; height:24px}
@@ -974,7 +984,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.21.6</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.21.7</p>
   </div>
 </section>
 
@@ -6397,7 +6407,7 @@ function renderTakes(){
   if(U.recMode==='loop')groups.reverse();
   groups.forEach(function(gr){
     if(!gr[2].length)return;
-    const gh=document.createElement('div');gh.className='tgrp '+gr[0];gh.innerHTML='<span>'+gr[1]+'</span><i>'+gr[2].length+'</i>';host.appendChild(gh);
+    const gh=document.createElement('div');gh.className='tkg '+gr[0];gh.innerHTML='<span>'+gr[1]+'</span><i>'+gr[2].length+'</i>';host.appendChild(gh);
     gr[2].slice().reverse().forEach(function(t){addRow(t);});
   });
   function addRow(t){
