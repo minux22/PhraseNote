@@ -219,7 +219,7 @@ body.aud .velc{visibility:hidden}
 .recb[aria-pressed="true"]{background:var(--rec); color:#fff}
 .recb[aria-pressed="true"] i{background:#fff; animation:ghostp 1s infinite}
 .recwrap{overflow-x:auto; border:1px solid var(--line); border-radius:12px; background:var(--panel); touch-action:pan-x}
-.recin{position:relative; width:max-content}
+.recin{position:relative; width:max-content; padding:0 12px}
 #recCv{display:block}
 .rph{position:absolute; top:0; bottom:0; width:2px; background:var(--rec); pointer-events:none; left:0}
 /* playhead styles: a white line with a head (a, b), or coral with a head (c) */
@@ -236,10 +236,11 @@ body.aud .velc{visibility:hidden}
 .thead small{font-size:11px; color:var(--dim)}
 .thead.gap b{color:var(--mint)}
 .take.on{border-color:var(--rec); box-shadow:inset 3px 0 0 var(--rec)}
-.clipov{position:absolute; top:40px; height:80px; border:2px solid #f5c542; border-radius:6px; background:rgba(245,197,66,.12); touch-action:none; cursor:grab; z-index:2}
+.clipov{position:absolute; top:40px; height:80px; box-sizing:border-box; border:2px solid #f5c542; border-left:0; border-right:0; background:rgba(245,197,66,.12); touch-action:none; cursor:grab; z-index:2}
+/* the handles sit outside the clip: their inner edge is exactly the clip's start or end */
 .clipov .ch{position:absolute; top:-2px; bottom:-2px; width:12px; background:#f5c542; touch-action:none}
-.clipov .ch.l{left:-7px; border-radius:6px 0 0 6px}
-.clipov .ch.r{right:-7px; border-radius:0 6px 6px 0}
+.clipov .ch.l{left:-12px; border-radius:6px 0 0 6px}
+.clipov .ch.r{right:-12px; border-radius:0 6px 6px 0}
 .clipov .ch::after{content:""; position:absolute; left:5px; top:30%; bottom:30%; width:2px; border-radius:1px; background:rgba(0,0,0,.55)}
 .clipbar{display:flex; flex-direction:column; gap:6px; margin-top:6px; border:1px solid var(--line); border-top:2px solid #f5c542; border-radius:12px; padding:8px; background:var(--panel)}
 .clipbar .cbr{display:flex; align-items:center; gap:6px}
@@ -966,7 +967,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.20.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.20.1</p>
   </div>
 </section>
 
@@ -6126,7 +6127,7 @@ $('#recCal').addEventListener('click',function(){
 });
 /* the REC timeline: bar strip, chords, the waveform of the take in use */
 /* the whole song fits the width, so every section's chosen take is in view (scrolls only when bars would get narrower than 28 px) */
-function recScale(){const M=Core.meter(P), bars=Math.max(mBars(),Math.ceil(Core.formTicks(P)/M.bar))+(P.pick?1:0), w=($('#recWrap').clientWidth||320)-2, beats=bars*M.bar/PPQ;return Math.max(w/beats,28/(M.bar/PPQ));}
+function recScale(){const M=Core.meter(P), bars=Math.max(mBars(),Math.ceil(Core.formTicks(P)/M.bar))+(P.pick?1:0), w=($('#recWrap').clientWidth||320)-26, beats=bars*M.bar/PPQ;return Math.max(w/beats,28/(M.bar/PPQ));}
 function renderRec(){
   if(U.view!=='rec')return;
   const cv=$('#recCv'), M=Core.meter(P), z=recScale(), pk=P.pick?M.bar:0;$('#recWrap').dataset.sk=U.recSkin||'b';
@@ -6219,7 +6220,7 @@ function clipUI(){
   const e=clipCur(), bar=$('#clipBar'), ov=$('#clipOv');
   if(!e||U.view!=='rec'){if(CLP)clipClose();return;}
   const M=Core.meter(P), z=recScale(), pk=P.pick?M.bar:0, X=function(tk){return (tk+pk)/PPQ*z;}, m=takeMeta(e.id);
-  ov.hidden=false;ov.style.left=X(e.a)+'px';ov.style.width=Math.max(6,X(e.b)-X(e.a))+'px';
+  ov.hidden=false;ov.style.left=(12+X(e.a))+'px';ov.style.width=Math.max(6,X(e.b)-X(e.a))+'px';
   bar.hidden=false;
   $('#clipName').textContent=m.name+' · '+fmtPos(e.a)+' – '+fmtPos(e.b);
   $('#clipSplit').disabled=!(K.cur>e.a&&K.cur<e.b);
@@ -6273,7 +6274,7 @@ Array.prototype.forEach.call(document.querySelectorAll('#clipBar .nb'),function(
 })();
 function movePhRec(beat){
   const M=Core.meter(P), z=recScale(), pk=P.pick?M.bar:0, x=(beat*PPQ+pk)/PPQ*z, ph=$('#recPh'), w=$('#recWrap');
-  ph.style.left=x+'px';
+  ph.style.left=(12+x)+'px';
   if(playing&&(x<w.scrollLeft||x>w.scrollLeft+w.clientWidth-30))w.scrollLeft=Math.max(0,x-20);
 }
 $('#recIn').addEventListener('click',function(e){
