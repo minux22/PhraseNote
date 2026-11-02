@@ -377,22 +377,35 @@ body.kbd-open{padding-bottom:calc(92px + var(--kbdh,150px) + env(safe-area-inset
 #kLat{padding:0 9px; font-size:11px}
 .kcl select{height:30px; width:52px; flex:none; font-size:12px; padding:0 2px 0 8px; border-radius:10px}
 .kcl{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--dim); font-weight:700; letter-spacing:.04em; text-transform:uppercase}
-.keys{display:flex; flex-direction:column; gap:8px}
-.kset{display:flex; flex-direction:column; gap:3px}
-.kb,.kw{position:relative; height:44px; display:flex}
-.kb{height:34px}
-.wk,.bk{border:1px solid var(--line); touch-action:none; padding:0; font-size:10px; font-family:var(--mono); display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:1px; padding-bottom:2px; -webkit-tap-highlight-color:transparent}
-.wk{flex:1; margin:0 1px; border-radius:6px; background:#f1f3f6; color:#4b5563; position:relative}
-.bk{position:absolute; top:0; bottom:0; width:8%; margin-left:-4%; border-radius:6px; background:#838b97; color:#10141a; border-color:#a3aab5}
-.bk.out{opacity:.92}
-.wk.out,.bk.out{opacity:.5}
-.wk.tn::before{content:''; position:absolute; top:4px; left:calc(50% - 3px); width:6px; height:6px; border-radius:50%; background:var(--mint)}
-.wk.down,.bk.down{background:var(--mint); color:var(--mint-ink); border-color:var(--mint)}
-.wk.fade,.bk.fade{animation:kfade .7s ease-out}
+.keys{display:flex; flex-direction:column; gap:6px; background:#111316; border:1px solid #2b2f35; border-radius:10px; padding:5px 6px 6px}
+/* stage-keyboard look: the black keys sit over the white keys, a mint LED line names each octave */
+.kset{position:relative; padding-top:13px; overflow:hidden}
+.kset::before{content:attr(data-oct); position:absolute; left:2px; top:0; font:700 9px/10px var(--mono); color:var(--mint); letter-spacing:.08em}
+.kset::after{content:''; position:absolute; left:26px; right:2px; top:4px; height:3px; border-radius:2px; background:linear-gradient(90deg,#1b5f50,var(--mint),#1b5f50); opacity:.7}
+.kw{position:relative; height:84px; display:flex}
+.kb{position:absolute; left:0; right:0; top:13px; height:52px; z-index:2; pointer-events:none}
+.wk,.bk{touch-action:none; padding:0 0 4px; font-size:10px; font-family:var(--mono); display:flex; flex-direction:column; align-items:center; justify-content:flex-end; gap:1px; -webkit-tap-highlight-color:transparent; position:relative; overflow:hidden}
+.wk{flex:1; margin:0; border:0; border-right:1px solid #b9bdc3; border-radius:0 0 4px 4px; background:linear-gradient(#e9ebee,#f6f7f8 70%,#d9dce0); color:#4a5058}
+.wk:first-child{border-left:1px solid #b9bdc3}
+.bk{position:absolute; top:0; bottom:0; width:8.6%; margin-left:-4.3%; border:1px solid #000; border-top:0; border-radius:0 0 4px 4px; background:linear-gradient(#2b2e33,#1b1d21); color:#8c939c; box-shadow:0 2px 0 #000; pointer-events:auto}
+.wk.out{background:linear-gradient(#cfd3d8,#dde0e4 70%,#c4c8ce); color:#6b727b}
+.bk.out{background:linear-gradient(#202226,#141518); color:#5d636b}
+.wk.tn::before{content:''; position:absolute; top:6px; left:calc(50% - 3px); width:6px; height:6px; border-radius:50%; background:var(--mint)}
+/* pressed: a mint glow from the front edge; released: it fades out */
+.wk::after,.bk::after{content:''; position:absolute; inset:0; opacity:0; pointer-events:none}
+.wk::after{background:linear-gradient(rgba(52,211,166,0),rgba(52,211,166,.35) 40%,rgba(52,211,166,.75)); box-shadow:inset 0 -3px 0 var(--mint)}
+.bk::after{background:linear-gradient(#155446,#1d8f74); box-shadow:inset 0 -3px 0 var(--mint)}
+.wk.down::after,.bk.down::after{opacity:1}
+.wk.fade::after,.bk.fade::after{animation:kfade2 .7s ease-out}
+@keyframes kfade2{0%{opacity:1}100%{opacity:0}}
 @keyframes kfade{0%{background:var(--mint); color:var(--mint-ink)}}
+.wk .kn,.wk .kl,.bk .kn,.bk .kl{position:relative; z-index:1}
+.wk.down .kn{color:#0b5a46}
+.bk.down .kn,.bk.down .kl{color:#e6fff7}
 .kl{opacity:.55; font-size:8px}
-.bk .kl{opacity:.55; color:#3a414b}
-@media (prefers-reduced-motion: reduce){.wk.fade,.bk.fade,.kbtn.lit2{animation:none}}
+.bk .kn{font-size:9px}
+.bk .kl{opacity:.6; font-size:7.5px}
+@media (prefers-reduced-motion: reduce){.wk.fade::after,.bk.fade::after,.kbtn.lit2{animation:none}}
 /* dock + sheets */
 .dock{position:fixed; left:0; right:0; bottom:0; z-index:8; background:var(--bg-2); border-top:1px solid var(--line);
   padding:8px max(16px, env(safe-area-inset-right, 0px)) calc(8px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px))}
@@ -984,7 +997,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.21.8</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.22.0</p>
   </div>
 </section>
 
@@ -4401,7 +4414,8 @@ function buildKeys(){
   kbdLabels();
 }
 function kbdLabels(){
-  const sc=Core.SCALES[P.scale];
+  const sc=Core.SCALES[P.scale], sets=document.querySelectorAll('#kbd .kset'), on=function(n){return WNAME[n%7]+Math.floor(n/7);};
+  if(sets.length===2){sets[0].dataset.oct=on(K.st+7);sets[1].dataset.oct=on(K.st);}
   Object.keys(K.keyEls).forEach(function(id){
     const el=K.keyEls[id], m=keyMidi(id[0],+id.slice(1)), rel=((m-P.key)%12+12)%12;
     el.classList.toggle('out',sc.indexOf(rel)<0);
