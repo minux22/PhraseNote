@@ -246,7 +246,10 @@ body.aud .velc{visibility:hidden}
 .clipbar .cbn{flex:1; min-width:0; font-size:12.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
 .clipbar .pill{height:32px; padding:0 12px; font-size:12.5px}
 .clipbar .pill.pri{background:#f5c542; border-color:#f5c542; color:#231a00}
-.clipbar .pill.dl{color:var(--rec)}
+.clipbar .pill.dl,.clipbar #clipSplit{color:#f5c542}
+.clipbar .cbr>.lbl{flex:0 0 46px}
+@keyframes yflash{0%{background:#f5c542; color:#231a00; border-color:#f5c542}100%{}}
+.clipbar .pill.fl{animation:yflash .6s ease-out}
 .clipbar .pill.nb{width:40px; padding:0}
 .clipbar .pill:disabled{opacity:.4}
 .clipbar .seg{flex:none; width:auto}
@@ -887,7 +890,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       <div class="clipbar" id="clipBar" hidden>
         <div class="cbr"><b class="cbn" id="clipName"></b><button type="button" class="pill pri" id="clipDone">Done</button></div>
         <div class="cbr"><button type="button" class="pill" id="clipSplit">✂ Split at playhead</button><button type="button" class="pill dl" id="clipDel">Delete</button></div>
-        <div class="cbr"><div class="seg" id="clipTgt"></div><button type="button" class="pill nb" data-n="-1" aria-label="Earlier">◀</button><button type="button" class="pill nb" data-n="1" aria-label="Later">▶</button></div>
+        <div class="cbr"><span class="lbl">Nudge</span><div class="seg" id="clipTgt"></div><button type="button" class="pill nb" data-n="-1" aria-label="Earlier">◀</button><button type="button" class="pill nb" data-n="1" aria-label="Later">▶</button></div>
         <div class="cbr"><span class="lbl">Step</span><div class="seg" id="clipStep"></div></div>
         <p class="note" id="clipHint">Drag the clip to move it, its edges to trim · tap the timeline to set the split point</p>
       </div>
@@ -962,7 +965,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.19.2</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.19.3</p>
   </div>
 </section>
 
@@ -6148,7 +6151,7 @@ function renderRec(){
     g.strokeStyle=col('--rec');g.globalAlpha=.5;g.lineWidth=1;g.strokeRect(x0+.5,42.5,x1-x0-1,H-46);g.globalAlpha=1;
     g.fillStyle=col('--dim');g.font='10px sans-serif';g.save();g.beginPath();g.rect(x0,40,x1-x0,14);g.clip();g.fillText(m.name,x0+4,51);g.restore();
     if(!a)return;
-    g.fillStyle=col('--rec');
+    g.fillStyle=CLP&&e.id===CLP.id&&e.a===CLP.a?'#f5c542':col('--rec');
     for(let x=Math.floor(x0);x<x1;x++){
       const tk0=(x-X(0))/z*PPQ, tk1=(x+1-X(0))/z*PPQ;
       const eo=e.o||0, s0=Math.max(0,Math.floor(takeOff(m,tk0-eo)*m.sr)), s1=Math.min(a.length,Math.floor(takeOff(m,tk1-eo)*m.sr));
@@ -6167,7 +6170,11 @@ function renderRec(){
 let CLP=null, clipSwallow=0, GAP=null;
 function fmtPos(t){const M=Core.meter(P), b=Math.floor(t/M.bar), r=t-b*M.bar, bt=Math.floor(r/M.bt), tk=r-bt*M.bt;return (b+1)+'.'+(bt+1)+(tk?'.'+tk:'');}
 function clipStep(){return {beat:Core.meter(P).bt,s16:120,t10:10,t1:1}[U.clipStep||'s16']||120;}
-function clipCur(){if(!CLP)return null;return (P.vcomp||[]).filter(function(e){return e.id===CLP.id&&e.a===CLP.a;})[0]||null;}
+function clipCur(){if(!CLP)return null;const v=P.vcomp||[];
+  let e=v.filter(function(x){return x.id===CLP.id&&x.a===CLP.a;})[0];
+  /* after Undo the clip may sit a little elsewhere: the nearest piece of the same take */
+  if(!e){let bd=Infinity;v.forEach(function(x){if(x.id!==CLP.id)return;const d=Math.abs(x.a-CLP.a);if(d<bd&&d<=3840){bd=d;e=x;}});if(e)CLP.a=e.a;}
+  return e||null;}
 function clipBounds(e){const m=takeMeta(e.id), o=e.o||0;return {lo:Math.max(loTick(),m.t0+o),hi:m.t0+o+takeTicks(m)};}
 function clipPut(e,a,b,o){
   const x={a:a,b:b,id:e.id};if(o)x.o=o;
@@ -6193,6 +6200,8 @@ function clipUI(){
   mkSeg($('#clipStep'),[['beat','Beat'],['s16','1/16'],['t10','10 tick'],['t1','1 tick']],function(){return U.clipStep||'s16';},function(v){U.clipStep=v;saveU();clipUI();});
 }
 $('#clipDone').addEventListener('click',function(){clipClose();renderRec();});
+/* Split, Delete and the arrows light up yellow and fade */
+['#clipSplit','#clipDel'].concat(['#clipBar .nb']).forEach(function(q){Array.prototype.forEach.call(document.querySelectorAll(q),function(b){b.addEventListener('pointerdown',function(){b.classList.remove('fl');void b.offsetWidth;b.classList.add('fl');});b.addEventListener('animationend',function(){b.classList.remove('fl');});});});
 $('#clipDel').addEventListener('click',function(){const e=clipCur();if(!e)return;edit(function(){P.vcomp=P.vcomp.filter(function(x){return x!==e;});});clipClose();renderRec();renderTakes();toast('Clip deleted (Undo brings it back).');});
 $('#clipSplit').addEventListener('click',function(){const e=clipCur(), x=K.cur;if(!e||!(x>e.a&&x<e.b))return;
   edit(function(){P.vcomp=P.vcomp.filter(function(y){return y!==e;}).concat([cpiece(e,e.a,x),cpiece(e,x,e.b)]).sort(function(p,q){return p.a-q.a;});CLP={id:e.id,a:e.a};});
