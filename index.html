@@ -234,6 +234,7 @@ body.aud .velc{visibility:hidden}
 .thead{display:flex; align-items:baseline; gap:8px; padding:2px 2px 0}
 .thead b{font-size:13px}
 .thead small{font-size:11px; color:var(--dim)}
+.thead.gap b{color:var(--mint)}
 .take.on{border-color:var(--rec); box-shadow:inset 3px 0 0 var(--rec)}
 .clipov{position:absolute; top:40px; height:80px; border:2px solid var(--rec); border-radius:6px; background:rgba(255,93,80,.12); touch-action:none; cursor:grab; z-index:2}
 .clipov .ch{position:absolute; top:-2px; bottom:-2px; width:12px; background:var(--rec); touch-action:none}
@@ -958,7 +959,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.19.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.19.1</p>
   </div>
 </section>
 
@@ -6152,13 +6153,16 @@ function renderRec(){
       g.fillRect(x,86-mx*32,1,Math.max(1,(mx-mn)*32));
     }
   });
+  if(GAP){const x0=X(GAP.a), x1=X(GAP.b);g.fillStyle=col('--mint');g.globalAlpha=.12;g.fillRect(x0,42,x1-x0,H-46);g.globalAlpha=1;
+    g.strokeStyle=col('--mint');g.lineWidth=1.5;g.setLineDash([4,3]);g.strokeRect(x0+1,42.5,x1-x0-2,H-46);g.setLineDash([]);}
   movePhRec(K.cur/PPQ);
   clipUI();
 }
 /* ---------- clip editing: long press a clip on the timeline ----------
    A clip is one piece of the comp ({a,b,id,o}). Split it at the playhead, delete it, move it (o follows, so the same sound
    moves), or trim its start or end, by dragging or by steps down to one tick. A clip placed over another cuts that one. */
-let CLP=null, clipSwallow=0;
+let CLP=null, clipSwallow=0, GAP=null;
+function fmtPos(t){const M=Core.meter(P), b=Math.floor(t/M.bar), r=t-b*M.bar, bt=Math.floor(r/M.bt), tk=r-bt*M.bt;return (b+1)+'.'+(bt+1)+(tk?'.'+tk:'');}
 function clipStep(){return {beat:Core.meter(P).bt,s16:120,t10:10,t1:1}[U.clipStep||'s16']||120;}
 function clipCur(){if(!CLP)return null;return (P.vcomp||[]).filter(function(e){return e.id===CLP.id&&e.a===CLP.a;})[0]||null;}
 function clipBounds(e){const m=takeMeta(e.id), o=e.o||0;return {lo:Math.max(loTick(),m.t0+o),hi:m.t0+o+takeTicks(m)};}
@@ -6171,7 +6175,7 @@ function clipMove(e,d){const lo=loTick();if(e.a+d<lo)d=lo-e.a;if(d)clipPut(e,e.a
 function clipTrim(e,side,v){const bd=clipBounds(e), min=30;
   if(side==='l'){v=Math.max(bd.lo,Math.min(e.b-min,v));if(v!==e.a)clipPut(e,v,e.b,e.o||0);}
   else{v=Math.min(bd.hi,Math.max(e.a+min,v));if(v!==e.b)clipPut(e,e.a,v,e.o||0);}}
-function clipOpen(e){CLP={id:e.id,a:e.a};U.clipTgt=U.clipTgt||'move';try{if(navigator.vibrate)navigator.vibrate(14);}catch(x){}renderRec();
+function clipOpen(e){GAP=null;renderTakes();CLP={id:e.id,a:e.a};U.clipTgt=U.clipTgt||'move';try{if(navigator.vibrate)navigator.vibrate(14);}catch(x){}renderRec();
   const b=$('#clipBar');if(b.getBoundingClientRect().bottom>window.innerHeight-80)window.scrollBy({top:b.getBoundingClientRect().bottom-window.innerHeight+90,behavior:'smooth'});}
 function clipClose(){CLP=null;$('#clipBar').hidden=true;$('#clipOv').hidden=true;}
 function clipUI(){
@@ -6180,8 +6184,7 @@ function clipUI(){
   const M=Core.meter(P), z=recScale(), pk=P.pick?M.bar:0, X=function(tk){return (tk+pk)/PPQ*z;}, m=takeMeta(e.id);
   ov.hidden=false;ov.style.left=X(e.a)+'px';ov.style.width=Math.max(6,X(e.b)-X(e.a))+'px';
   bar.hidden=false;
-  const pos=function(t){const b=Math.floor(t/M.bar), r=t-b*M.bar, bt=Math.floor(r/M.bt), tk=r-bt*M.bt;return (b+1)+'.'+(bt+1)+(tk?'.'+tk:'');};
-  $('#clipName').textContent=m.name+' · '+pos(e.a)+' – '+pos(e.b);
+  $('#clipName').textContent=m.name+' · '+fmtPos(e.a)+' – '+fmtPos(e.b);
   $('#clipSplit').disabled=!(K.cur>e.a&&K.cur<e.b);
   mkSeg($('#clipTgt'),[['move','Move'],['l','Start'],['r','End']],function(){return U.clipTgt||'move';},function(v){U.clipTgt=v;saveU();clipUI();});
   mkSeg($('#clipStep'),[['beat','Beat'],['s16','1/16'],['t10','10 tick'],['t1','1 tick']],function(){return U.clipStep||'s16';},function(v){U.clipStep=v;saveU();clipUI();});
@@ -6241,6 +6244,15 @@ $('#recIn').addEventListener('click',function(e){
   const tk=Math.max(loTick(),CLP?Math.round(raw/clipStep())*clipStep():snapBeat(raw));
   const sl=Core.layout(P).filter(function(x){return tk>=x.start&&tk<x.start+x.len;})[0];
   if(sl&&sl.i!==P.slot){Core.storeCur(P);P.slot=sl.i;Core.loadCur(P);persist();renderAll();}
+  /* a tap on an empty stretch between clips selects that gap: a take tapped in the list then fills only the gap */
+  GAP=null;
+  if(!CLP&&sl&&e.clientY-r.top>=38){
+    const comp=P.vcomp||[], a0=sl.start, b0=sl.start+sl.len;
+    if(!comp.some(function(x){return raw>=x.a&&raw<x.b;})&&compIn(a0,b0).length){
+      let ga=a0, gb=b0;comp.forEach(function(x){if(x.b<=raw&&x.b>ga)ga=x.b;if(x.a>raw&&x.a<gb)gb=x.a;});
+      if(gb>ga)GAP={a:ga,b:gb};
+    }
+  }
   K.cur=tk;movePhRec(K.cur/PPQ);renderTakes();renderRec();if(playing)seekPlay();
 });
 /* takes list */
@@ -6250,10 +6262,12 @@ function renderTakes(){
   /* only the takes of the selected section; the one chosen for it plays in the comp */
   const M=Core.meter(P), sr0=slotRange(), lc=laneBar(Math.floor(sr0.t0/M.bar));
   const lab=(lc?lc.id+(lc.role?' '+lc.role:''):'Section')+' · bar '+(Math.floor(sr0.t0/M.bar)+1)+'–'+Math.round(sr0.t1/M.bar);
-  const here=(P.takes||[]).filter(function(t){return t.t0<sr0.t1&&t.t0+takeTicks(t)>sr0.t0;});
+  const ra=GAP?GAP.a:sr0.t0, rb=GAP?GAP.b:sr0.t1;
+  const here=(P.takes||[]).filter(function(t){return t.t0<rb&&t.t0+takeTicks(t)>ra;});
   const inUse={};compIn(sr0.t0,sr0.t1).forEach(function(e){inUse[e.id]=1;});
-  const hd=document.createElement('div');hd.className='thead';
-  hd.innerHTML='<b>'+lab+'</b><small>'+(here.length?here.length+' take'+(here.length>1?'s':'')+' · tap one to use it here':'no takes here yet')+'</small>';
+  const hd=document.createElement('div');hd.className='thead'+(GAP?' gap':'');
+  hd.innerHTML=GAP?'<b>Gap '+fmtPos(GAP.a)+' – '+fmtPos(GAP.b)+'</b><small>'+(here.length?'tap a take to fill it':'no take covers this gap')+'</small>'
+    :'<b>'+lab+'</b><small>'+(here.length?here.length+' take'+(here.length>1?'s':'')+' · tap one to use it here':'no takes here yet')+'</small>';
   host.appendChild(hd);
   /* Song and Loop takes in their own groups (the current recording mode first), newest first in each */
   const isLoop=function(t){return /^Loop-/.test(t.name);};
@@ -6280,9 +6294,13 @@ $('#takeList').addEventListener('click',function(e){
   const id=row.dataset.id, m=takeMeta(id), btn=e.target.closest('button'), a=btn?btn.dataset.a:null, sr0=slotRange();
   if(a==='del'){edit(function(){P.takes=P.takes.filter(function(t){return t.id!==id;});P.vcomp=(P.vcomp||[]).filter(function(x){return x.id!==id;});});renderTakes();renderRec();toast(m.name+' deleted (Undo brings it back).');return;}
   if(a==='wav'){exportWav(m);return;}
-  const on=compIn(sr0.t0,sr0.t1).some(function(x){return x.id===id;});
-  const use=function(){if(!on)edit(function(){P.vcomp=compSet(P.vcomp||[],sr0.t0,sr0.t1,id);});return loadTake(id).then(function(){renderTakes();renderRec();});};
-  if(a==='play'){use().then(function(){if(playing)stopPlay();K.cur=Math.max(sr0.t0,Math.floor(m.t0/240)*240);startPlay();});return;}
+  const g=GAP, on=!g&&compIn(sr0.t0,sr0.t1).some(function(x){return x.id===id;});
+  const use=function(){
+    if(g){edit(function(){P.vcomp=compSet(P.vcomp||[],g.a,g.b,id);});GAP=null;
+      const t=takeMeta(id), e=t.t0+takeTicks(t);if(t.t0>g.a||e<g.b)toast('This take covers only part of the gap.');}
+    else if(!on)edit(function(){P.vcomp=compSet(P.vcomp||[],sr0.t0,sr0.t1,id);});
+    return loadTake(id).then(function(){renderTakes();renderRec();});};
+  if(a==='play'){const from=g?Math.max(sr0.t0,Math.floor((g.a-barTk())/barTk())*barTk()):Math.max(sr0.t0,Math.floor(m.t0/240)*240);use().then(function(){if(playing)stopPlay();K.cur=from;startPlay();});return;}
   if(on){edit(function(){P.vcomp=compSet(P.vcomp||[],sr0.t0,sr0.t1,null);});renderTakes();renderRec();return;}
   use();
 });
