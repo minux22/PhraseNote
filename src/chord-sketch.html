@@ -226,6 +226,11 @@ body.aud .velc{visibility:hidden}
 .thead b{font-size:13px}
 .thead small{font-size:11px; color:var(--dim)}
 .take.on{border-color:var(--rec); box-shadow:inset 3px 0 0 var(--rec)}
+.tgrp{display:flex; align-items:center; gap:8px; margin-top:6px; font-size:10.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--dim)}
+.tgrp::after{content:""; flex:1; height:1px; background:var(--line)}
+.tgrp i{font-style:normal; font-weight:700; letter-spacing:0; font-size:10px; padding:1px 6px; border-radius:999px; background:var(--panel-2); border:1px solid var(--line); order:2}
+.tgrp::after{order:3}
+.tgrp span{order:1}
 .take .tn{flex:1; min-width:0; display:flex; flex-direction:column; line-height:1.25}
 .take .tn b{font-size:13px}
 .take .tn small{font-size:11px; color:var(--dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
@@ -922,7 +927,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.18.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.18.2</p>
   </div>
 </section>
 
@@ -6140,14 +6145,23 @@ function renderTakes(){
   const hd=document.createElement('div');hd.className='thead';
   hd.innerHTML='<b>'+lab+'</b><small>'+(here.length?here.length+' take'+(here.length>1?'s':'')+' · tap one to use it here':'no takes here yet')+'</small>';
   host.appendChild(hd);
-  here.slice().reverse().forEach(function(t){
+  /* Song and Loop takes in their own groups (the current recording mode first), newest first in each */
+  const isLoop=function(t){return /^Loop-/.test(t.name);};
+  const groups=[['song','Song takes',here.filter(function(t){return !isLoop(t);})],['loop','Loop takes',here.filter(isLoop)]];
+  if(U.recMode==='loop')groups.reverse();
+  groups.forEach(function(gr){
+    if(!gr[2].length)return;
+    const gh=document.createElement('div');gh.className='tgrp '+gr[0];gh.innerHTML='<span>'+gr[1]+'</span><i>'+gr[2].length+'</i>';host.appendChild(gh);
+    gr[2].slice().reverse().forEach(function(t){addRow(t);});
+  });
+  function addRow(t){
     const on=!!inUse[t.id], r=document.createElement('div');r.className='take'+(on?' on':'');r.dataset.id=t.id;
     const dur=t.n/t.sr, b0=Math.floor(t.t0/M.bar)+1, b1=Math.ceil((t.t0+takeTicks(t))/M.bar);
     const d=new Date(t.made), hh=(d.getHours()<10?'0':'')+d.getHours()+':'+(d.getMinutes()<10?'0':'')+d.getMinutes();
     r.innerHTML='<span class="tn"><b>'+t.name+(on?' · in use':'')+'</b><small>bar '+b0+'–'+b1+' · '+fmtDur(dur)+' · '+hh+(takeMoved(t)?' · tempo changed since':'')+'</small></span>'+
       '<button type="button" data-a="play" aria-label="Play this section with it">▶</button><button type="button" data-a="wav">WAV</button><button type="button" data-a="del" class="del" aria-label="Delete">✕</button>';
     host.appendChild(r);
-  });
+  }
   const others=(P.takes||[]).length-here.length;
   if(others>0){const n=document.createElement('p');n.className='note';n.style.margin='2px 0 0';n.textContent=others+' more take'+(others>1?'s':'')+' in other sections: tap a section on the timeline above.';host.appendChild(n);}
 }
