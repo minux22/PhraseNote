@@ -568,7 +568,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
   .stbox{display:grid; grid-template-columns:calc(50% - 7px) 1fr; gap:14px; align-items:end}
   .stl{width:auto; margin-bottom:6px}
   #toolSeg2 button{height:32px}
-  #recDev{flex:0 1 260px}
+  #recDev{flex:0 0 calc(50% - 12px)}  /* Calibrate lines up with the Pickup switch above */
 }
 #staffCtl .stgrid button{height:32px; padding:0; border:1px solid var(--line); border-radius:10px; background:var(--panel-2); color:var(--text); font-size:18px; display:grid; place-items:center}
 #staffCtl .stgrid button.on{background:var(--blue); border-color:var(--blue); color:var(--on-blue)}
@@ -984,7 +984,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.21.7</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.21.8</p>
   </div>
 </section>
 
