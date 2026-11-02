@@ -958,7 +958,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.21.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.21.2</p>
   </div>
 </section>
 
@@ -3351,7 +3351,7 @@ function suggestNow(){
   for(let i=0;i<alt.length;i+=P.unit){if(sugg.base[i]!=null)continue;const c=alt[i];if(c!==last)names.push(Core.chordInfo(c,CK(),P.scale).name);last=c;}
   toast('Suggest '+(sugg.idx+1)+'/'+sugg.alts.length+': '+names.join(' – ')+(sugg.alts.length>1?' · tap again for another':''));
   K.cur=slotRange().t0;showCursor(true);
-  if(playing)seekPlay();else startPlay();
+  if(playing)stopPlay();
 }
 $('#btnRand').addEventListener('click',function(){
   if($('#btnRand').classList.contains('sug')){suggestNow();return;}
@@ -3359,13 +3359,18 @@ $('#btnRand').addEventListener('click',function(){
   const s=serialize();
   const r=Core.randomChords(P,Math.random,lastRand);
   lastRand=r.i;P.chords=r.chords;P.sample=false;
+  /* a random accompaniment style too (one that fits the meter, not the one in use); Color starts off */
+  const ids=Core.COMPS.map(function(c){return c[0];}).filter(function(id){return Core.compOk(P,id)&&id!==P.comp;});
+  const cid=ids[Math.floor(Math.random()*ids.length)]||P.comp, cname=(Core.COMPS.filter(function(c){return c[0]===cid;})[0]||[0,cid])[1];
+  Core.applyStyle(P,cid);P.color='off';
   pushUndo(s);renderAll();
-  toast('Random: '+r.names);
+  toast('Random: '+r.names+' · '+cname);
   /* always from the beginning (of the slot) */
   K.cur=inMelody()?loTick():slotRange().t0;
   roll.scrollLeft=0;$('#stWrap').scrollLeft=0;
   showCursor(true);
-  if(playing)seekPlay();else startPlay();
+  /* stop and wait: press Play to hear it */
+  if(playing)stopPlay();
 });
 
 function showTab(which){
