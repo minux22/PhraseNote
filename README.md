@@ -43,9 +43,9 @@ PhraseNote는 떠오른 악상을 휴대폰에서 바로 기록하고 들어 볼
 
 ## Sounds / 기본 음원
 
-On first launch, PhraseNote downloads **GeneralUser GS v2.0.3** by S. Christian Collins (about 31 MB) once and keeps it on the device. Ardour uses the same bank for MIDI playback, so exported MIDI files sound the same there. Other .sf2 files can be added in Setup.
+On first launch, PhraseNote downloads **GeneralUser GS v2.0.3** by S. Christian Collins (about 31 MB) once and keeps it on the device. Other .sf2 files can be added in Setup.
 
-처음 실행할 때 S. Christian Collins의 **GeneralUser GS v2.0.3**(약 31MB)을 한 번 내려받아 기기에 보관합니다. Ardour가 MIDI 재생에 사용하는 것과 같은 음원이므로, 내보낸 MIDI 파일을 Ardour에서도 같은 소리로 들을 수 있습니다. 다른 .sf2 파일은 Setup에서 추가할 수 있습니다.
+처음 실행할 때 S. Christian Collins의 **GeneralUser GS v2.0.3**(약 31MB)을 한 번 내려받아 기기에 보관합니다. 다른 .sf2 파일은 Setup에서 추가할 수 있습니다.
 
 ## For developers / 개발 정보
 

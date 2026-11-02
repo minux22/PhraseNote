@@ -964,7 +964,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.21.4</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.21.5</p>
   </div>
 </section>
 
@@ -1817,7 +1817,7 @@ const Core=(function(){
 
   function vlq(n){const b=[n&127];n>>=7;while(n>0){b.unshift((n&127)|128);n>>=7;}return b;}
   function strBytes(s){const o=[];for(let i=0;i<s.length;i++)o.push(s.charCodeAt(i)&127);return o;}
-  /* text in MIDI meta events: UTF-8 (DAWs such as Ardour show Korean titles this way) */
+  /* text in MIDI meta events: UTF-8 (DAWs show Korean titles this way) */
   function utf8(s){const o=[];for(const ch of String(s)){let c=ch.codePointAt(0);
     if(c<0x80)o.push(c);else if(c<0x800)o.push(0xC0|c>>6,0x80|c&63);else if(c<0x10000)o.push(0xE0|c>>12,0x80|c>>6&63,0x80|c&63);else o.push(0xF0|c>>18,0x80|c>>12&63,0x80|c>>6&63,0x80|c&63);}
     return o.slice(0,120);}
@@ -5043,7 +5043,7 @@ document.addEventListener('keydown',function(e){
     });
     const bt=$('#btnSf');bt.textContent=on?'Add SoundFont':'Load SoundFont';bt.hidden=files.length>=MAXF;
     const gb=$('#btnGu');gb.hidden=hasGu()||files.length>=MAXF;gb.disabled=guBusy;if(!guBusy)gb.textContent='Use the built-in GeneralUser GS';
-    $('#sfNote').textContent=on?'Saved on this device ('+mb(tot)+' in use, up to '+MAXF+' files). Each track can use a sound from any file.':'Use the built-in GeneralUser GS (the same bank Ardour plays MIDI with), or load your own .sf2 file. It is kept on this device, so you only need to do this again to swap it. You can add more files and give each track its own.';
+    $('#sfNote').textContent=on?'Saved on this device ('+mb(tot)+' in use, up to '+MAXF+' files). Each track can use a sound from any file.':'Use the built-in GeneralUser GS, or load your own .sf2 file. It is kept on this device, so you only need to do this again to swap it. You can add more files and give each track its own.';
   }
   /* the index keeps each file's sound list too, so a file can be listed and chosen without reading it into memory */
   function idxRows(){return files.map(function(F){return {id:F.id,name:F.name,size:F.size,presets:F.m.raw};});}
@@ -5291,7 +5291,7 @@ document.addEventListener('keydown',function(e){
       }
     });
   }).catch(function(){}).then(function(){
-    /* first launch with nothing chosen yet: fetch the built-in GeneralUser GS once (like Ardour's default MIDI sounds) */
+    /* first launch with nothing chosen yet: fetch the built-in GeneralUser GS once */
     if(files.length||S.basic!==undefined||S.gu)return;
     try{if(navigator.connection&&navigator.connection.saveData)return;}catch(e){}
     builtin(true);

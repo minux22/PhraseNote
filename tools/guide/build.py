@@ -51,7 +51,7 @@ KO = dict(
         '<b>슬롯별 조 · 템포</b> — 마지막 후렴의 전조나 특정 구간의 템포 변화를 슬롯 단위로 지정합니다.',
         '<b>멜로디 이어 쓰기</b> — 앞 프레이즈를 변형한 다음 두 마디를 점선으로 제안합니다.',
         '<b>오디오 클립 편집</b> — 녹음한 클립을 분할 · 삭제 · 이동 · 길이 조절하고, 빈 구간을 다른 테이크로 채웁니다.',
-        '<b>내장 음원</b> — Ardour와 같은 GeneralUser GS 음원을 기본으로 사용하므로 MIDI를 옮겨도 같은 소리로 재생됩니다.',
+        '<b>내장 음원</b> — 별도의 파일 없이도 GeneralUser GS 음원으로 실제 악기에 가까운 소리를 들을 수 있습니다.',
     ]),
     install=('시작하기', [
         '<b>앱 주소</b> https://minux22.github.io/PhraseNote/',
@@ -196,7 +196,7 @@ KO = dict(
          '저장되는 MIDI 파일에는 각 트랙의 페이더 값이 볼륨 정보로 기록됩니다.'),
         ('음원 (SoundFont)', 'Setup의 Sound에서 악기 음원을 선택합니다.', [('setup_sound', 66)], [
             'Basic Synth는 별도 파일 없이 동작하는 기본 음원이며, SoundFont는 실제 악기 샘플을 사용하는 음원입니다.',
-            '불러온 음원 목록. 내장 음원 GeneralUser GS(Ardour가 MIDI 재생에 쓰는 것과 같은 음원)가 기본으로 들어 있습니다. 목록에서 지운 경우 “Use the built-in GeneralUser GS”로 다시 받을 수 있습니다.',
+            '불러온 음원 목록. 내장 음원 GeneralUser GS가 기본으로 들어 있습니다. 목록에서 지운 경우 “Use the built-in GeneralUser GS”로 다시 받을 수 있습니다.',
             'Add SoundFont. 다른 .sf2 파일을 추가하면 Melody · Chords · Bass · Drums 트랙별로 악기를 선택할 수 있습니다. 불러온 파일은 기기에 보관됩니다. Save / Load preset으로 악기 구성과 믹서 설정을 함께 저장하고 불러올 수 있습니다.',
             '드럼 패턴 선택과 편집(7장의 편집 창).'], None),
         ('저장과 열기', 'Setup의 Project에서 수행합니다.', [('setup_project', 66)], [
@@ -212,7 +212,7 @@ KO = dict(
         '앱의 데이터는 브라우저 저장 공간에 보관됩니다. 사이트 데이터를 삭제하거나 브라우저를 제거하면 데이터가 삭제될 수 있으므로 Save project로 정기적으로 백업하십시오.',
         '녹음은 설치한 앱 또는 앱 주소에서 진행하십시오. 다른 앱의 미리보기 화면에서는 마이크 사용이 제한될 수 있습니다. 마이크 권한을 거부한 경우 브라우저의 사이트 설정에서 다시 허용하십시오.',
         '블루투스 이어폰은 지연이 커서 녹음에 적합하지 않습니다. 유선 이어폰 사용을 권장합니다.',
-        '저장 파일은 다운로드 폴더에 .zip 형식으로 저장됩니다. 지정한 폴더에 직접 저장하는 기능은 현재 지원하지 않습니다.',
+        '저장 파일은 다운로드 폴더에 .zip 형식으로 저장됩니다.',
         '일부 반주 스타일과 장르별 드럼 패턴은 4/4 박자 전용이며, 각 패턴은 해당 장르의 특징을 근사적으로 재현한 것입니다.',
         '녹음은 녹음 당시의 속도로 보관되므로, 녹음한 뒤 그 구간의 템포를 바꾸면 테이크가 반주와 어긋날 수 있습니다. 이 경우 테이크 목록에 “tempo changed since”가 표시됩니다.',
         '박자(Time)는 곡 전체에 하나만 지정할 수 있습니다.',
@@ -239,7 +239,7 @@ EN = dict(
         '<b>Key and tempo per slot</b> — lift the last chorus or slow one part down, slot by slot.',
         '<b>Continue the melody</b> — a dashed two-bar idea grown from your last phrase.',
         '<b>Audio clip editing</b> — split, delete, move and trim recorded clips, and fill gaps with another take.',
-        '<b>Built-in sounds</b> — GeneralUser GS, the bank Ardour plays MIDI with, so your MIDI sounds the same there.',
+        '<b>Built-in sounds</b> — the GeneralUser GS bank gives realistic instruments without loading any file.',
     ]),
     toc='Contents',
     install=('Getting started', [
@@ -385,7 +385,7 @@ EN = dict(
          'MIDI files carry each track’s fader as its volume.'),
         ('Sound (SoundFont)', 'In Setup → Sound.', [('setup_sound', 66)], [
             'Basic Synth works without files; SoundFont plays sampled instruments.',
-            'Loaded banks. The built-in GeneralUser GS (the bank Ardour plays MIDI with) is there from the start. If removed, “Use the built-in GeneralUser GS” fetches it again.',
+            'Loaded banks. The built-in GeneralUser GS is there from the start. If removed, “Use the built-in GeneralUser GS” fetches it again.',
             'Add SoundFont: add other .sf2 files and pick an instrument for Melody · Chords · Bass · Drums. Loaded files stay on the phone. Save / Load preset stores the instruments together with the mixer balance.',
             'Drum pattern and Edit (the editor from chapter 7).'], None),
         ('Saving and opening', 'In Setup → Project.', [('setup_project', 66)], [
@@ -401,7 +401,7 @@ EN = dict(
         'The app’s data lives in the browser’s storage. Clearing site data or uninstalling the browser can delete it, so back up with Save project.',
         'Record in the installed app or at its address; previews inside other apps may block the microphone. If the permission was refused, allow it again in the browser’s site settings.',
         'Bluetooth earphones add too much delay for recording; wired ones are recommended.',
-        'Files are saved to Downloads as a .zip. Saving straight into a chosen folder is not supported yet.',
+        'Files are saved to Downloads as a .zip.',
         'Some accompaniment styles and genre drums are 4/4 only; patterns approximate a genre’s feel.',
         'Recordings keep the speed they were recorded at: change a slot’s tempo after recording and its takes may drift (the take list then says “tempo changed since”).',
         'The time signature is one for the whole song.',
