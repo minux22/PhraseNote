@@ -988,7 +988,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.22.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.22.2</p>
   </div>
 </section>
 
@@ -3387,6 +3387,9 @@ $('#btnRand').addEventListener('click',function(){
   if($('#btnRand').classList.contains('sug')){suggestNow();return;}
   Aud.ensure();
   const s=serialize();
+  /* a fresh sketch (one slot, no melody): major or minor at random too; once the song has grown, key and scale stay */
+  let scTag='';
+  if(P.form.length===1&&!P.mel.length){const sc=Math.random()<0.5?'major':'minor';if(sc!==P.scale){P.scale=sc;lastRand=-1;}scTag=(sc==='major'?'Major':'Minor')+' · ';}
   const r=Core.randomChords(P,Math.random,lastRand);
   lastRand=r.i;P.chords=r.chords;P.sample=false;
   /* a random accompaniment style too (one that fits the meter, not the one in use); Color starts off */
@@ -3398,7 +3401,7 @@ $('#btnRand').addEventListener('click',function(){
   const dpk=dps[Math.floor(Math.random()*dps.length)];
   if(dpk){setDrums(U.drum,dpk[0]);const ds=$('#dPat');if(ds)ds.value=dpk[0];}
   pushUndo(s);renderAll();
-  toast('Random: '+r.names+' · '+cname+(dpk?' · '+dpk[1]+(U.drum?'':' (drums off)'):''));
+  toast('Random: '+scTag+r.names+' · '+cname+(dpk?' · '+dpk[1]+(U.drum?'':' (drums off)'):''));
   /* always from the beginning (of the slot) */
   K.cur=inMelody()?loTick():slotRange().t0;
   roll.scrollLeft=0;$('#stWrap').scrollLeft=0;
