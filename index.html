@@ -56,8 +56,6 @@
 /* light theme: selected notes get a white band and a pink halo; Split and Delete get a pale yellow fill so they read on the light page */
 :root[data-theme="light"] .nt.sl{outline:none; filter:none; box-shadow:0 0 0 2px #fffdf9,0 0 0 4px #e0679d}
 :root[data-theme="light"] .clipbar .pill.ce,:root[data-theme="light"] .clipbar #clipSplit{color:#7a5600; background:#fdf3cf; border-color:#f5c542}
-/* unavailable (Split with the playhead outside the clip): same brown text, no fill, dashed edge */
-:root[data-theme="light"] .clipbar .pill.ce:disabled,:root[data-theme="light"] .clipbar #clipSplit:disabled{opacity:1; color:#7a5600; background:transparent; border-style:dashed}
 :root[data-theme="light"] body.aud .play.on{background:#f4a493; color:#4e1c12}
 :root[data-theme="light"] .seg.mode3 button:last-child,:root[data-theme="light"] .fsn .fserr,:root[data-theme="light"] #recNote.warn,:root[data-theme="light"] #recGainV.clip,:root[data-theme="light"] .recb,:root[data-theme="light"] .take button.del,:root[data-theme="light"] .btn.danger,:root[data-theme="light"] .selbar button.dl{color:var(--rec-tx)}
 :root[data-theme="light"] .xtog .xs,:root[data-theme="light"] .secnm{color:var(--blue-tx)}
@@ -1038,7 +1036,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.25.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.25.2</p>
   </div>
 </section>
 
