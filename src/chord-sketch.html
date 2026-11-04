@@ -953,7 +953,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
         <div class="cbr"><button type="button" class="pill ce" id="clipSplit"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><path d="M8.6 7.5 20 17M8.6 16.5 20 7"/></g></svg>Split at playhead</button><button type="button" class="pill dl ce" id="clipDel"><svg viewBox="0 0 24 24" width="15" height="15" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4.5h6V7M6.5 7l1 13h9l1-13M10.5 11v5.5M13.5 11v5.5"/></g></svg>Delete</button></div>
         <div class="cbr"><span class="lbl">Nudge</span><div class="seg" id="clipTgt"></div><button type="button" class="pill nb" data-n="-1" aria-label="Earlier">◀</button><button type="button" class="pill nb" data-n="1" aria-label="Later">▶</button></div>
         <div class="cbr"><span class="lbl">Step</span><div class="seg" id="clipStep"></div></div>
-        <p class="note" id="clipHint">Drag the clip to move it, its edges to trim · tap the timeline to set the split point</p>
+        <p class="note" id="clipHint">Drag the clip to move it, its edges to trim · tap the timeline to set the split point, another clip to edit it</p>
       </div>
       <p class="hint" id="melHint" style="margin:2px 0 0"></p>
       <div class="takes" id="takeList" hidden></div>
@@ -1028,7 +1028,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.25.3</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.25.4</p>
   </div>
 </section>
 
@@ -6437,6 +6437,9 @@ $('#recIn').addEventListener('click',function(e){
   if(REC.run)return;
   if(Date.now()<clipSwallow)return;
   const r=$('#recCv').getBoundingClientRect(), M=Core.meter(P), z=recScale(), pk=P.pick?M.bar:0, raw=(e.clientX-r.left)/z*PPQ-pk;
+  /* while editing a clip, a tap on another clip switches the editor to it (Done ends editing) */
+  if(CLP&&e.clientY-r.top>=38){const c=(P.vcomp||[]).filter(function(x){return raw>=x.a&&raw<x.b;})[0];
+    if(c&&!(c.id===CLP.id&&c.a===CLP.a)){clipOpen(c);return;}}
   const tk=Math.max(loTick(),CLP?Math.round(raw/clipStep())*clipStep():snapBeat(raw));
   const sl=Core.layout(P).filter(function(x){return tk>=x.start&&tk<x.start+x.len;})[0];
   if(sl&&sl.i!==P.slot){Core.storeCur(P);P.slot=sl.i;Core.loadCur(P);persist();renderAll();}
