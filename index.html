@@ -28,13 +28,13 @@
   --bg:#f6f3ee; --bg-2:#ebe6dd; --panel:#fffdf9; --panel-2:#f2eee7; --line:#ddd5c9;
   --text:#2b2620; --dim:#7a6f62;
   --amber:#f5a33b; --on-amber:#2b1a03; --rec:#e0604c; --blue:#3d7fd9; --on-blue:#ffffff; --nudge:#6b6156; --nudge-ink:#ffffff;
-  --chord:#2f6cc0; --chord-ink:#ffffff; --mel:#c81c70; --mel-ink:#ffffff; --mint:#0f8f6e; --mint-ink:#ffffff; --ctl:#3b342c; --ctl-ink:#fffaf2;
+  --chord:#2f6cc0; --chord-ink:#ffffff; --mel:#c81c70; --mel-ink:#ffffff; --mint:#34d3a6; --mint-ink:#04241b; --ctl:#3b342c; --ctl-ink:#fffaf2;
   --shadow:0 3px 10px rgba(60,40,20,.07); --fgroove:#e0d9ce; --fcap1:#fffdf9; --fcap2:#ece6dc; --fcapb:#b5aa9a; --ftick:rgba(43,38,32,.28);
-  --k-bg:#ebe4d8; --k-case:#d8cebd; --k-caseb:#beb29f; --k-panel:#fffdf9; --k-panel2:#f4f0ea; --k-line:#d0c5b3; --k-mx:#fffdf9; --k-out:#e6e0d6; --k-text:#2b2620; --k-dim:#7a6f62; --k-mint:#0f8f6e;
+  --k-bg:#ebe4d8; --k-case:#d8cebd; --k-caseb:#beb29f; --k-panel:#fffdf9; --k-panel2:#f4f0ea; --k-line:#d0c5b3; --k-mx:#fffdf9; --k-out:#e6e0d6; --k-text:#2b2620; --k-dim:#7a6f62; --k-mint:#34d3a6;
   color-scheme:light;
 }
 /* light theme: the Keys and Mixer drawer and the sheets share one tray color, darker than the page, with white keys and white channel strips */
-:root[data-theme="light"] .kbd{--text:var(--k-text); --dim:var(--k-dim); --mint:var(--k-mint); --line:var(--k-line); --panel:var(--k-panel); --panel-2:var(--k-panel2); --mint-ink:#ffffff; color-scheme:light; background:var(--k-bg); box-shadow:0 -2px 6px rgba(40,30,20,.14),0 -14px 32px rgba(40,30,20,.30)}
+:root[data-theme="light"] .kbd{--text:var(--k-text); --dim:var(--k-dim); --mint:var(--k-mint); --line:var(--k-line); --panel:var(--k-panel); --panel-2:var(--k-panel2); --mint-ink:#04241b; color-scheme:light; background:var(--k-bg); box-shadow:0 -2px 6px rgba(40,30,20,.14),0 -14px 32px rgba(40,30,20,.30)}
 :root[data-theme="light"] .keys{background:var(--k-case); border-color:var(--k-caseb)}
 :root[data-theme="light"] .kset::after{background:linear-gradient(90deg,rgba(0,0,0,0),var(--mint),rgba(0,0,0,0)); opacity:.6}
 :root[data-theme="light"] .wk{background:linear-gradient(#fffefb,#fbf9f5 70%,#e6e0d5); border-right-color:var(--k-caseb); color:#4a5058}
@@ -1008,7 +1008,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.23.3</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.23.4</p>
   </div>
 </section>
 
