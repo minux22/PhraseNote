@@ -48,8 +48,8 @@
 :root[data-theme="light"] .xtog .xs,:root[data-theme="light"] .secnm{color:var(--blue-tx)}
 :root[data-theme="light"] .sph,:root[data-theme="light"] .pkl,:root[data-theme="light"] .qbox .qhead .lbl,:root[data-theme="light"] .contb,:root[data-theme="light"] .contm button[aria-pressed="true"]{color:var(--mel-tx)}
 :root[data-theme="light"] .rand,:root[data-theme="light"] .rsec .rkey,:root[data-theme="light"] .slot.over,:root[data-theme="light"] .slot.over small,:root[data-theme="light"] .slot .kb,:root[data-theme="light"] .slot .tbg,:root[data-theme="light"] .tmrow input.on{color:var(--amb-tx)!important}
-/* light theme: with Keys or the Mixer open the page is dimmed like it is under Setup (it still takes taps) */
-:root[data-theme="light"] body.kbd-open::after{content:''; position:fixed; inset:0; z-index:6; background:rgba(0,0,0,.25); pointer-events:none}
+/* light theme: with Keys (Live) or the Mixer open the page is dimmed like it is under Setup (it still takes taps); Step input keeps it bright */
+:root[data-theme="light"] body.kbd-open:not(.kstep)::after{content:''; position:fixed; inset:0; z-index:6; background:rgba(0,0,0,.25); pointer-events:none}
 :root[data-theme="light"] .back{background:rgba(0,0,0,.25)}
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:pan-x pan-y}
 html,body{scrollbar-width:none; -ms-overflow-style:none}
@@ -1018,7 +1018,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.24.2</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.24.3</p>
   </div>
 </section>
 
@@ -4459,6 +4459,7 @@ function kbdRender(){
   const show=on&&K.open&&!aud;
   $('#kbd').hidden=!show;
   document.body.classList.toggle('kbd-open',show||MIX.open);
+  document.body.classList.toggle('kstep',show&&K.mode==='step');
   if(show){
     buildKeys();
     $('#kOctVal').textContent=stName();
