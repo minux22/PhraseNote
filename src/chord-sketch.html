@@ -44,6 +44,9 @@
 :root[data-theme="light"] .play.on,:root[data-theme="light"] .rzb button:active,:root[data-theme="light"] .seg.mode3 button:last-child.on,:root[data-theme="light"] .recb[aria-pressed="true"],:root[data-theme="light"] .krec[aria-pressed="true"]{color:var(--rec-ink)}
 :root[data-theme="light"] .zoom button:active{color:var(--mel-ink)}
 :root[data-theme="light"] .play.on{box-shadow:0 4px 12px rgba(0,0,0,.12)}
+/* light theme: the fixed left column of the roll and the staff (bar/chord labels, clef) one shade darker than the page, as in dark */
+:root[data-theme="light"] .rcorner,:root[data-theme="light"] .stfix{background:#ebe6dd}
+:root[data-theme="light"] .rcorner span:first-child{background:#e3ddd2}
 /* light theme: selected notes get a white band and a pink halo; the clip edit box is pale yellow with white buttons */
 :root[data-theme="light"] .nt.sl{outline:none; filter:none; box-shadow:0 0 0 2px #fffdf9,0 0 0 4px #e0679d}
 :root[data-theme="light"] .clipbar{background:#fdf1c6; border-color:#f0d98a; --panel-2:#fffdf9}
@@ -1028,7 +1031,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.25.7</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.25.8</p>
   </div>
 </section>
 
