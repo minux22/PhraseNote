@@ -16,33 +16,25 @@
   color-scheme:dark;
 }
 :root[data-theme="light"]{
-  --bg:#f4f5f7; --bg-2:#e7e9ed; --panel:#ffffff; --panel-2:#eff1f4; --line:#d9dde3;
-  --text:#1f2329; --dim:#6b7280;
-  --amber:#f5a33b; --on-amber:#2b1a03; --rec:#e8604f; --blue:#3d7fd9; --on-blue:#ffffff; --nudge:#5f6672; --nudge-ink:#ffffff;
-  --chord:#2f6fc9; --chord-ink:#ffffff; --mel:#d11a74; --mel-ink:#ffffff; --mint:#0e9a76; --mint-ink:#ffffff; --ctl:#2b3038; --ctl-ink:#ffffff;
-  --shadow:0 3px 10px rgba(20,25,35,.07); --fgroove:#d6dae0; --fcap1:#ffffff; --fcap2:#e8ebef; --fcapb:#aab1bb; --ftick:rgba(31,35,41,.28);
-  --k-bg:#d9dee5; --k-case:#c3c9d2; --k-caseb:#aab1bc; --k-panel:#ffffff; --k-panel2:#eceef1; --k-line:#bfc5ce; --k-mx:#ffffff; --k-out:#e1e4e8; --k-text:#1f2329; --k-dim:#6b7280; --k-mint:#0e9a76;
-  color-scheme:light;
-}
-:root[data-theme="paper"]{
   --bg:#f6f3ee; --bg-2:#ebe6dd; --panel:#fffdf9; --panel-2:#f2eee7; --line:#ddd5c9;
   --text:#2b2620; --dim:#7a6f62;
   --amber:#f5a33b; --on-amber:#2b1a03; --rec:#e0604c; --blue:#3d7fd9; --on-blue:#ffffff; --nudge:#6b6156; --nudge-ink:#ffffff;
   --chord:#2f6cc0; --chord-ink:#ffffff; --mel:#c81c70; --mel-ink:#ffffff; --mint:#0f8f6e; --mint-ink:#ffffff; --ctl:#3b342c; --ctl-ink:#fffaf2;
   --shadow:0 3px 10px rgba(60,40,20,.07); --fgroove:#e0d9ce; --fcap1:#fffdf9; --fcap2:#ece6dc; --fcapb:#b5aa9a; --ftick:rgba(43,38,32,.28);
-  --k-bg:#e3dacb; --k-case:#cfc4b1; --k-caseb:#b6aa96; --k-panel:#fffdf9; --k-panel2:#f2eee7; --k-line:#c9bda9; --k-mx:#fffdf9; --k-out:#e6e0d6; --k-text:#2b2620; --k-dim:#7a6f62; --k-mint:#0f8f6e;
+  --k-bg:#d9cdb8; --k-case:#c5b79e; --k-caseb:#aa9b81; --k-panel:#fffdf9; --k-panel2:#efe8dc; --k-line:#bfae94; --k-mx:#fffdf9; --k-out:#e6e0d6; --k-text:#2b2620; --k-dim:#7a6f62; --k-mint:#0f8f6e;
   color-scheme:light;
 }
-/* light themes: the Keys and Mixer drawer is a darker tray than the page, with white keys and white channel strips */
-:root[data-theme="light"] .kbd,:root[data-theme="paper"] .kbd{--text:var(--k-text); --dim:var(--k-dim); --mint:var(--k-mint); --line:var(--k-line); --panel:var(--k-panel); --panel-2:var(--k-panel2); --mint-ink:#ffffff; color-scheme:light; background:var(--k-bg); box-shadow:0 -8px 24px rgba(20,20,30,.18)}
-:root[data-theme="light"] .keys,:root[data-theme="paper"] .keys{background:var(--k-case); border-color:var(--k-caseb)}
-:root[data-theme="light"] .kset::after,:root[data-theme="paper"] .kset::after{background:linear-gradient(90deg,rgba(0,0,0,0),var(--mint),rgba(0,0,0,0)); opacity:.6}
-:root[data-theme="light"] .wk,:root[data-theme="paper"] .wk{background:linear-gradient(#ffffff,#fbfbfc 70%,#e4e6e9); border-right-color:var(--k-caseb); color:#4a5058}
-:root[data-theme="light"] .wk:first-child,:root[data-theme="paper"] .wk:first-child{border-left-color:var(--k-caseb)}
-:root[data-theme="light"] .wk.out,:root[data-theme="paper"] .wk.out{background:linear-gradient(var(--k-out),#eef0f2 70%,#d6d9de); color:#868c95}
-:root[data-theme="light"] .bk,:root[data-theme="paper"] .bk{box-shadow:0 2px 3px rgba(0,0,0,.35)}
-:root[data-theme="light"] .bk.out,:root[data-theme="paper"] .bk.out{background:linear-gradient(#3e4248,#2f3237); color:#b3b8bf}
-:root[data-theme="light"] .mx,:root[data-theme="paper"] .mx{background:var(--k-mx); border:1px solid var(--k-line); box-shadow:0 1px 2px rgba(0,0,0,.06)}
+/* light theme: the Keys and Mixer drawer and the sheets share one tray color, darker than the page, with white keys and white channel strips */
+:root[data-theme="light"] .kbd{--text:var(--k-text); --dim:var(--k-dim); --mint:var(--k-mint); --line:var(--k-line); --panel:var(--k-panel); --panel-2:var(--k-panel2); --mint-ink:#ffffff; color-scheme:light; background:var(--k-bg); box-shadow:0 -8px 24px rgba(20,20,30,.18)}
+:root[data-theme="light"] .keys{background:var(--k-case); border-color:var(--k-caseb)}
+:root[data-theme="light"] .kset::after{background:linear-gradient(90deg,rgba(0,0,0,0),var(--mint),rgba(0,0,0,0)); opacity:.6}
+:root[data-theme="light"] .wk{background:linear-gradient(#fffefb,#fbf9f5 70%,#e6e0d5); border-right-color:var(--k-caseb); color:#4a5058}
+:root[data-theme="light"] .wk:first-child{border-left-color:var(--k-caseb)}
+:root[data-theme="light"] .wk.out{background:linear-gradient(var(--k-out),#efebe4 70%,#d9d2c6); color:#8a8176}
+:root[data-theme="light"] .bk{box-shadow:0 2px 3px rgba(0,0,0,.35)}
+:root[data-theme="light"] .bk.out{background:linear-gradient(#3e4248,#2f3237); color:#b3b8bf}
+:root[data-theme="light"] .sheet{--line:var(--k-line); --panel-2:var(--k-panel2); background:var(--k-bg); box-shadow:0 -8px 24px rgba(40,30,20,.18)}
+:root[data-theme="light"] .mx{background:var(--k-mx); border:1px solid var(--k-line); box-shadow:0 1px 2px rgba(0,0,0,.06)}
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:pan-x pan-y}
 html,body{scrollbar-width:none; -ms-overflow-style:none}
 html::-webkit-scrollbar,body::-webkit-scrollbar{display:none; width:0; height:0}
@@ -771,9 +763,9 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 #sheetFile .dtop .btn{font-size:12px; padding:0 10px}
 </style>
 <script>
-/* theme: 'light' | 'paper' | 'dark', chosen in Setup; until chosen it follows the system setting */
+/* theme: 'light' | 'dark', chosen in Setup; until chosen it follows the system setting */
 (function(){var r=document.documentElement,mq=window.matchMedia?matchMedia('(prefers-color-scheme: light)'):null;
-  function pick(){var t=null;try{t=localStorage.getItem('phrasenote-theme');}catch(e){}return t||(mq&&mq.matches?'light':'dark');}
+  function pick(){var t=null;try{t=localStorage.getItem('phrasenote-theme');}catch(e){}if(t==='paper')t='light';return t||(mq&&mq.matches?'light':'dark');}
   r.dataset.theme=pick();
   if(mq&&mq.addEventListener)mq.addEventListener('change',function(){var o=r.dataset.theme;r.dataset.theme=pick();if(o!==r.dataset.theme&&window.__themeChanged)window.__themeChanged();});
 })();
@@ -957,7 +949,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 <section class="sheet" id="sheetFile" role="dialog" aria-label="Setup" hidden>
   <div class="sheet-in">
     <div class="sheet-head"><h2>Setup</h2><button class="pill" type="button" data-close>Close</button></div>
-    <div class="sbox"><span class="lbl">Theme</span><div class="seg big" id="themeSeg" role="group" aria-label="Theme" style="margin-top:6px"><button type="button" data-th="light">Light</button><button type="button" data-th="paper">Paper</button><button type="button" data-th="dark">Dark</button></div></div>
+    <div class="sbox"><span class="lbl">Theme</span><div class="seg big" id="themeSeg" role="group" aria-label="Theme" style="margin-top:6px"><button type="button" data-th="light">Light</button><button type="button" data-th="dark">Dark</button></div></div>
     <button class="btn danger" id="btnClear" type="button">Clear all chords</button>
     <button class="btn danger" id="btnClearMel" type="button">Clear melody</button>
     <div class="snd">
@@ -1007,7 +999,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.23.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.23.1</p>
   </div>
 </section>
 
@@ -5237,7 +5229,7 @@ document.addEventListener('keydown',function(e){
   function setMode(basic){S.basic=basic;save();refresh();Aud.audition('m');}
   $('#modeBasic').addEventListener('click',function(){setMode(true);});
   $('#modeSf').addEventListener('click',function(){setMode(false);});
-  /* theme (Setup): Light, Paper, Dark; the head script applies it before the first paint */
+  /* theme (Setup): Light or Dark; the head script applies it before the first paint */
   function themeUI(){const t=document.documentElement.dataset.theme;document.querySelectorAll('#themeSeg [data-th]').forEach(function(b){b.classList.toggle('on',b.dataset.th===t);b.setAttribute('aria-pressed',b.dataset.th===t?'true':'false');});}
   window.__themeChanged=function(){themeUI();renderAll();};
   $('#themeSeg').addEventListener('click',function(e){const b=e.target.closest?e.target.closest('[data-th]'):null;if(!b)return;
