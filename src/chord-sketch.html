@@ -1021,7 +1021,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.24.6</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.24.7</p>
   </div>
 </section>
 
@@ -2861,6 +2861,8 @@ let lateN=0;
 function tick(){
   const ctx=Aud.ctx();
   while(nextTime<ctx.currentTime+0.2){
+    /* only the count-in bar itself is special; rec.lead stays set for the whole take */
+    const cin=rec.lead&&nextStep<cinTo;
     /* If the page stalled and this step is already in the past, drop it. Playing it late would stack it on top of the next
        notes (a burst that sounds 2-3x louder). */
     if(nextTime<ctx.currentTime-0.03)lateN++;else schedule(nextStep,nextTime);
@@ -2872,7 +2874,7 @@ function tick(){
     /* Audio mode, Loop: the bar range repeats while playing too */
     else if(!REC.run&&inMelody()&&U.view==='rec'&&U.recMode==='loop'){const r=recLoop();if(nextStep===r.t1/240){nextStep=r.t0/240;takeFrom=nextStep;}}
     /* Melody Track with the Chord Track on Loop: wrap at the end of the chain, or grow it while recording */
-    if(melLoopOn()&&!rec.lead){
+    if(melLoopOn()&&!cin){
       const ch=loopChain(), growing=(REC.run&&REC.run.b==null)||rec.on;
       /* recording: the next copy is made a whole slot ahead, so nothing happens at the seam */
       if(growing&&nextStep*240>=ch.t1-ch.len&&nextStep*240<ch.t1){const at=insertLoopCopy();if(at!=null){if(rec.on)(rec.grown=rec.grown||[]).push(at);else (REC.grown=REC.grown||[]).push(at);growPaint();}}
@@ -2881,7 +2883,7 @@ function tick(){
       else if(!growing&&!REC.run&&!rec.on&&nextStep>c2.t1/240){nextStep=c2.t0/240;takeFrom=nextStep;}
     }
     /* Chord Track: Loop wraps at the end of the slot, Song at the end of the song */
-    if(!inMelody()&&!rec.lead){
+    if(!inMelody()&&!cin){
       if(U.cmode==='song'){if(nextStep>=songEnd())nextStep=0;}
       else{const r=slotRange();if(nextStep>=r.b||nextStep<r.a){nextStep=r.a;takeFrom=nextStep;}}
     }
