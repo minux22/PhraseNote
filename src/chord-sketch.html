@@ -18,13 +18,14 @@
 :root[data-theme="light"]{
   --bg:#f6f3ee; --bg-2:#ebe6dd; --panel:#fffdf9; --panel-2:#f2eee7; --line:#ddd5c9;
   --text:#2b2620; --dim:#7a6f62;
-  --amber:#f5a33b; --on-amber:#2b1a03; --rec:#e0604c; --blue:#3d7fd9; --on-blue:#ffffff; --nudge:#6b6156; --nudge-ink:#ffffff;
-  --chord:#3d7fd9; --chord-ink:#ffffff; --mel:#c81c70; --mel-ink:#ffffff; --mint:#7fcfae; --mint-ink:#123b2e; --mint-tx:#3a8a6f; --ctl:#3b342c; --ctl-ink:#fffaf2;
+  --amber:#f7c983; --on-amber:#4a2e05; --rec:#f4a493; --rec-ink:#4e1c12; --blue:#8fb9ec; --on-blue:#14304f; --nudge:#6b6156; --nudge-ink:#ffffff;
+  --chord:#8fb9ec; --chord-ink:#14304f; --mel:#f095bd; --mel-ink:#4a1430;
+  --blue-tx:#3f74b8; --mel-tx:#b8457c; --rec-tx:#c55a45; --amb-tx:#b9781c; --mint:#7fcfae; --mint-ink:#123b2e; --mint-tx:#3a8a6f; --ctl:#3b342c; --ctl-ink:#fffaf2;
   --shadow:0 3px 10px rgba(60,40,20,.07); --fgroove:#e0d9ce; --fcap1:#fffdf9; --fcap2:#ece6dc; --fcapb:#b5aa9a; --ftick:rgba(43,38,32,.28);
-  --k-bg:#ebe4d8; --k-case:#d8cebd; --k-caseb:#beb29f; --k-panel:#fffdf9; --k-panel2:#f4f0ea; --k-line:#d0c5b3; --k-mx:#fffdf9; --k-out:#e6e0d6; --k-text:#2b2620; --k-dim:#7a6f62; --k-mint:#7fcfae;
+  --k-bg:#f6f3ee; --k-case:#d8cebd; --k-caseb:#beb29f; --k-panel:#fffdf9; --k-panel2:#f4f0ea; --k-line:#d0c5b3; --k-mx:#fffdf9; --k-out:#e6e0d6; --k-text:#2b2620; --k-dim:#7a6f62; --k-mint:#7fcfae;
   color-scheme:light;
 }
-/* light theme: the Keys and Mixer drawer and the sheets share one tray color, darker than the page, with white keys and white channel strips */
+/* light theme: the Keys and Mixer drawer and the sheets use the page color; a shadow and a dimmed page set them apart */
 :root[data-theme="light"] .kbd{--text:var(--k-text); --dim:var(--k-dim); --mint:var(--k-mint); --line:var(--k-line); --panel:var(--k-panel); --panel-2:var(--k-panel2); --mint-ink:#123b2e; color-scheme:light; background:var(--k-bg); box-shadow:0 -2px 6px rgba(40,30,20,.14),0 -14px 32px rgba(40,30,20,.30)}
 :root[data-theme="light"] .keys{background:var(--k-case); border-color:var(--k-caseb)}
 :root[data-theme="light"] .kset::after{background:linear-gradient(90deg,rgba(0,0,0,0),var(--mint),rgba(0,0,0,0)); opacity:.6}
@@ -37,6 +38,18 @@
 :root[data-theme="light"] .mx{background:var(--k-mx); border:1px solid var(--k-line); box-shadow:0 1px 2px rgba(0,0,0,.06)}
 /* light theme: the mint is a pastel fill; where it is text on the light page a deeper shade keeps it readable */
 :root[data-theme="light"] .plist .gh,:root[data-theme="light"] .thead.gap b,:root[data-theme="light"] .kset::before,:root[data-theme="light"] .mx .mn small,:root[data-theme="light"] .sheet .lbl,:root[data-theme="light"] .sheet h2,:root[data-theme="light"] .dlg h3{color:var(--mint-tx)}
+/* light theme: soft pastel fills with dark ink; text in these colors uses a deeper shade. Audio mode keeps the stronger colors. */
+:root[data-theme="light"] body.aud{--amber:#f5a33b; --on-amber:#2b1a03; --rec:#e0604c; --rec-ink:#ffffff; --blue:#3d7fd9; --on-blue:#ffffff; --chord:#3d7fd9; --chord-ink:#ffffff; --mel:#e0604c; --mel-ink:#ffffff;
+  --blue-tx:#3d7fd9; --mel-tx:#e0604c; --rec-tx:#e0604c; --amb-tx:#f5a33b}
+:root[data-theme="light"] .play.on,:root[data-theme="light"] .rzb button:active,:root[data-theme="light"] .seg.mode3 button:last-child.on,:root[data-theme="light"] .recb[aria-pressed="true"],:root[data-theme="light"] .krec[aria-pressed="true"]{color:var(--rec-ink)}
+:root[data-theme="light"] .zoom button:active{color:var(--mel-ink)}
+:root[data-theme="light"] .play.on{box-shadow:0 4px 12px rgba(0,0,0,.12)}
+:root[data-theme="light"] .seg.mode3 button:last-child,:root[data-theme="light"] .fsn .fserr,:root[data-theme="light"] #recNote.warn,:root[data-theme="light"] #recGainV.clip,:root[data-theme="light"] .recb,:root[data-theme="light"] .take button.del,:root[data-theme="light"] .btn.danger,:root[data-theme="light"] .selbar button.dl{color:var(--rec-tx)}
+:root[data-theme="light"] .xtog .xs,:root[data-theme="light"] .secnm{color:var(--blue-tx)}
+:root[data-theme="light"] .sph,:root[data-theme="light"] .pkl,:root[data-theme="light"] .qbox .qhead .lbl,:root[data-theme="light"] .contb,:root[data-theme="light"] .contm button[aria-pressed="true"]{color:var(--mel-tx)}
+:root[data-theme="light"] .rand,:root[data-theme="light"] .rsec .rkey,:root[data-theme="light"] .slot.over,:root[data-theme="light"] .slot.over small,:root[data-theme="light"] .slot .kb,:root[data-theme="light"] .slot .tbg,:root[data-theme="light"] .tmrow input.on{color:var(--amb-tx)!important}
+/* light theme: with Keys or the Mixer open the page is dimmed like it is under Setup (it still takes taps) */
+:root[data-theme="light"] body.kbd-open::after{content:''; position:fixed; inset:0; z-index:6; background:rgba(0,0,0,.5); pointer-events:none}
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent; touch-action:pan-x pan-y}
 html,body{scrollbar-width:none; -ms-overflow-style:none}
 html::-webkit-scrollbar,body::-webkit-scrollbar{display:none; width:0; height:0}
@@ -1001,7 +1014,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.23.6</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.24.0</p>
   </div>
 </section>
 
@@ -6258,7 +6271,7 @@ function renderRec(){
   const W=Math.ceil((bars*M.bar+pk)/PPQ*z), H=124, dpr=window.devicePixelRatio||1;
   cv.width=W*dpr;cv.height=H*dpr;cv.style.width=W+'px';cv.style.height=H+'px';
   const g=cv.getContext('2d');g.setTransform(dpr,0,0,dpr,0,0);
-  const css=getComputedStyle(document.documentElement), col=function(v){return css.getPropertyValue(v).trim()||'#888';};
+  const css=getComputedStyle(document.body), col=function(v){return css.getPropertyValue(v).trim()||'#888';};
   g.fillStyle=col('--panel');g.fillRect(0,0,W,H);
   g.fillStyle='rgba(128,128,128,.12)';g.fillRect(0,0,W,18);
   const X=function(tk){return (tk+pk)/PPQ*z;};
