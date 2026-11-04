@@ -997,7 +997,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.22.3</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.22.4</p>
   </div>
 </section>
 
@@ -3398,8 +3398,8 @@ $('#btnRand').addEventListener('click',function(){
   const s=serialize();
   /* a fresh sketch (one slot, no melody): major or minor at random too; once the song has grown, key and scale stay */
   let scTag='';
-  /* major 50%, natural minor 25%, harmonic minor 25%; C major or A minor, so it stays on the white keys as much as possible */
-  if(P.form.length===1&&!P.mel.length){const q=Math.random(), sc=q<0.5?'major':q<0.75?'minor':'harm';if(sc!==P.scale)lastRand=-1;P.scale=sc;P.key=sc==='major'?0:9;
+  /* major 70%, natural minor 15%, harmonic minor 15%; C major or A minor, so it stays on the white keys as much as possible */
+  if(P.form.length===1&&!P.mel.length){const q=Math.random(), sc=q<0.7?'major':q<0.85?'minor':'harm';if(sc!==P.scale)lastRand=-1;P.scale=sc;P.key=sc==='major'?0:9;
     scTag=(sc==='major'?'C major':sc==='minor'?'A minor':'A harm. minor')+' · ';}
   const r=Core.randomChords(P,Math.random,lastRand);
   lastRand=r.i;P.chords=r.chords;P.sample=false;
