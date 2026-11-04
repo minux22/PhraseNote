@@ -1030,7 +1030,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.24.7</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.24.8</p>
   </div>
 </section>
 
@@ -2847,6 +2847,10 @@ function schedule(step,t){
   if(rec.lead&&step>=cinFrom&&step<cinTo){
     if(K.count){const k=step-cinFrom;if(k%M0.sps===0){Aud.click(t,k===0,Core.posVel(P,(k%bs)*240));clicked=true;}}
     if(cinOnly)return;
+  }
+  /* audio recording: the bar before the take always clicks (with whatever backing is there); the take itself has none */
+  if(REC.run&&REC.run.cinB!=null&&step>=REC.run.cinA&&step<REC.run.cinB){
+    const k=step-REC.run.cinA;if(k%M0.sps===0)Aud.click(t,k===0,Core.posVel(P,(k%bs)*240));
   }
   /* chords loop; the melody runs straight through (on the Chord Track only with Mel on) */
   const a=step>=0?Core.songAt(P,step,!inMelody()&&U.cmode!=='song'):{view:Core.secView(P,P.form[0]),local:step}, dp=a?Core.secDrums(a.view,null):null;
@@ -6191,12 +6195,12 @@ function recStart(){
   /* the take's name: Song-Bar01-1st, or Loop-Bar01-16-2nd (every pass of a loop counts) */
   const two=function(n){return (n<10?'0':'')+n;}, b0=Math.floor(a/bar);
   const key=U.recMode==='loop'?'Loop-Bar'+two(b0+1)+'-'+two(Math.round(b/bar)):'Song-Bar'+two(b0+1);
-  REC.run={a:a/240,b:b!=null?b/240:null,ta:a,tb:b,mode:U.recMode,bpm:P.bpm,key:key};
+  REC.run={a:a/240,b:b!=null?b/240:null,ta:a,tb:b,mode:U.recMode,bpm:P.bpm,key:key,cinA:(a-bar)/240,cinB:a/240};
   REC.cap={chunks:[],first:null};REC.grown=[];
   K.cur=a-bar;
   startPlay();
   const q=queue[0];REC.run.tStart=q?q.t+dsec(q.step*240,a):Aud.ctx().currentTime+0.08+dsec(a-bar,a);
-  renderRecCtl();toast(U.recMode==='loop'?'Recording the loop: every pass is a take. Stop when done.':'Recording after one bar of backing…');
+  renderRecCtl();toast(U.recMode==='loop'?'Recording the loop: every pass is a take. Stop when done.':'Recording after a one-bar count-in…');
 }
 function ordinal(n){const t=n%100, u=n%10;return n+(t>=11&&t<=13?'th':u===1?'st':u===2?'nd':u===3?'rd':'th');}
 function recFinish(){
