@@ -1031,7 +1031,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.25.8</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.25.9</p>
   </div>
 </section>
 
@@ -1407,12 +1407,15 @@ const Core=(function(){
         if((t[0]>>1)!==ps)return;
         let kind=t[1];const nxt=kind[0]==='>';if(nxt)kind=kind.slice(1);
         if(!nxt&&t[0]===0&&pushOf(kind)&&tieIn)return;
-        const off=(t[0]&1)*0.25, st=step*0.5+off, v=clampV(posVel(p,ps*240+off*480)*t[3]);
-        let inf=info, d, prv=prevInfo;
+        const off=(t[0]&1)*0.25, st=step*0.5+off, v0=clampV(posVel(p,ps*240+off*480)*t[3]);
+        let inf=info, d, prv=prevInfo, v=v0;
         if(nxt){
           const nc=beat+1<ch.length?ch[beat+1]:(p._next!==undefined?p._next:ch[0]);if(nc==null)return;
           const dn=tieOut?downOf(kind):null;
           inf=chordInfo(nc,p.key,p.scale);prv=info;d=Math.max(0.08,(t[2]+(dn?dn[2]:0))*0.25*0.95);
+          /* the push stands in for the next downbeat, so it carries most of that accent; otherwise the one downbeat that
+             is struck (the first bar after Play) sounds far louder than every pushed one */
+          if(dn)v=Math.max(v,clampV(posVel(p,0)*dn[3]*0.9));
         }else d=Math.max(0.08,Math.min(t[2]*0.25*0.95,endQ()-st));
         const n0=out.length;
         const V=voicing(inf,p.key,p.voic,p.inv?prv:null,p.color), n=V.length, k0=kind[0];
