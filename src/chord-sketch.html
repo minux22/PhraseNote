@@ -1031,7 +1031,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.25.9</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.25.10</p>
   </div>
 </section>
 
@@ -2185,6 +2185,9 @@ const Core=(function(){
       if(!loop){
         const pv=i>0?secView(p,L[i-1].id):null, nx=i+1<L.length?secView(p,L[i+1].id):null;
         v._prevComp=pv?pv.comp:null;v._nextComp=nx?nx.comp:null;v._next=nx?nx.chords[0]:null;
+      }else{
+        /* a looping slot follows itself: its last-bar push carries into its own first bar, which is then not struck again */
+        v._prevComp=v.comp;v._nextComp=v.comp;v._next=v.chords[0];
       }
       return {slot:i,id:sl.id,start:sl.start,len:sl.len,view:v,local:(t-sl.start)/240};
     }}
@@ -2857,7 +2860,9 @@ function schedule(step,t){
     const k=step-REC.run.cinA;if(k%M0.sps===0)Aud.click(t,k===0,Core.posVel(P,(k%bs)*240));
   }
   /* chords loop; the melody runs straight through (on the Chord Track only with Mel on) */
-  const a=step>=0?Core.songAt(P,step,!inMelody()&&U.cmode!=='song'):{view:Core.secView(P,P.form[0]),local:step}, dp=a?Core.secDrums(a.view,null):null;
+  /* the Melody Track's loop chain (copies of one slot, wrapping) pushes and ties across its seam like the Chord Track's Loop; while a recording grows it the real neighbours decide */
+  const loopMel=melLoopOn()&&!rec.on&&!(REC.run&&REC.run.b==null);
+  const a=step>=0?Core.songAt(P,step,(!inMelody()&&U.cmode!=='song')||loopMel):{view:Core.secView(P,P.form[0]),local:step}, dp=a?Core.secDrums(a.view,null):null;
   /* the first bar after Play or a jump has no pushed chord before it, so it is struck */
   if(a&&step>=0&&Math.floor(step/bs)===Math.floor(tieFrom/bs))a.view._noTie=true;
   const evs=a&&step>=0?Core.eventsAt(a.view,a.local,dp):[], ms=Core.melAt(P,step), dr=dp?Core.drumsAt(a.view,a.local,dp):[];
@@ -2886,6 +2891,8 @@ function tick(){
     queue.push({t:nextTime,step:nextStep});
     nextTime+=30/bpmAt(nextStep*240);
     nextStep=nextStep+1;
+    /* past the first bar after Play: from here on a loop that comes back to that bar ties into it like any other */
+    if(tieFrom>=0&&nextStep>=0&&Math.floor(nextStep*240/Core.meter(P).bar)>Math.floor(tieFrom*240/Core.meter(P).bar))tieFrom=-1;
     /* recording a slot in a loop: wrap at its end */
     if(REC.run&&REC.run.b!=null&&nextStep>=REC.run.b){nextStep=REC.run.a;takeFrom=nextStep;}
     /* Audio mode, Loop: the bar range repeats while playing too */
