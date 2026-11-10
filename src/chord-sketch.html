@@ -90,11 +90,8 @@ h1::before{content:'♪'; display:inline-flex; align-items:center; justify-conte
 .bpm input{width:42px; height:32px; border:0; background:transparent; color:var(--ctl); text-align:center; font-family:var(--mono); font-size:21px; font-weight:700; padding:0; -moz-appearance:textfield}
 .tgl{width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:var(--panel-2); color:var(--dim); display:grid; place-items:center; padding:0; flex:none}
 .tgl svg{display:block}
-#drumBtn{width:38px; height:36px; border-radius:11px 0 0 11px; border-right:0}
+#drumBtn{width:46px; height:36px; border-radius:11px}
 #drumBtn svg{width:25px; height:25px}
-#drumPick{width:22px; height:36px; border-radius:0 11px 11px 0; margin-left:-5px; position:relative; border-left:1px solid var(--line)}
-#drumPick svg{width:13px; height:13px}
-#drumBtn[aria-pressed="true"]+#drumPick{background:var(--ctl); border-color:var(--ctl); color:var(--ctl-ink); box-shadow:inset 1px 0 0 rgba(0,0,0,.22)}
 .plist{max-height:60vh; overflow:auto; display:flex; flex-direction:column; gap:2px; margin:0 -4px}
 .plist .gh{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--mint); padding:8px 6px 2px}
 .plist button{text-align:left; border:0; background:transparent; color:var(--text); font-size:14px; padding:0 10px; min-height:38px; border-radius:8px}
@@ -498,6 +495,22 @@ input[type=range]::-moz-range-progress{height:2px; background:var(--blue)}
 input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:14px; height:24px; margin-top:-9px; border-radius:3px; background:linear-gradient(90deg,transparent 5px,var(--blue) 5px 7px,transparent 7px),linear-gradient(180deg,var(--fcap1),var(--fcap2)); border:1px solid var(--fcapb); box-shadow:0 2px 4px rgba(0,0,0,.45)}
 input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; background:linear-gradient(90deg,transparent 5px,var(--blue) 5px 7px,transparent 7px),linear-gradient(180deg,var(--fcap1),var(--fcap2)); border:1px solid var(--fcapb)}
 .cchips{gap:5px}
+/* accompaniment parts: one tab per part, its current choice under the name */
+.parts{display:grid; grid-template-columns:repeat(3,1fr); gap:4px; background:var(--panel-2); border:1px solid var(--line); border-radius:12px; padding:3px; margin:0 0 10px}
+.parts button{border:0; background:none; color:var(--dim); border-radius:9px; padding:6px 2px 5px; display:flex; flex-direction:column; align-items:center; gap:1px; min-width:0; font:inherit}
+.parts .pi{display:block; width:20px; height:20px}
+.parts .pi svg{width:20px; height:20px; display:block}
+.parts b{font-size:12.5px; font-weight:700; line-height:1.2}
+.parts small{font-size:10px; font-weight:600; opacity:.85; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.parts button[aria-selected="true"]{background:var(--blue); color:var(--on-blue)}
+.parts .ig{display:none}
+.parts.gtr .ik{display:none}.parts.gtr .ig{display:block}
+.ppane{display:flex; flex-direction:column; gap:10px}
+.instseg{margin:0}
+.patchln{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--dim); padding:0 4px}
+.patchln b{color:var(--text); font-weight:700}
+.patchln .auto{font-size:10px; font-weight:800; letter-spacing:.06em; color:var(--mint); border:1px solid var(--mint); border-radius:7px; padding:0 5px}
+:root[data-theme="light"] .patchln .auto{color:var(--mint-tx)}
 .cchips .gh{flex:0 0 100%; font-size:10px; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:var(--dim); margin-top:4px}
 .cchips .gh:first-child{margin-top:0}
 .cchips .pill{height:26px; padding:0 10px}
@@ -816,7 +829,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       <small>BPM</small>
     </div>
     <span class="sp"></span>
-    <button class="tgl" id="drumBtn" type="button" aria-pressed="false" aria-label="Drums"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><ellipse cx="12" cy="11.2" rx="9.8" ry="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M2.2 11.2v7.4c0 1.8 4.4 3.2 9.8 3.2s9.8-1.4 9.8-3.2v-7.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 14.4v6.2M12 14.6v7M17 14.4v6.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M6.2 3.6L10.4 10.2M17.8 3.6L13.6 10.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10.8" cy="10.9" r="1.2" fill="currentColor"/><circle cx="13.2" cy="10.9" r="1.2" fill="currentColor"/></svg></button><button class="tgl" id="drumPick" type="button" aria-label="Drum pattern" aria-haspopup="dialog"><svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true"><path d="m6 9 6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button class="tgl" id="drumBtn" type="button" aria-pressed="false" aria-label="Drums"><svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true"><ellipse cx="12" cy="11.2" rx="9.8" ry="3.4" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M2.2 11.2v7.4c0 1.8 4.4 3.2 9.8 3.2s9.8-1.4 9.8-3.2v-7.4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M7 14.4v6.2M12 14.6v7M17 14.4v6.2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M6.2 3.6L10.4 10.2M17.8 3.6L13.6 10.2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="10.8" cy="10.9" r="1.2" fill="currentColor"/><circle cx="13.2" cy="10.9" r="1.2" fill="currentColor"/></svg></button>
     <span class="sp"></span>
     <button class="icon" id="undoBtn" type="button" aria-label="Undo"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="M9 14 4 9l5-5M4 9h10a6 6 0 0 1 0 12h-3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button class="icon" id="redoBtn" type="button" aria-label="Redo"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true"><path d="m15 14 5-5-5-5M20 9H10a6 6 0 0 0 0 12h3" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
@@ -864,18 +877,39 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 
     <div class="panel" id="compPanel">
       <div class="sec"><span class="lbl">Accompaniment</span></div>
+      <div class="parts" id="partTabs" role="tablist" aria-label="Accompaniment parts">
+        <button type="button" role="tab" data-pt="keys"><span class="pi ik"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 5v14M12 5v14M16 5v14" stroke="currentColor" stroke-width="1.4"/><rect x="6.6" y="5" width="2.8" height="8" rx=".6" fill="currentColor"/><rect x="14.6" y="5" width="2.8" height="8" rx=".6" fill="currentColor"/></svg></span><span class="pi ig"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.2 9.8 20.5 3.5M18.6 2.6l2.8 2.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M13.6 10.4c-1.1-1.1-3-.9-4 .2l-.5.6c-.5.5-1.3.6-2 .5-1.6-.2-3.2.6-3.7 2.2-.7 2 .1 4.3 1.9 5.8 1.5 1.4 3.6 2 5.4 1.3 1.5-.6 2.2-2.1 2-3.6-.1-.7 0-1.4.5-1.9l.6-.5c1.1-1.1 1.3-3 .2-4.1z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="10" cy="14.2" r="1.5" fill="currentColor"/></svg></span><b id="ptKeysN">Keys</b><small id="ptKeys"></small></button>
+        <button type="button" role="tab" data-pt="bass"><span class="pi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9.5c0-3.3 2.6-5.5 5.6-5.5 3.4 0 5.7 2.4 5.7 6.1 0 5.2-4.4 8.8-10.8 10.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="7.4" cy="9.6" r="2.3" fill="currentColor"/><circle cx="19.6" cy="7.6" r="1.4" fill="currentColor"/><circle cx="19.6" cy="12.6" r="1.4" fill="currentColor"/></svg></span><b>Bass</b><small id="ptBass"></small></button>
+        <button type="button" role="tab" data-pt="rhythm"><span class="pi"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="11.2" rx="9" ry="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 11.2v6.6c0 1.7 4 3 9 3s9-1.3 9-3v-6.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 14.2v5.6M12 14.4v6.4M16.5 14.2v5.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M6.6 3.8 10.6 10M17.4 3.8 13.4 10" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span><b>Rhythm</b><small id="ptRhythm"></small></button>
+      </div>
+      <div id="pKeys" class="ppane">
+      <div class="seg big instseg" id="instSeg" role="group" aria-label="Instrument"><button type="button" data-inst="keys">Keys</button><button type="button" data-inst="guitar">Guitar</button></div>
       <div class="cbox">
       <div class="chips cchips" id="compChips"></div>
       <p class="hint" id="compHint"></p>
       </div>
+      <div class="patchln" id="cPatch"></div>
       <div class="cbox">
-      <div class="crow"><button class="lbl tipb" type="button" data-tip="voic">Voicing</button><div class="cr"><div class="seg cs" id="voicSeg"></div><button class="pill smt" id="invBtn" type="button" aria-pressed="false">Smooth</button></div></div>
-      <div class="crow"><button class="lbl tipb" type="button" data-tip="col">Color</button><div class="seg cs" id="colSeg"></div></div>
-      <div class="crow"><button class="lbl tipb" type="button" data-tip="bpat">Bass</button><div class="seg cs" id="bpatSeg"></div></div>
+      <div class="crow kopt"><button class="lbl tipb" type="button" data-tip="voic">Voicing</button><div class="cr"><div class="seg cs" id="voicSeg"></div><button class="pill smt" id="invBtn" type="button" aria-pressed="false">Smooth</button></div></div>
+      <div class="crow kopt"><button class="lbl tipb" type="button" data-tip="col">Color</button><div class="seg cs" id="colSeg"></div></div>
       <div class="crow"><button class="lbl tipb" type="button" data-tip="strum">Strum</button><div class="cr"><input class="sq" id="strumR" type="range" min="0" max="60" step="1" aria-label="Strum spread"><span class="cv" id="strumV"></span></div></div>
       <div class="crow"><button class="lbl tipb" type="button" data-tip="lay">Late</button><div class="cr"><input class="sq" id="layR" type="range" min="0" max="60" step="1" aria-label="Lay back chords"><span class="cv" id="layV"></span></div></div>
       <div class="crow"><button class="lbl tipb" type="button" data-tip="swing">Swing</button><div class="cr"><div class="seg cs su" id="swuSeg" role="group" aria-label="Swing unit"></div><input class="sq" id="swingR" type="range" min="0" max="100" step="1" aria-label="Swing amount"><span class="cv" id="swingV"></span></div></div>
       <div class="crow"><button class="lbl tipb" type="button" data-tip="loose">Loose</button><div class="cr"><input class="sq" id="looseR" type="range" min="0" max="30" step="1" aria-label="Timing looseness"><span class="cv" id="looseV"></span></div></div>
+      </div>
+      </div>
+      <div id="pBass" class="ppane" hidden>
+      <div class="cbox">
+      <div class="crow"><button class="lbl tipb" type="button" data-tip="bpat">Pattern</button><div class="seg cs" id="bpatSeg"></div></div>
+      </div>
+      <div class="patchln" id="bPatch"></div>
+      </div>
+      <div id="pRhythm" class="ppane" hidden>
+      <div class="cbox">
+      <div class="chips cchips" id="rhyChips"></div>
+      <div class="crow" id="rhyEditRow" hidden><span class="hint" style="margin:0">Your own step pattern.</span><button class="btn" id="rhyEdit" type="button">Edit</button></div>
+      </div>
+      <p class="hint" id="rhyHint"></p>
       </div>
     </div>
   </section>
@@ -1009,7 +1043,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
         <div class="sfrow tr"><span class="lbl">Chords</span><select class="fs" id="sfCf" aria-label="Chords SoundFont"></select><select id="sfC" aria-label="Chords sound"></select></div>
         <div class="sfrow tr"><span class="lbl">Bass</span><select class="fs" id="sfBf" aria-label="Bass SoundFont"></select><select id="sfB" aria-label="Bass sound"></select></div>
         <div class="sfrow tr drow"><span class="lbl">Drums</span><select class="fs" id="sfDf" aria-label="Drums SoundFont"></select><select id="sfD" aria-label="Drums sound"></select></div>
-        <div class="sfrow sub"><span class="lbl">Pattern</span><select id="dPat" aria-label="Drum pattern"></select><button class="btn" id="dEdit" type="button" aria-expanded="false" aria-controls="dSlide" aria-label="Edit pattern">Edit</button></div>
+        <div class="sfrow sub" hidden><span class="lbl">Pattern</span><select id="dPat" aria-label="Drum pattern"></select><button class="btn" id="dEdit" type="button" aria-expanded="false" aria-controls="dSlide" aria-label="Edit pattern">Edit</button></div>
       </div>
       <div class="sbox" id="spBox"><div class="sfpre"><button class="btn" id="spSave" type="button">Save preset</button><button class="btn" id="spOpen" type="button">Load preset</button></div><input id="spIn" type="file" hidden></div>
       <div class="sbox" style="margin-top:10px">
@@ -1031,7 +1065,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.25.10</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.26.0</p>
   </div>
 </section>
 
@@ -1099,13 +1133,6 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
             <div class="dscroll"><div class="dgrid" id="dGrid"></div></div>
           </div>
     <div class="dlgrow"><button class="btn" type="button" id="dsClose">Done</button></div>
-  </div>
-</div>
-<div class="dlgback" id="patDlg" hidden>
-  <div class="dlg" role="dialog" aria-label="Drum pattern">
-    <h3>Drum pattern</h3>
-    <div class="plist" id="patList"></div>
-    <div class="dlgrow"><button class="btn" type="button" id="patClose">Close</button></div>
   </div>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -1240,6 +1267,14 @@ const Core=(function(){
     return colorize(v,info,key,color);
   }
   function bassNote(info,key){return 36+((key+info.bassTone)%12);}
+  /* a six-string barre shape: E shape for roots E..G# (low string 40..44), A shape for A..D# (five strings, 45..51).
+     A seventh takes the place of the octave on the third string; a slash bass goes on the lowest string. */
+  function gtrVoicing(info,key){
+    const t=info.tones, i3=t[1]-t[0], i5=t[2]-t[0], s7=info.sev?t[3]-t[0]:null, r=40+(((key+t[0])%12)-4+12)%12;
+    const v=r<=44?[r,r+i5,s7!=null?r+s7:r+12,r+12+i3,r+12+i5,r+24]:[r,r+i5,s7!=null?r+s7:r+12,r+12+i3,r+12+i5];
+    if(info.slash){const pc=(key+info.bassTone)%12;let b=v[1]-1;while(((b%12)+12)%12!==pc)b--;if(b<40)b+=12;if(b<v[1])v[0]=b;else v.shift();}
+    return v;
+  }
   /* Chord notes plus the bass note. With Bass off, a slash chord gets its bass note added below the chord instead. */
   function notesFor(p,info,prev){
     const c=voicing(info,p.key,p.voic,p.inv?prev:null,p.color);
@@ -1275,10 +1310,18 @@ const Core=(function(){
 
   /* Accompaniment styles. Grid styles ([cell on a 16th grid, kind, length in 16ths, velocity factor]) are 4/4 only; others fall back to Beat.
      Kinds: C chord, D/U strum down/up, N<k> one chord tone an octave up. Arpeggios index the chord tones (k>=n = next octave) per 8th step. */
-  const COMPS=[['hold','Block','Classic'],['beat','Beat','Classic'],['eighth','8th','Classic'],['pop','Pop stabs','Classic'],['ballad','Ballad arp','Classic'],['arpup','Arp up','Classic'],['arpud','Arp up-down','Classic'],['alberti','Alberti','Classic'],['offbeat','Offbeat','Classic'],['funk','Funk stabs','Classic'],['strum','Strum','Classic'],['pad','Pad','Classic'],['waltz','Waltz','Classic'],['bossa','Bossa comp','Classic'],['gospel','Gospel','Classic'],
+  const COMPS=[['hold','Block','Classic'],['beat','Beat','Classic'],['eighth','8th','Classic'],['stac8','Staccato 8ths','Classic'],['pop','Pop stabs','Classic'],['ballad','Ballad arp','Classic'],['arpup','Arp up','Classic'],['arpud','Arp up-down','Classic'],['alberti','Alberti','Classic'],['offbeat','Offbeat','Classic'],['funk','Funk stabs','Classic'],['pad','Pad','Classic'],['waltz','Waltz','Classic'],['bossa','Bossa comp','Classic'],['gospel','Gospel','Classic'],
     ['kballad','K-ballad piano','Modern'],['antic','Anticipation','Modern'],['citypop','City pop','Modern'],['rnbstab','R&B stabs','Modern'],['hiphop','Hip-hop keys','Modern'],['lofi','Lo-fi keys','Modern'],['pluck16','Pluck 16th','Modern'],['housep','House piano','Modern'],['gate','Trance gate','Modern'],['arp16','Arp 16th','Modern'],['synth16','Synth arp','Modern'],['rolled','Rolled chords','Modern'],
-    ['charleston','Charleston','Jazz / Soul'],['freddie','Freddie Green','Jazz / Soul'],['jazzcomp','Jazz comping','Jazz / Soul'],['neosoul','Neo-soul','Jazz / Soul'],['rhodes','Rhodes sustain','Jazz / Soul'],['shell','Shell voicing','Jazz / Soul'],
-    ['chug','Power chug','Rock / Folk'],['powerhalf','Power sustain','Rock / Folk'],['boomchick','Boom-chick','Rock / Folk'],['finger','Fingerpick','Rock / Folk'],['stac8','Staccato 8ths','Rock / Folk']];
+    ['charleston','Charleston','Jazz / Soul'],['jazzcomp','Jazz comping','Jazz / Soul'],['neosoul','Neo-soul','Jazz / Soul'],['rhodes','Rhodes sustain','Jazz / Soul'],['shell','Shell voicing','Jazz / Soul'],
+    ['strum','Folk strum','Acoustic'],['strum8','Strum 8th','Acoustic'],['strum16','Strum 16th','Acoustic'],['balstrum','Ballad strum','Acoustic'],['finger','Fingerpick','Acoustic'],['travis','Travis pick','Acoustic'],['boomchick','Boom-chick','Acoustic'],
+    ['cleancut','Clean cutting','Electric'],['funkmute','Funk muted','Electric'],['garp','Clean arpeggio','Electric'],['chug','Power chug','Electric'],['powerhalf','Power sustain','Electric'],['freddie','Freddie Green','Electric']];
+  /* guitar styles: played on a six-string shape instead of a keyboard voicing */
+  const GUITAR={strum:1,strum8:1,strum16:1,balstrum:1,finger:1,travis:1,boomchick:1,cleancut:1,funkmute:1,garp:1,chug:1,powerhalf:1,freddie:1};
+  function instOf(id){return GUITAR[id]?'guitar':'keys';}
+  /* the General MIDI program (0-based) that suits each style; the Chords sound follows it when set to Auto */
+  const COMP_PATCH={pad:89,gospel:16,citypop:4,rnbstab:4,hiphop:4,lofi:4,neosoul:4,rhodes:4,gate:90,synth16:81,
+    strum:25,strum8:25,strum16:25,balstrum:25,finger:24,travis:25,boomchick:25,cleancut:27,funkmute:28,garp:27,chug:29,powerhalf:30,freddie:26};
+  function compPatch(id){return COMP_PATCH[id]!=null?COMP_PATCH[id]:0;}
   const STY={
     pop:[[0,'C',5,1],[6,'C',2,.85],[8,'C',5,.95],[14,'C',2,.8]],
     funk:[[0,'C',1,1],[3,'C',1,.8],[6,'C',1,.9],[8,'C',1,.85],[10,'C',1,.7],[11,'C',1,.8],[14,'C',1,.9]],
@@ -1304,7 +1347,15 @@ const Core=(function(){
     chug:[[0,'P',1,1],[2,'P',1,.7],[4,'P',1,.85],[6,'P',1,.7],[8,'P',1,.9],[10,'P',1,.7],[12,'P',1,.85],[14,'P',1,.7]],
     powerhalf:[[0,'P',8,1],[8,'P',8,.95]],
     boomchick:[[0,'P',3,.9],[4,'T',2,.75],[8,'P',3,.85],[12,'T',2,.75]],
-    stac8:[[0,'C',1,1],[2,'C',1,.8],[4,'C',1,.9],[6,'C',1,.8],[8,'C',1,.95],[10,'C',1,.8],[12,'C',1,.9],[14,'C',1,.8]]
+    stac8:[[0,'C',1,1],[2,'C',1,.8],[4,'C',1,.9],[6,'C',1,.8],[8,'C',1,.95],[10,'C',1,.8],[12,'C',1,.9],[14,'C',1,.8]],
+    /* guitar: D/U = down/up stroke (the number is the ms between strings), G<k> = one string of the shape (0 = lowest) */
+    strum8:[[0,'D10',2,1],[2,'U8',2,.65],[4,'D10',2,.85],[6,'U8',2,.65],[8,'D10',2,.95],[10,'U8',2,.65],[12,'D10',2,.85],[14,'U8',2,.65]],
+    strum16:[[0,'D9',2,1],[3,'U7',1,.55],[4,'D9',2,.8],[6,'U7',2,.65],[8,'D9',2,.95],[10,'U7',1,.6],[11,'U7',1,.55],[12,'D9',2,.85],[14,'U7',2,.7]],
+    balstrum:[[0,'D16',8,1],[8,'D14',4,.8],[12,'U10',2,.6],[14,'D12',2,.7]],
+    travis:[[0,'G0',4,1],[2,'G4',2,.6],[4,'G1',4,.85],[6,'G3',2,.6],[8,'G0',4,.9],[10,'G5',2,.6],[12,'G1',4,.85],[14,'G4',2,.6]],
+    cleancut:[[0,'T',1,.75],[4,'T',1,1],[7,'T',1,.6],[10,'T',1,.7],[12,'T',1,1],[15,'T',1,.55]],
+    funkmute:[[0,'T',1,1],[1,'T',1,.35],[2,'T',1,.55],[3,'T',1,.35],[4,'T',1,.9],[5,'T',1,.35],[6,'T',1,.6],[7,'T',1,.4],[8,'T',1,.95],[9,'T',1,.35],[10,'T',1,.55],[11,'T',1,.35],[12,'T',1,.9],[13,'T',1,.35],[14,'T',1,.65],[15,'T',1,.4]],
+    garp:[[0,'G0',4,.95],[2,'G3',4,.7],[4,'G4',4,.75],[6,'G5',4,.7],[8,'G2',4,.85],[10,'G4',4,.7],[12,'G5',4,.75],[14,'G3',4,.65]]
   };
   (function(){
     const mk=function(ks,len,vf){return ks.map(function(k,i){return [i,'K'+k,len,vf(i)];});};
@@ -1332,12 +1383,12 @@ const Core=(function(){
     synth16:{color:'add9',bpat:'oct'},
     rolled:{color:'add9',voic:'open',inv:true,bpat:'r5',strum:40,lay:10},
     charleston:{color:'nine',voic:'open',inv:true,swing:55,bpat:'r5',loose:6},
-    freddie:{color:'nine',voic:'open',swing:55,bpat:'r5',loose:5},
     jazzcomp:{color:'nine',voic:'open',inv:true,swing:55,lay:10,bpat:'r5',loose:6},
     neosoul:{color:'nine',voic:'open',inv:true,lay:25,swing:20,swu:'16',strum:30,loose:8},
     rhodes:{color:'nine',voic:'open',inv:true,lay:15,loose:6},
     shell:{color:'nine',swing:55,bpat:'r5',loose:5},
-    finger:{voic:'open',inv:true,loose:5}
+    finger:{loose:5},travis:{bpat:'r5',loose:4},strum:{loose:4},strum8:{loose:3},strum16:{loose:3,swu:'16'},balstrum:{bpat:'r5',loose:5},
+    boomchick:{bpat:'r5',loose:3},cleancut:{loose:3},funkmute:{bpat:'kick',loose:2},garp:{loose:3},freddie:{swing:55,bpat:'r5',loose:5}
   };
   function applyStyle(p,id){
     const r=Object.assign({},NEUTRAL,RECIPES[id]||{});
@@ -1392,7 +1443,7 @@ const Core=(function(){
     }else if(style==='waltz'){
       if(j===0&&bi>=1){attack=true;dur=0.95*q;vel=p.vel4[bslot(bi)];}
     }else if(ARP[style]){
-      const pat=ARP[style], k=pat[ps%pat.length], V=voicing(info,p.key,p.voic,p.inv?prevInfo:null,p.color), n=V.length;
+      const pat=ARP[style], k=pat[ps%pat.length], V=GUITAR[style]?gtrVoicing(info,p.key):voicing(info,p.key,p.voic,p.inv?prevInfo:null,p.color), n=V.length;
       const m=V[k%n]+12*Math.floor(k/n), st=step*0.5;
       out.push({k:'c',midi:m,vel:clampV(posVel(p,ps*240)*(k>=3?0.92:1)),dur:Math.max(0.1,Math.min(ARPD[style]*0.98,endQ()-st)),off:0});
     }else if(STY[style]){
@@ -1418,13 +1469,15 @@ const Core=(function(){
           if(dn)v=Math.max(v,clampV(posVel(p,0)*dn[3]*0.9));
         }else d=Math.max(0.08,Math.min(t[2]*0.25*0.95,endQ()-st));
         const n0=out.length;
-        const V=voicing(inf,p.key,p.voic,p.inv?prv:null,p.color), n=V.length, k0=kind[0];
-        if(k0==='T'){put(V.slice(1),off,d,v,'D',0);}
-        else if(k0==='P'){const r=48+((p.key+inf.tones[0])%12);put([r,r+(inf.slash?7:inf.tones[2]-inf.tones[0])],off,d,v,'D',0);}
+        const G=!!GUITAR[style], V=G?gtrVoicing(inf,p.key):voicing(inf,p.key,p.voic,p.inv?prv:null,p.color), n=V.length, k0=kind[0];
+        if(k0==='T'){put(G?V.slice(-4):V.slice(1),off,d,v,'D',G?6:0);}
+        else if(k0==='P'){const r=G?V[0]:48+((p.key+inf.tones[0])%12), f=inf.slash?7:inf.tones[2]-inf.tones[0];put(G?[r,r+f,r+12]:[r,r+f],off,d,v,'D',G?7:0);}
+        else if(k0==='G'){const k=+kind.slice(1);out.push({k:'c',midi:V[Math.min(k,n-1)],vel:v,dur:d,off:off});}
+        else if(G&&(k0==='D'||k0==='U')){put(k0==='U'?V.slice(-4):V,off,d,v,k0,parseInt(kind.slice(1),10)||10);}
         else if(k0==='K'){const k=+kind.slice(1);out.push({k:'c',midi:V[k%n]+12*Math.floor(k/n),vel:v,dur:d,off:off});}
         else if(k0==='N'){const k=+kind.slice(1);out.push({k:'c',midi:V[Math.min(k,n-1)]+12,vel:v,dur:d,off:off});}
         else if(k0==='D'||k0==='U'){put(notesFor(p,inf,prv).c,off,d,v,k0,parseInt(kind.slice(1),10)||15);}
-        else put(notesFor(p,inf,prv).c,off,d,v,'D',0);
+        else put(G?V:notesFor(p,inf,prv).c,off,d,v,'D',0);
         if(t[0]&1)for(let i=n0;i<out.length;i++)out[i].s16=1;
       });
     }
@@ -1937,6 +1990,9 @@ const Core=(function(){
       return out;
     }
     const ce=evs(cn), be=evs(bn), me=evs(mn), de=evs(dn);
+    /* Chords on Auto: each slot's style brings its own program */
+    let cp0=prog.c;
+    if(o.cauto){let last=null;layout(p).forEach(function(sl,i){const g=compPatch(secView(p,sl.id).comp);if(i===0){cp0=g;last=g;return;}if(g!==last&&sl.start+off<total)ce.push({t:sl.start+off,o:0,b:[0xC0,g]});last=g;});}
     function track(evs,head){
       evs.sort(function(a,b){return a.t-b.t||a.o-b.o;});
       const out=head.slice(); let last=0;
@@ -1960,7 +2016,7 @@ const Core=(function(){
     const pc=function(x){return Math.max(0,Math.min(127,x|0));};
     /* track volume (CC7) from the mixer: 0 dB = 100, as in General MIDI's 40·log10 curve */
     const cc7=function(k,ch){if(!p.mix||!p.mix[k])return [];const db=faderDb(p.mix[k].v);return [0,0xB0|ch,7,db===-Infinity?0:pc(Math.round(100*Math.pow(10,db/40)))];};
-    const t1=track(ce,meta(0x03,strBytes('Chords')).concat([0,0xC0,pc(prog.c)]).concat(cc7('c',0)));
+    const t1=track(ce,meta(0x03,strBytes('Chords')).concat([0,0xC0,pc(cp0)]).concat(cc7('c',0)));
     const t2=track(be,meta(0x03,strBytes('Bass')).concat([0,0xC1,pc(prog.b)]).concat(cc7('b',1)));
     const tl=[t0,t1,t2];
     if(de.length)tl.push(track(de,meta(0x03,strBytes('Drums')).concat(cc7('d',9))));
@@ -2371,7 +2427,7 @@ const Core=(function(){
   }
   return {SCALES:SCALES,SCALE_NAMES:SCALE_NAMES,KEY_NAMES:KEY_NAMES,chordInfo:chordInfo,voicing:voicing,
     noteName:noteName,bassNote:bassNote,notesFor:notesFor,
-    COMPS:COMPS,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,mkMap:mkMap,tempoMap:tempoMap,secAt:secAt,tickAt:tickAt,bpmAt:bpmAt,mapPairs:mapPairs,takeMap:takeMap,takeLen:takeLen,nextSection:nextSection,NEXT_ROLE:NEXT_ROLE,slotStats:slotStats,
+    COMPS:COMPS,GUITAR:GUITAR,instOf:instOf,compPatch:compPatch,gtrVoicing:gtrVoicing,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,mkMap:mkMap,tempoMap:tempoMap,secAt:secAt,tickAt:tickAt,bpmAt:bpmAt,mapPairs:mapPairs,takeMap:takeMap,takeLen:takeLen,nextSection:nextSection,NEXT_ROLE:NEXT_ROLE,slotStats:slotStats,
     POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM,suggestChords:suggestChords,guessKey:guessKey,rekey:rekey,recode:recode,SEC_IDS:SEC_IDS,ROLES:ROLES,SECF:SECF,normSec:normSec,copySec:copySec,secOf:secOf,curId:curId,storeCur:storeCur,loadCur:loadCur,layout:layout,formTicks:formTicks,secView:secView,secDrums:secDrums,songAt:songAt,melInsert:melInsert,melDelete:melDelete,melSlice:melSlice,melPaste:melPaste,resizeSec:resizeSec,xcode:xcode,isX:isX,xWith:xWith,extraPalette:extraPalette};
 })();
 
@@ -2555,6 +2611,7 @@ const LS='chord-sketch-v1';
 const RK='phrasenote-recent', RMAX=10;
 /* General MIDI programs of the sounds in use (set by the Sound section; null = basic synth defaults) */
 let soundPrograms=function(){return null;};
+let chordAuto=function(){}, soundOf=function(){return null;}, chordsAuto=function(){return false;};
 let recentT=null, storeOk=null;
 let P=Core.fresh(Math.random), sel=0, flashSel=-1, bassSel=0, popOpen=false, undo=[], redo=[], dl=null;
 try{const raw=localStorage.getItem(LS); if(raw)P=Core.normalize(JSON.parse(raw));}catch(e){}
@@ -2863,6 +2920,7 @@ function schedule(step,t){
   /* the Melody Track's loop chain (copies of one slot, wrapping) pushes and ties across its seam like the Chord Track's Loop; while a recording grows it the real neighbours decide */
   const loopMel=melLoopOn()&&!rec.on&&!(REC.run&&REC.run.b==null);
   const a=step>=0?Core.songAt(P,step,(!inMelody()&&U.cmode!=='song')||loopMel):{view:Core.secView(P,P.form[0]),local:step}, dp=a?Core.secDrums(a.view,null):null;
+  if(a&&step>=0)chordAuto(a.view.comp);
   /* the first bar after Play or a jump has no pushed chord before it, so it is struck */
   if(a&&step>=0&&Math.floor(step/bs)===Math.floor(tieFrom/bs))a.view._noTie=true;
   const evs=a&&step>=0?Core.eventsAt(a.view,a.local,dp):[], ms=Core.melAt(P,step), dr=dp?Core.drumsAt(a.view,a.local,dp):[];
@@ -3275,19 +3333,28 @@ vhost.addEventListener('pointercancel',endVel);
 
 /* ---------- accompaniment ---------- */
 const COMP_HINT={kballad:'Low root and fifth with short upper chords, pushed into the next chord.',antic:'Chord stabs with a push on 4& into the next chord.',citypop:'16th syncopation, best with the 9th colour.',rnbstab:'Sparse, syncopated chord hits.',hiphop:'Laid-back chords with a short echo.',lofi:'Soft, loose chords, played a little late.',pluck16:'Short 16th-note plucks with accents.',housep:'Piano house stabs on a 16th grid.',gate:'Gated 16th chord pulses (trance).',arp16:'16th-note arpeggio that climbs to the 9th-ish top and back.',synth16:'Fast 16th-note synth arpeggio.',rolled:'Slowly rolled block chords.',charleston:'Beat 1 long, then a short hit on 2&.',freddie:'Light, short quarter-note chords (no root).',jazzcomp:'Syncopated hits that change every bar. Try Swing 50-60%.',neosoul:'Rolled, late chords with a push. Try the 9th colour and Late.',rhodes:'Long overlapping chords.',shell:'Low root and fifth with a short upper hit.',chug:'Palm-muted power-chord 8ths.',powerhalf:'Sustained power chords.',boomchick:'Low pair, chord, low pair, chord.',finger:'Fingerpicked pattern, 8th notes.',stac8:'Short chords on every 8th note.',hold:'Chords held for as long as they last.',beat:'One chord stab on every beat.',eighth:'Chords on every 8th note.',pop:'Syncopated stabs on 1, 2&, 3 and 4&.',ballad:'Slow rolling arpeggio, notes ring together.',arpup:'Chord tones climbing, 8th notes.',arpud:'Chord tones up and back down.',alberti:'Low-high-middle-high figure (classical).',offbeat:'Short chords on the off-beats (reggae, ska).',funk:'Short 16th-note stabs.',strum:'Guitar-like down and up strums.',pad:'Long chords with a doubled root, for atmosphere.',waltz:'Bass on 1, chords on 2 and 3 (3/4 only).',bossa:'Bossa clave rhythm.',gospel:'Block chords with passing top notes.'};
+/* the last style used on each instrument, to come back to when switching Keys / Guitar */
+const lastComp={keys:'beat',guitar:'strum8'};
+function pickComp(id,quiet){
+  edit(function(){Core.applyStyle(P,id);});
+  lastComp[Core.instOf(id)]=id;
+  if(!playing)chordAuto(P.comp);
+  if(!quiet){const c=Core.COMPS.filter(function(x){return x[0]===id;})[0];toast((c?c[1]:id)+': recommended options applied.');}
+  if(!playing){Aud.ensure();Aud.audition('c');}
+}
 function renderComp(){
   const host=$('#compChips');host.innerHTML='';
+  const inst=Core.instOf(P.comp);lastComp[inst]=P.comp;
+  if(!playing)chordAuto(P.comp);
+  $('#instSeg').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.inst===inst);});
+  document.querySelectorAll('#pKeys .kopt').forEach(function(r){r.hidden=inst==='guitar';});
   let gn=null;
   Core.COMPS.forEach(function(c){
-    if(!Core.compOk(P,c[0]))return;
+    if(!Core.compOk(P,c[0])||Core.instOf(c[0])!==inst)return;
     if(c[2]!==gn){gn=c[2];const h=document.createElement('div');h.className='gh';h.textContent=gn;host.appendChild(h);}
     const b=document.createElement('button');b.type='button';b.className='pill';b.textContent=c[1];
     b.setAttribute('aria-pressed',P.comp===c[0]?'true':'false');
-    b.addEventListener('click',function(){
-      let r=null;edit(function(){r=Core.applyStyle(P,c[0]);});
-      toast(c[1]+': recommended options applied.');
-      if(!playing){Aud.ensure();Aud.audition('c');}
-    });
+    b.addEventListener('click',function(){pickComp(c[0]);});
     host.appendChild(b);
   });
   const ok=Core.compOk(P,P.comp);
@@ -3301,7 +3368,33 @@ function renderComp(){
   mkSeg($('#swuSeg'),[['8','8th'],['16','16th']],function(){return P.swu;},function(v){edit(function(){P.swu=v;});});
   $('#swingR').value=P.swing;$('#swingV').textContent=P.swing?P.swing+'%':'Off';
   $('#looseR').value=P.loose;$('#looseV').textContent=P.loose?P.loose+' ms':'Off';
+  renderParts();renderRhythm();
 }
+/* the part tabs (their current choice under each name) and the sound line under each part */
+function renderParts(){
+  const inst=Core.instOf(P.comp), c=Core.COMPS.filter(function(x){return x[0]===P.comp;})[0];
+  const tab=['keys','bass','rhythm'].indexOf(U.ptab)>=0?U.ptab:'keys';
+  $('#partTabs').classList.toggle('gtr',inst==='guitar');
+  $('#ptKeysN').textContent=inst==='guitar'?'Guitar':'Keys';
+  $('#ptKeys').textContent=c?c[1]:'';
+  $('#ptBass').textContent=P.bass?{root:'Root',r5:'Root+5',oct:'Octave',kick:'Kick'}[P.bpat]||'Root':'Off';
+  const d=Core.DPATS.filter(function(x){return x[0]===U.dpat;})[0];
+  $('#ptRhythm').textContent=U.drum?(d?d[1]:''):'Off';
+  $('#partTabs').querySelectorAll('button').forEach(function(b){b.setAttribute('aria-selected',b.dataset.pt===tab?'true':'false');});
+  $('#pKeys').hidden=tab!=='keys';$('#pBass').hidden=tab!=='bass';$('#pRhythm').hidden=tab!=='rhythm';
+  const line=function(el,k){const v=soundOf(k);el.innerHTML='';
+    const t=document.createElement('span');t.textContent='Sound';el.appendChild(t);
+    const b=document.createElement('b');b.textContent=v?v.name:'Basic synth';el.appendChild(b);
+    if(v&&v.auto){const a=document.createElement('span');a.className='auto';a.textContent='AUTO';el.appendChild(a);}
+    if(!v){const n=document.createElement('span');n.textContent='(SoundFont off)';el.appendChild(n);}};
+  line($('#cPatch'),'c');line($('#bPatch'),'b');
+}
+$('#partTabs').addEventListener('click',function(e){const b=e.target.closest?e.target.closest('button[data-pt]'):null;if(!b)return;U.ptab=b.dataset.pt;saveU();renderParts();});
+$('#instSeg').addEventListener('click',function(e){
+  const b=e.target.closest?e.target.closest('button[data-inst]'):null;if(!b||b.dataset.inst===Core.instOf(P.comp))return;
+  let id=lastComp[b.dataset.inst];if(!Core.compOk(P,id))id=b.dataset.inst==='guitar'?'finger':'beat';
+  pickComp(id);
+});
 
 /* tap a setting's name for a short explanation (English + Korean) */
 const TIPS={
@@ -3370,32 +3463,28 @@ $('#rewBtn').addEventListener('click',function(){
   if(playing)seekPlay();
   showCursor(true);
 });
-$('#drumBtn').addEventListener('click',function(){setDrums(!U.drum);renderTop();if(U.drum&&!playing){Aud.ensure();Aud.audition('d');}});
+$('#drumBtn').addEventListener('click',function(){setDrums(!U.drum);renderTop();renderParts();renderRhythm();if(U.drum&&!playing){Aud.ensure();Aud.audition('d');}});
 
-(function(){
-  const dlg=$('#patDlg'), list=$('#patList');
-  function build(){
-    list.innerHTML='';let gn=null;
-    Core.DPATS.forEach(function(d){
-      if(d[2]!==gn){gn=d[2];const h=document.createElement('div');h.className='gh';h.textContent=gn==='Basic'?'Basic':gn;list.appendChild(h);}
-      const b=document.createElement('button');b.type='button';b.textContent=d[1];b.dataset.p=d[0];if(d[0]===U.dpat)b.className='on';list.appendChild(b);
-    });
-  }
-  function open(){build();dlg.querySelector('h3').textContent='Drum pattern · section '+Core.curId(P);dlg.hidden=false;const on=list.querySelector('.on');if(on)setTimeout(function(){on.scrollIntoView({block:'center'});},0);}
-  function close(){dlg.hidden=true;}
-  $('#drumPick').addEventListener('click',open);
-  $('#patClose').addEventListener('click',close);
-  dlg.addEventListener('click',function(e){if(e.target===dlg)close();});
-  list.addEventListener('click',function(e){
-    const b=e.target.closest?e.target.closest('button[data-p]'):null;if(!b)return;
-    /* My pattern: straight into its step grid */
-    if(b.dataset.p==='custom'){close();setDrums(true,'custom');const sel=$('#dPat');if(sel)sel.value='custom';renderTop();if(window.__dOpen)window.__dOpen(true);return;}
-    setDrums(true,b.dataset.p);
-    const sel=$('#dPat');if(sel)sel.value=U.dpat;
-    renderTop();build();Aud.ensure();if(!playing)Aud.audition('d');
-    toast('Drums: '+b.textContent);
+/* Rhythm tab: the drum pattern of this slot (the button beside BPM only turns the drums on and off) */
+function renderRhythm(){
+  const host=$('#rhyChips');host.innerHTML='';let gn=null;
+  Core.DPATS.forEach(function(d){
+    if(d[2]!==gn){gn=d[2];const h=document.createElement('div');h.className='gh';h.textContent=gn;host.appendChild(h);}
+    const b=document.createElement('button');b.type='button';b.className='pill';b.textContent=d[1];b.dataset.p=d[0];
+    b.setAttribute('aria-pressed',d[0]===U.dpat?'true':'false');host.appendChild(b);
   });
-})();
+  $('#rhyEditRow').hidden=U.dpat!=='custom';
+  $('#rhyHint').textContent=U.drum?'':'Drums are off: turn them on with the drum button beside BPM.';
+}
+$('#rhyChips').addEventListener('click',function(e){
+  const b=e.target.closest?e.target.closest('button[data-p]'):null;if(!b)return;
+  setDrums(U.drum,b.dataset.p);
+  const sel=$('#dPat');if(sel)sel.value=U.dpat;
+  renderTop();renderRhythm();renderParts();
+  if(b.dataset.p==='custom'){if(window.__dOpen)window.__dOpen(true);return;}
+  if(U.drum&&!playing){Aud.ensure();Aud.audition('d');}
+});
+$('#rhyEdit').addEventListener('click',function(){if(window.__dOpen)window.__dOpen(true);});
 $('#bpmDown').addEventListener('click',function(){setBpm(P.bpm-1);});
 $('#bpmUp').addEventListener('click',function(){setBpm(P.bpm+1);});
 $('#bpmVal').addEventListener('change',function(e){setBpm(e.target.value);});
@@ -4898,7 +4987,7 @@ function projectFiles(name){
     rs.forEach(function(r){if(r.a)audio[r.t.id]=b64(new Uint8Array(r.a.buffer,r.a.byteOffset,r.a.byteLength));});
     if(Object.keys(audio).length)o.audio=audio;
     const files=[{name:name+ownExt('.phrasenote'),data:new TextEncoder().encode(JSON.stringify(o))},
-      {name:name+'.mid',data:Core.buildMidi(P,U.drum?U.dpat:null,{prog:soundPrograms(),name:P.name})}];
+      {name:name+'.mid',data:Core.buildMidi(P,U.drum?U.dpat:null,{prog:soundPrograms(),cauto:chordsAuto(),name:P.name})}];
     rs.forEach(function(r){if(r.a)files.push({name:name+'-'+fsSafe(r.t.name)+'.wav',data:wavOf(r.t,r.a)});});
     const mw=compWav(rs);if(mw)files.splice(2,0,{name:name+'-Melody.wav',data:mw});
     return files;
@@ -5035,7 +5124,9 @@ document.addEventListener('keydown',function(e){
   const DEFP={c:[0,4],b:[0,33],m:[0,73],d:[128,0]};
   /* a track's sound is {f:file id, b:bank, n:program}; null = basic synth */
   function pre(a){return {f:null,b:a[0],n:a[1]};}
-  const S={c:pre(DEFP.c),b:pre(DEFP.b),m:pre(DEFP.m),d:pre(DEFP.d),v:{c:70,b:65,m:45,d:36},rev:35,mv:50};
+  const S={c:pre(DEFP.c),b:pre(DEFP.b),m:pre(DEFP.m),d:pre(DEFP.d),v:{c:70,b:65,m:45,d:36},rev:35,mv:50,ca:true};
+  /* Chords on Auto: the sound follows the accompaniment style (Core.compPatch) of the slot that is playing */
+  let autoProg=0;
   try{
     const r=localStorage.getItem(KEY);
     if(r){const o=JSON.parse(r);TR.forEach(function(k){
@@ -5043,7 +5134,7 @@ document.addEventListener('keydown',function(e){
       if(v===null)S[k]=null;
       else if(Array.isArray(v))S[k]=pre(v);
       else if(v&&typeof v==='object'&&typeof v.b==='number'&&typeof v.n==='number')S[k]={f:typeof v.f==='string'?v.f:null,b:v.b,n:v.n};
-    });Object.assign(S.v,o.v||{});if(typeof o.rev==='number')S.rev=o.rev;if(typeof o.mv==='number')S.mv=Math.max(0,Math.min(100,o.mv));if(typeof o.basic==='boolean')S.basic=o.basic;}
+    });Object.assign(S.v,o.v||{});if(typeof o.rev==='number')S.rev=o.rev;if(typeof o.mv==='number')S.mv=Math.max(0,Math.min(100,o.mv));if(typeof o.basic==='boolean')S.basic=o.basic;S.ca=typeof o.ca==='boolean'?o.ca:!(S.c&&(S.c.b!==DEFP.c[0]||S.c.n!==DEFP.c[1]));}
   }catch(e){}
   const files=[], MAXF=4, MAXB=300*1048576;
   function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
@@ -5071,6 +5162,7 @@ document.addEventListener('keydown',function(e){
   function presetOpts(el,F,k){
     el.innerHTML='';el.appendChild(new Option('Basic synth','-1'));
     if(!F)return;
+    if(k==='c')el.appendChild(new Option('Auto (follows the style)','auto'));
     if(k==='d'){F.m.kits.forEach(function(p){el.appendChild(new Option(p.name,String(p.i)));});return;}
     const g0=grp('General MIDI'), g1=grp('Variations');
     F.m.list.forEach(function(p){
@@ -5093,7 +5185,8 @@ document.addEventListener('keydown',function(e){
   function resolve(k){
     const none={fid:null,pi:-1};
     if(!files.length||isBasic())return none;
-    const t=S[k];if(t===null)return none;
+    let t=S[k];if(t===null)return none;
+    if(k==='c'&&S.ca)t={f:selFile.c,b:0,n:autoProg};
     let F=t.f?files.filter(function(x){return x.id===t.f;})[0]:null, i=F?F.m.indexOf(t.b,t.n):-1;
     if(i<0){for(let j=0;j<files.length&&i<0;j++){const q=files[j].m.indexOf(t.b,t.n);if(q>=0){F=files[j];i=q;}}}
     if(i<0){F=files[0];i=F.m.indexOf(DEFP[k][0],DEFP[k][1]);}
@@ -5108,11 +5201,24 @@ document.addEventListener('keydown',function(e){
       let F=fileById(selFile[k])||files[0]||null;if(F)selFile[k]=F.id;
       const fe=$('#'+IDS[k]+'f');if(F)fe.value=F.id;
       const el=$('#'+IDS[k]);presetOpts(el,F,k);
-      el.value=r.fid&&r.fid===(F&&F.id)?String(r.pi):'-1';
+      el.value=k==='c'&&S.ca&&r.fid?'auto':r.fid&&r.fid===(F&&F.id)?String(r.pi):'-1';
     });
     syncLoaded();
+    try{renderParts();}catch(e){}
   }
   function mb(n){return (n/1048576).toFixed(n<1048576*10?1:0)+' MB';}
+  /* switch the Chords sound to the style's program (only when Chords is on Auto and the program changes) */
+  chordAuto=function(comp){
+    const pg=Core.compPatch(comp);if(pg===autoProg)return;autoProg=pg;
+    if(!S.ca||!files.length||isBasic())return;
+    const r=resolve('c');Aud.setTrack('c',r.fid,r.pi,gain(TVOL.c));
+  };
+  /* what a track plays, for the Accompaniment panel: {name, auto} or null for the basic synth */
+  soundOf=function(k){
+    const r=resolve(k),F=r.fid?fileById(r.fid):null;if(!F||r.pi<0)return null;
+    return {name:F.m.presets[r.pi].name,auto:k==='c'&&!!S.ca};
+  };
+  chordsAuto=function(){return !!S.ca&&!!files.length&&!isBasic();};
   soundPrograms=function(){
     const o={};let any=false;
     ['c','b','m'].forEach(function(k){const r=resolve(k),F=r.fid?fileById(r.fid):null;if(F&&r.pi>=0){o[k]=F.m.presets[r.pi].num;any=true;}});
@@ -5194,7 +5300,9 @@ document.addEventListener('keydown',function(e){
   TR.forEach(function(k){
     $('#'+IDS[k]).addEventListener('change',function(e){
       const v=e.target.value, F=fileById(selFile[k]);
-      if(v==='-1'||!F)S[k]=null;
+      if(k==='c')S.ca=v==='auto';
+      if(v==='auto'){if(!S.c)S.c=pre(DEFP.c);}
+      else if(v==='-1'||!F)S[k]=null;
       else{const pr=F.m.presets[+v];S[k]={f:F.id,b:pr.bank,n:pr.num};}
       save();apply();Aud.audition(k);
     });
