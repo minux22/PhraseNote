@@ -5,10 +5,11 @@ const Core=new Function(html.match(/<script id="core">([\s\S]*?)<\/script>/)[1]+
 const assert=require('assert');
 const p=Core.normalize(Core.defaults());
 p.bpat='walk';Core.applyStyle(p,'citypop');assert.strictEqual(p.bpat,'walk','style changed the bass');
-assert.strictEqual(p.color,'nine');
+assert.strictEqual(p.color,'off','a style turned Color on');
 // style only keeps the options
-p.color='off';Core.applyStyle(p,'neosoul',true);assert.strictEqual(p.comp,'neosoul');assert.strictEqual(p.color,'off');
-const d=Core.recipeDiff(p,'neosoul').map(x=>x[0]);assert(d.indexOf('color')>=0&&d.indexOf('bpat')<0,'diff '+d);
+p.lay=0;Core.applyStyle(p,'neosoul',true);assert.strictEqual(p.comp,'neosoul');assert.strictEqual(p.lay,0);
+const d=Core.recipeDiff(p,'neosoul').map(x=>x[0]);assert(d.indexOf('lay')>=0&&d.indexOf('bpat')<0&&d.indexOf('color')<0,'diff '+d);
+p.color='nine';Core.applyStyle(p,'beat');assert.strictEqual(p.color,'nine','a style turned Color off');p.color='off';
 Core.applyStyle(p,'neosoul');assert.strictEqual(Core.recipeDiff(p,'neosoul').length,0);
 // instrument: shared style keeps the choice, guitar style forces guitar, keys-only forces keys
 p.inst='guitar';Core.applyStyle(p,'bossa');assert.strictEqual(Core.instP(p),'guitar');assert.strictEqual(Core.compPatch('bossa','guitar'),24);

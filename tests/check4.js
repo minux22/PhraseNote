@@ -14,7 +14,7 @@ let q5=Core.quantize([{s:130,l:100,p:60}],120,0.5,false,1920); console.log(JSON.
 const p=Core.normalize({mel:[{s:0,l:480,p:72},{s:240,l:240,p:74},{s:360,l:120,p:76},{s:99999999,l:1,p:60}],bars:4,melAmt:100});
 assert.strictEqual(p.mel.length,3);
 console.log(Core.melAt(p,0),Core.melAt(p,1),Core.melAt(p,1).length);
-assert.strictEqual(Core.melVel(p,0),100); assert.strictEqual(Core.melVel(p,480),60); assert.strictEqual(Core.melVel(p,240),p.vel8[1]);
+assert.strictEqual(Core.melVel(p,0),95); assert.strictEqual(Core.melVel(p,480),55); assert.strictEqual(Core.melVel(p,240),p.vel8[1]);
 p.melAmt=0; assert.strictEqual(Core.melVel(p,0),90); p.melAmt=50; assert.strictEqual(Core.melVel(p,0),Math.round(90+(Core.posVel(p,0)-90)/2)); p.melAmt=100; assert.strictEqual(Core.melVel(p,0),Core.posVel(p,0)); assert.strictEqual(Core.normalize({}).melAmt,30); assert.strictEqual(Core.normalize({melPat:false}).melAmt,0); assert.strictEqual(Core.fresh(()=>0.3).melAmt,30);
 // shrink bars
 assert.strictEqual(Core.fitMel([{s:5000,l:100,p:60},{s:1800,l:500,p:60}],1920).length,1);

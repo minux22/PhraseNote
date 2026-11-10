@@ -1147,7 +1147,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.7</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.8</p>
   </div>
 </section>
 
@@ -1476,27 +1476,28 @@ const Core=(function(){
   })();
   const ARP={ballad:[0,1,2,3,4,3,2,1],arpup:[0,1,2,3,0,1,2,3],arpud:[0,1,2,3,2,1,0,1],alberti:[0,2,1,2,0,2,1,2],finger:[0,2,3,2,1,2,3,2]};
   const ARPD={ballad:1.8,arpup:1,arpud:1,alberti:0.5,finger:1.2};
-  /* Choosing a style also sets the options that make it sound right; anything not listed goes back to neutral. */
-  const NEUTRAL={voic:'close',inv:false,color:'off',strum:0,lay:0,swing:0,swu:'8',loose:0};
+  /* Choosing a style also sets the options that make it sound right; anything not listed goes back to neutral.
+     Color is never part of a style: it stays Off until it is turned on by hand. */
+  const NEUTRAL={voic:'close',inv:false,strum:0,lay:0,swing:0,swu:'8',loose:0};
   const RECIPES={
-    pad:{voic:'open',color:'add9'},
-    kballad:{color:'add9',inv:true,loose:4},
-    antic:{color:'add9',inv:true,loose:3},
-    citypop:{color:'nine',voic:'open',inv:true,bpat:'kick',loose:3},
-    rnbstab:{color:'nine',voic:'open',inv:true,bpat:'kick',lay:15,swing:15,swu:'16',loose:5},
-    hiphop:{color:'nine',lay:20,swing:20,swu:'16',bpat:'kick',loose:6},
-    lofi:{color:'nine',voic:'open',lay:30,swing:30,swu:'16',strum:20,loose:12},
-    pluck16:{color:'add9',bpat:'kick'},
-    housep:{color:'add9',bpat:'oct'},
-    gate:{color:'sus',bpat:'oct'},
-    arp16:{color:'add9',voic:'open',inv:true,loose:4},
-    synth16:{color:'add9',bpat:'oct'},
-    rolled:{color:'add9',voic:'open',inv:true,bpat:'r5',strum:40,lay:10},
-    charleston:{color:'nine',voic:'open',inv:true,swing:55,bpat:'r5',loose:6},
-    jazzcomp:{color:'nine',voic:'open',inv:true,swing:55,lay:10,bpat:'r5',loose:6},
-    neosoul:{color:'nine',voic:'open',inv:true,lay:25,swing:20,swu:'16',strum:30,loose:8},
-    rhodes:{color:'nine',voic:'open',inv:true,lay:15,loose:6},
-    shell:{color:'nine',swing:55,bpat:'r5',loose:5},
+    pad:{voic:'open'},
+    kballad:{inv:true,loose:4},
+    antic:{inv:true,loose:3},
+    citypop:{voic:'open',inv:true,bpat:'kick',loose:3},
+    rnbstab:{voic:'open',inv:true,bpat:'kick',lay:15,swing:15,swu:'16',loose:5},
+    hiphop:{lay:20,swing:20,swu:'16',bpat:'kick',loose:6},
+    lofi:{voic:'open',lay:30,swing:30,swu:'16',strum:20,loose:12},
+    pluck16:{bpat:'kick'},
+    housep:{bpat:'oct'},
+    gate:{bpat:'oct'},
+    arp16:{voic:'open',inv:true,loose:4},
+    synth16:{bpat:'oct'},
+    rolled:{voic:'open',inv:true,bpat:'r5',strum:40,lay:10},
+    charleston:{voic:'open',inv:true,swing:55,bpat:'r5',loose:6},
+    jazzcomp:{voic:'open',inv:true,swing:55,lay:10,bpat:'r5',loose:6},
+    neosoul:{voic:'open',inv:true,lay:25,swing:20,swu:'16',strum:30,loose:8},
+    rhodes:{voic:'open',inv:true,lay:15,loose:6},
+    shell:{swing:55,bpat:'r5',loose:5},
     finger:{loose:5},travis:{bpat:'r5',loose:4},strum:{loose:4},strum8:{loose:3},strum16:{loose:3,swu:'16'},balstrum:{bpat:'r5',loose:5},
     boomchick:{bpat:'r5',loose:3},cleancut:{loose:3},funkmute:{bpat:'kick',loose:2},garp:{loose:3},freddie:{swing:55,bpat:'r5',loose:5}
   };
@@ -2476,7 +2477,7 @@ const Core=(function(){
     const ch=[];
     [0,10,6,8].forEach(function(c){for(let i=0;i<4;i++)ch.push(c);});
     return {v:1,key:0,scale:'major',bars:4,bpm:90,unit:2,sev:false,bass:true,comp:'beat',voic:'close',inv:false,strum:0,bpat:'root',swing:0,color:'off',lay:0,loose:0,
-      vel4:[100,60,80,60],vel8:[100,55,60,50,80,50,60,50],jitter:6,chords:ch,sample:true,mel:[],melAmt:30,pick:false,ts:'4/4',str:'off',srng:'mid'};
+      vel4:[95,55,75,55],vel8:[95,55,60,55,75,55,60,55],jitter:6,chords:ch,sample:true,mel:[],melAmt:30,pick:false,ts:'4/4',str:'off',srng:'mid'};
   }
   /* starting point for a new project: random tempo 85-130, random major/minor (C major or A minor), 4 bars, 2-beat cells, pickup off, auto-velocity on */
   function fresh(rnd){
@@ -4019,10 +4020,12 @@ function renderRhythm(){
 }
 function pickPat(id){
   /* swing patterns come with 60% swing (on 8ths) */
-  const diff=SWUNG[id]?[['swing',P.swing,60],['swu',P.swu,'8']].filter(function(d){return d[0]==='swing'?P.swing<40:P.swu!=='8';}):[];
+  let diff=SWUNG[id]?[['swing',P.swing,60],['swu',P.swu,'8']].filter(function(d){return d[0]==='swing'?P.swing<40:P.swu!=='8';}):[];
+  /* and leaving one for a straight pattern takes that swing back off (only the 60% on 8ths it set) */
+  if(!SWUNG[id]&&SWUNG[U.dpat]&&P.swing===60&&P.swu==='8')diff=[['swing',60,0]];
   const dn=(Core.DPATS.filter(function(d){return d[0]===id;})[0]||[0,id])[1];
   withOptions(dn,diff,function(only){
-    if(!only&&diff.length)edit(function(){P.swing=60;P.swu='8';});
+    if(!only&&diff.length)edit(function(){diff.forEach(function(d){P[d[0]]=d[2];});});
     setPat(id);
   });
 }
@@ -4121,7 +4124,7 @@ function doRandom(mode){
   const pool=mode==='style'?Core.compsFor(Core.instP(P)):Core.COMPS;
   const ids=pool.map(function(c){return c[0];}).filter(function(id){return Core.compOk(P,id)&&id!==P.comp;});
   const cid=ids[Math.floor(Math.random()*ids.length)]||P.comp;
-  Core.applyStyle(P,cid,U.styAsk==='style');if(U.styAsk!=='style')P.color='off';lastComp[Core.instP(P)]=cid;said.push(compName(cid));}
+  Core.applyStyle(P,cid,U.styAsk==='style');lastComp[Core.instP(P)]=cid;said.push(compName(cid));}
   /* and a random drum pattern (not My pattern, not the extreme metal ones); the drum button stays as it is */
   if(doR){
   /* Rhythm only keeps the rhythm type (and its kit); Everything picks from all patterns */
