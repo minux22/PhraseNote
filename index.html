@@ -1090,7 +1090,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.28.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.28.1</p>
   </div>
 </section>
 
@@ -3474,6 +3474,7 @@ const COMP_HINT={kballad:'Low root and fifth with short upper chords, pushed int
 const lastComp={keys:'beat',guitar:'strum8'};
 function pickComp(id,quiet){
   edit(function(){Core.applyStyle(P,id);});
+  if(MIX.open)mixRender();
   lastComp[Core.instOf(id)]=id;
   if(!playing)chordAuto(P.comp);
   if(!quiet){const c=Core.COMPS.filter(function(x){return x[0]===id;})[0];toast((c?c[1]:id)+': recommended options applied.');}
@@ -6130,7 +6131,7 @@ function openKeyGuess(){
 
 /* ---------- mixer: Melody MIDI, Melody Audio, Chords, Bass, Drums, Reverb, Master (kept in the project) ---------- */
 var MIX={open:false};
-var MXCH=[['m','MIDI','Melody'],['a','Audio','Melody'],['c','Chords'],['s','Strings'],['b','Bass'],['d','Drums']];
+var MXCH=[['m','MIDI','Melody'],['a','Audio','Melody'],['c','Keys','Chords'],['b','Bass'],['s','Strings'],['d','Drums']];
 function mixDbText(v){const d=Core.faderDb(v);return d===-Infinity?'−∞':(d>0?'+':'')+d.toFixed(1);}
 /* fader, mute and solo into the channel buses; reverb and master as before */
 function applyMix(){
@@ -6149,7 +6150,8 @@ function mixRender(){
       '<div class="ms">'+(ms?'<button type="button" class="m" aria-pressed="'+(mx[k].mu?'true':'false')+'" aria-label="Mute '+name+'">M</button><button type="button" class="s" aria-pressed="'+(mx[k].so?'true':'false')+'" aria-label="Solo '+name+'">S</button>':'')+'</div>';
     host.appendChild(d);const inp=d.querySelector('input');inp.value=v;if(window.__rangeRO)window.__rangeRO.observe(inp);
   };
-  MXCH.forEach(function(c){const ch=mx[c[0]];strip(c[0],c[1],c[2]||'',ch.v,mixDbText(ch.v),true,ch.mu||(anySolo&&!ch.so),false);});
+  /* the Chords strip is named after the instrument of the current slot (Keys or Guitar) */
+  MXCH.forEach(function(c){const ch=mx[c[0]], nm=c[0]==='c'?(Core.instOf(P.comp)==='guitar'?'Guitar':'Keys'):c[1];strip(c[0],nm,c[2]||'',ch.v,mixDbText(ch.v),true,ch.mu||(anySolo&&!ch.so),false);});
   strip('rev','Reverb','',mx.rev,mx.rev+'%',false,false,true);
   strip('mst','Master','',mx.mst,mixDbText(mx.mst),false,false,false);
   const ms=host.querySelector('.mx[data-k=mst]');ms.classList.add('mst');
