@@ -17,3 +17,10 @@ assert.strictEqual(Core.kitOf({dpat:'swing',dkit:'k808'}),'jazz');
 // percussion: hand percussion only
 const pc=notes('tumbao','std');assert(pc.every(n=>[62,63,64,82].indexOf(n)>=0),pc);
 console.log('rhythm ok');
+// brushes: on the Brush kit the ride figure becomes soft snare taps plus a swirl each half bar; the Jazz kit keeps the ride
+{const p=Core.defaults();p.dpat='swing';const all=k=>{p.dkit=k;const o=[];for(let s=0;s<8;s++)Core.drumsAt(p,s,'swing').forEach(e=>o.push(e));return o;};
+ const j=all('jazz'), b=all('brush');
+ assert(j.some(e=>e.n===51)&&!j.some(e=>e.n===40),'jazz keeps ride');
+ assert(!b.some(e=>e.n===51),'brush has no ride');assert.strictEqual(b.filter(e=>e.n===40).length,2);
+ b.filter(e=>e.n===38).forEach(e=>{assert(e.nf&&e.vel<=60,'soft taps');});
+ console.log('brush ok');}

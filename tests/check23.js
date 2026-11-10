@@ -17,10 +17,17 @@ Core.BASSES.forEach(function(b){
     ev.forEach(e=>{assert(e.midi>=28&&e.midi<=60,b[0]+' range '+e.midi);assert(e.dur>0,b[0]+' dur');});
   });
 });
-// walking in C -> Am: beat 4 of bar 1 is a half step from A (A1=33 or A2=45)
+// walking in C -> Am: only chord tones; beat 4 of bar 1 is the C-chord tone closest to A (G)
 const w=bassOf('walk');const b4=w.filter(e=>Math.abs(e.t-3)<0.01)[0];
-assert(b4&&[32,34,44,46].indexOf(b4.midi)>=0,'approach '+(b4&&b4.midi));
+assert(b4&&b4.midi%12===7,'approach '+(b4&&b4.midi));
 assert.strictEqual(w.filter(e=>e.t===4)[0].midi%12,9);
+// a longer line (C Am Dm G7 C/E): every note is a tone of its chord, no leap over a sixth
+{const ch=[0,0,0,0,10,10,10,10,2,2,2,2,9,9,9,9,42,42,42,42,1,1,1,1];const ev=bassOf('walk','4/4',ch);
+ const p=Core.defaults();ev.forEach(function(e,i){const inf=Core.chordInfo(ch[Math.round(e.t)],0,'major');
+   const pcs=inf.tones.slice(0,inf.sev?4:3).map(x=>((x%12)+12)%12).concat([((inf.bassTone%12)+12)%12]);
+   assert(pcs.indexOf(e.midi%12)>=0,'non-chord tone '+e.midi+' at '+e.t);
+   if(i)assert(Math.abs(e.midi-ev[i-1].midi)<=9,'leap '+ev[i-1].midi+'->'+e.midi);});
+ console.log('walk line',ev.map(e=>e.midi).join(' '));}
 assert.strictEqual(Core.bassKind('slap'),'electric');assert.strictEqual(Core.bassPatch('walk'),32);assert.strictEqual(Core.bassPatch('sub'),39);
 console.log('bass ok',w.map(e=>e.midi).join(' '));
 // MIDI: Bass on Auto writes each slot's program
