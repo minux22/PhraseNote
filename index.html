@@ -1145,7 +1145,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.2</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.3</p>
   </div>
 </section>
 
@@ -1200,7 +1200,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 <div class="dlgback" id="styDlg" hidden>
   <div class="dlg" role="dialog" aria-labelledby="styTitle">
     <h3 id="styTitle"></h3>
-    <p class="note" style="margin:0">This style was made with these options. Change them too?</p>
+    <p class="note" style="margin:0">These options go with it. Change them too?</p>
     <div class="stychg" id="styList"></div>
     <p class="note" id="styFeel" style="margin:0">Swing and Loose apply to every part, the bass and drums too.</p>
     <div class="dlgrow"><button class="btn" type="button" id="styOnly">Style only</button><button class="btn primary" type="button" id="styAll">With options</button></div>
@@ -1437,7 +1437,7 @@ const Core=(function(){
     strum:[[0,'D',4,1],[4,'D',2,.8],[6,'U',2,.75],[10,'U',2,.75],[12,'D',3,.9],[14,'U',2,.75]],
     bossa:[[0,'C',3,1],[3,'C',3,.85],[6,'C',4,.9],[10,'C',2,.85],[12,'C',3,.9]],
     gospel:[[0,'C',4,1],[4,'N1',2,.7],[6,'N2',2,.7],[8,'C',4,.95],[12,'N2',2,.7],[14,'N1',2,.6]],
-    kballad:[[0,'P',7,.9],[2,'T',2,.7],[4,'T',3,.85],[8,'P',6,.9],[10,'T',2,.7],[12,'T',2,.85],[14,'>T',2,.8]],
+    kballad:[[0,'L0',8,.85],[0,'T',8,.62],[2,'L1',6,.6],[4,'L2',4,.66],[6,'L3',2,.6],[8,'L0',8,.78],[8,'T',8,.58],[10,'L1',6,.58],[12,'L2',4,.64],[14,'L3',2,.58]],
     antic:[[0,'C',5,1],[6,'C',2,.85],[10,'C',3,.9],[14,'>C',3,.95]],
     citypop:[[0,'C',2,1],[3,'C',2,.75],[5,'T',1,.6],[6,'C',2,.9],[10,'C',2,.85],[12,'T',1,.7],[14,'>C',2,.9]],
     rnbstab:[[0,'C',2,1],[3,'T',1,.7],[6,'C',2,.85],[10,'T',2,.75],[13,'C',2,.8]],
@@ -1478,7 +1478,7 @@ const Core=(function(){
   const NEUTRAL={voic:'close',inv:false,color:'off',strum:0,lay:0,swing:0,swu:'8',loose:0};
   const RECIPES={
     pad:{voic:'open',color:'add9'},
-    kballad:{color:'nine',voic:'open',inv:true,bpat:'r5',loose:4},
+    kballad:{color:'add9',inv:true,loose:4},
     antic:{color:'add9',inv:true,loose:3},
     citypop:{color:'nine',voic:'open',inv:true,bpat:'kick',loose:3},
     rnbstab:{color:'nine',voic:'open',inv:true,bpat:'kick',lay:15,swing:15,swu:'16',loose:5},
@@ -1699,6 +1699,13 @@ const Core=(function(){
         if(k0==='T'){put(G?V.slice(-4):V.slice(1),off,d,v,'D',G?6:0);}
         else if(k0==='P'){const r=G?V[0]:48+((p.key+inf.tones[0])%12), f=inf.slash?7:inf.tones[2]-inf.tones[0];put(G?[r,r+f,r+12]:[r,r+f],off,d,v,'D',G?7:0);}
         else if(k0==='G'){const k=+kind.slice(1);out.push({k:'c',midi:V[Math.min(k,n-1)],vel:v,dur:d,off:off});}
+        else if(k0==='L'){
+          /* left hand broken chord from the bass note: 0 bass, 1 the chord tone a fifth or so up, 2 the octave, 3 the chord tone above that (the 10th) */
+          const bpc=((p.key+(inf.slash?inf.bassTone:inf.tones[0]))%12+12)%12, b=43+((bpc-7+12)%12);
+          const pcs=inf.tones.slice(0,3).map(function(x){return ((p.key+x)%12+12)%12;});
+          const up=function(from){let m=from;while(pcs.indexOf(((m%12)+12)%12)<0)m++;return m;};
+          const L=[b,up(b+5),b+12,up(b+14)], k=+kind.slice(1);
+          out.push({k:'c',midi:L[k],vel:v,dur:d,off:off});}
         else if(G&&(k0==='D'||k0==='U')){put(k0==='U'?V.slice(-4):V,off,d,v,k0,parseInt(kind.slice(1),10)||10);}
         else if(k0==='K'){const k=+kind.slice(1);out.push({k:'c',midi:V[k%n]+12*Math.floor(k/n),vel:v,dur:d,off:off});}
         else if(k0==='N'){const k=+kind.slice(1);out.push({k:'c',midi:V[Math.min(k,n-1)]+12,vel:v,dur:d,off:off});}
@@ -2441,7 +2448,7 @@ const Core=(function(){
   function fresh(rnd){
     const d=defaults(), minor=rnd()<0.5;
     d.bpm=85+Math.floor(rnd()*46);d.scale=minor?'minor':'major';d.key=minor?9:0;
-    d.bars=4;d.unit=2;d.pick=false;d.melAmt=30;
+    d.bars=4;d.unit=2;d.pick=false;d.melAmt=30;d.sev=true;
     return normalize(d);
   }
   function clamp(x,a,b){x=Math.round(Number(x));if(!isFinite(x))x=a;return Math.max(a,Math.min(b,x));}
@@ -3696,7 +3703,7 @@ vhost.addEventListener('pointercancel',endVel);
 })();
 
 /* ---------- accompaniment ---------- */
-const COMP_HINT={kballad:'Low root and fifth with short upper chords, pushed into the next chord.',antic:'Chord stabs with a push on 4& into the next chord.',citypop:'16th syncopation, best with the 9th colour.',rnbstab:'Sparse, syncopated chord hits.',hiphop:'Laid-back chords with a short echo.',lofi:'Soft, loose chords, played a little late.',pluck16:'Short 16th-note plucks with accents.',housep:'Piano house stabs on a 16th grid.',gate:'Gated 16th chord pulses (trance).',arp16:'16th-note arpeggio that climbs to the 9th-ish top and back.',synth16:'Fast 16th-note synth arpeggio.',rolled:'Slowly rolled block chords.',charleston:'Beat 1 long, then a short hit on 2&.',freddie:'Light, short quarter-note chords (no root).',jazzcomp:'Syncopated hits that change every bar. Try Swing 50-60%.',neosoul:'Rolled, late chords with a push. Try the 9th colour and Late.',rhodes:'Long overlapping chords.',shell:'Low root and fifth with a short upper hit.',chug:'Palm-muted power-chord 8ths.',powerhalf:'Sustained power chords.',boomchick:'Low pair, chord, low pair, chord.',finger:'Fingerpicked pattern, 8th notes.',stac8:'Short chords on every 8th note.',hold:'Chords held for as long as they last.',beat:'One chord stab on every beat.',eighth:'Chords on every 8th note.',pop:'Syncopated stabs on 1, 2&, 3 and 4&.',ballad:'Slow rolling arpeggio, notes ring together.',arpup:'Chord tones climbing, 8th notes.',arpud:'Chord tones up and back down.',alberti:'Low-high-middle-high figure (classical).',offbeat:'Short chords on the off-beats (reggae, ska).',funk:'Short 16th-note stabs.',strum:'Guitar-like down and up strums.',pad:'Long chords with a doubled root, for atmosphere.',waltz:'Bass on 1, chords on 2 and 3 (3/4 only).',bossa:'Bossa clave rhythm.',gospel:'Block chords with passing top notes.'};
+const COMP_HINT={kballad:'Left hand rolls 1-5-8-10 in 8ths under soft right-hand chords on beats 1 and 3 (the usual pop-ballad piano).',antic:'Chord stabs with a push on 4& into the next chord.',citypop:'16th syncopation, best with the 9th colour.',rnbstab:'Sparse, syncopated chord hits.',hiphop:'Laid-back chords with a short echo.',lofi:'Soft, loose chords, played a little late.',pluck16:'Short 16th-note plucks with accents.',housep:'Piano house stabs on a 16th grid.',gate:'Gated 16th chord pulses (trance).',arp16:'16th-note arpeggio that climbs to the 9th-ish top and back.',synth16:'Fast 16th-note synth arpeggio.',rolled:'Slowly rolled block chords.',charleston:'Beat 1 long, then a short hit on 2&.',freddie:'Light, short quarter-note chords (no root).',jazzcomp:'Syncopated hits that change every bar. Try Swing 50-60%.',neosoul:'Rolled, late chords with a push. Try the 9th colour and Late.',rhodes:'Long overlapping chords.',shell:'Low root and fifth with a short upper hit.',chug:'Palm-muted power-chord 8ths.',powerhalf:'Sustained power chords.',boomchick:'Low pair, chord, low pair, chord.',finger:'Fingerpicked pattern, 8th notes.',stac8:'Short chords on every 8th note.',hold:'Chords held for as long as they last.',beat:'One chord stab on every beat.',eighth:'Chords on every 8th note.',pop:'Syncopated stabs on 1, 2&, 3 and 4&.',ballad:'Slow rolling arpeggio, notes ring together.',arpup:'Chord tones climbing, 8th notes.',arpud:'Chord tones up and back down.',alberti:'Low-high-middle-high figure (classical).',offbeat:'Short chords on the off-beats (reggae, ska).',funk:'Short 16th-note stabs.',strum:'Guitar-like down and up strums.',pad:'Long chords with a doubled root, for atmosphere.',waltz:'Bass on 1, chords on 2 and 3 (3/4 only).',bossa:'Bossa clave rhythm.',gospel:'Block chords with passing top notes.'};
 /* the last style used on each instrument, to come back to when switching Keys / Guitar */
 const lastComp={keys:'beat',guitar:'strum8'};
 /* picking a style: when its recommended options differ from the ones in use, ask (or follow the Setup choice) */
@@ -3710,33 +3717,35 @@ function optText(k,v){
   return v?v+' ms':'Off';
 }
 function compName(id){const c=Core.COMPS.filter(function(x){return x[0]===id;})[0];return c?c[1]:id;}
-function pickComp(id){
-  const diff=Core.recipeDiff(P,id);
-  if(!diff.length||U.styAsk==='all'){setComp(id,false,diff.length>0);return;}
-  if(U.styAsk==='style'){setComp(id,true,false);return;}
-  /* ask */
-  $('#styTitle').textContent=compName(id)+': recommended options';
+/* choosing a style or a rhythm pattern that comes with its own options: Ask shows them first, Apply changes them and
+   lists what changed in a message, Keep leaves every option as it is */
+function withOptions(title,diff,go){
+  if(!diff.length){go(false);return;}
+  if(U.styAsk==='style'){go(true);return;}
+  const said=function(){toast(title+': '+diff.map(function(d){return (OPT_NAME[d[0]]||d[0])+' '+optText(d[0],d[2]);}).join(' · '));};
+  if(U.styAsk==='all'){go(false);said();return;}
+  $('#styTitle').textContent=title+': recommended options';
   const L=$('#styList');L.innerHTML='';
   diff.forEach(function(d){const a=document.createElement('span');a.textContent=OPT_NAME[d[0]]||d[0];
     const b=document.createElement('b');const em=document.createElement('em');em.textContent=optText(d[0],d[1])+' → ';b.appendChild(em);b.appendChild(document.createTextNode(optText(d[0],d[2])));
     L.appendChild(a);L.appendChild(b);});
   $('#styFeel').hidden=!diff.some(function(d){return d[0]==='swing'||d[0]==='swu'||d[0]==='loose';});
   $('#styNoAsk').checked=false;
-  styPending=id;$('#styDlg').hidden=false;
+  styPending=go;$('#styDlg').hidden=false;
 }
+function pickComp(id){withOptions(compName(id),Core.recipeDiff(P,id),function(only){setComp(id,only);});}
 let styPending=null;
-function setComp(id,only,said){
+function setComp(id,only){
   edit(function(){Core.applyStyle(P,id,only);});
   if(MIX.open)mixRender();
   lastComp[Core.instP(P)]=id;
   if(!playing)chordAuto(P.comp,Core.instP(P));
-  if(said)toast(compName(id)+': recommended options applied.');
   if(!playing){Aud.ensure();Aud.audition('c');}
 }
 function styAnswer(only){
-  const id=styPending;styPending=null;$('#styDlg').hidden=true;if(!id)return;
+  const go=styPending;styPending=null;$('#styDlg').hidden=true;if(!go)return;
   if($('#styNoAsk').checked){U.styAsk=only?'style':'all';saveU();renderStyAsk();toast('Saved. You can change this in Setup.');}
-  setComp(id,only,false);
+  go(only);
 }
 $('#styOnly').addEventListener('click',function(){styAnswer(true);});
 $('#styAll').addEventListener('click',function(){styAnswer(false);});
@@ -3975,9 +3984,17 @@ function renderRhythm(){
   $('#rhyHint').textContent=U.drum?(ty==='perc'?'Hand percussion instead of a drum kit.':''):'Drums are off: turn them on with the drum button beside BPM.';
 }
 function pickPat(id){
+  /* swing patterns come with 60% swing (on 8ths) */
+  const diff=SWUNG[id]?[['swing',P.swing,60],['swu',P.swu,'8']].filter(function(d){return d[0]==='swing'?P.swing<40:P.swu!=='8';}):[];
+  const dn=(Core.DPATS.filter(function(d){return d[0]===id;})[0]||[0,id])[1];
+  withOptions(dn,diff,function(only){
+    if(!only&&diff.length)edit(function(){P.swing=60;P.swu='8';});
+    setPat(id);
+  });
+}
+function setPat(id){
   setDrums(U.drum,id);
   const sel=$('#dPat');if(sel)sel.value=U.dpat;
-  if(SWUNG[id]&&P.swing<40){edit(function(){P.swing=60;});toast('Swing set to 60% for a jazz feel.');}
   if(!playing)kitAuto(curKit());
   renderTop();renderRhythm();renderParts();
   if(id==='custom'){if(window.__dOpen)window.__dOpen(true);return;}
@@ -4116,7 +4133,8 @@ if(['roll','staff','rec'].indexOf(U.view)<0)U.view='roll';
 if([16,8,4,2,1].indexOf(U.nv)<0)U.nv=4;
 U.dot=!!U.dot&&U.nv>1;if([0,1,-1,2].indexOf(U.acc)<0)U.acc=0;
 U.drum=!!U.drum;U.abuf=['interactive','balanced','playback'].indexOf(U.abuf)<0?'balanced':U.abuf;if(!Core.DPATS.some(function(d){return d[0]===U.dpat;}))U.dpat='rock8';U.clk=Math.max(0,Math.min(100,Math.round(+U.clk||0)));
-U.styAsk=['ask','all','style'].indexOf(U.styAsk)<0?'ask':U.styAsk;U.rmode=['all','chords','style','rhythm'].indexOf(U.rmode)<0?'all':U.rmode;
+try{if(!localStorage.getItem('phrasenote-styask-apply')){U.styAsk='all';localStorage.setItem('phrasenote-styask-apply','1');}}catch(e){}
+U.styAsk=['ask','all','style'].indexOf(U.styAsk)<0?'all':U.styAsk;U.rmode=['all','chords','style','rhythm'].indexOf(U.rmode)<0?'all':U.rmode;
 U.qStr=Math.max(0,Math.min(100,Math.round(+U.qStr||0)));U.qLen=U.qLen!==false;U.melc=U.melc!==false;U.more=!!U.more;U.cmode=U.cmode==='song'?'song':'loop';
 /* new starting setup (applied once to settings saved earlier): Roll view, Len 8, Snap 8, keyboard on, pickup off, auto-velocity on */
 try{if(!localStorage.getItem('phrasenote-init-1')){U.view='roll';U.snap=240;U.len=240;U.kbd=false;P.pick=false;localStorage.setItem('phrasenote-init-1','1');persist();saveU();}}catch(e){}

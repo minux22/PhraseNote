@@ -29,3 +29,8 @@ assert(Core.BASS_BY_KIND.acoustic.indexOf('r5')>=0);
  const o2=Core.defaults();o2.bpat='slap';const n2=Core.normalize(o2);assert.strictEqual(n2.bkind,'electric');
  const o3=Core.defaults();o3.bpat='slap';o3.bkind='acoustic';assert.strictEqual(Core.normalize(o3).bkind,'electric','slap is not on acoustic');}
 console.log('v0.30 ok');
+// K-ballad: the left hand rolls bass, fifth, octave, tenth in 8ths; a new project starts with 7th on
+{const p=Core.normalize(Core.defaults());p.bass=false;Core.applyStyle(p,'kballad');p.chords=[0,0,0,0];p.bars=1;
+ const lh=[];for(let s=0;s<4;s++)Core.eventsAt(p,s).forEach(e=>lh.push(e.midi));
+ assert.deepStrictEqual([48,55,60,64].every(m=>lh.indexOf(m)>=0),true,'kballad LH '+lh);
+ assert.strictEqual(Core.fresh(Math.random).sev,true);console.log('kballad ok');}
