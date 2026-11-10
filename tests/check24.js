@@ -22,7 +22,7 @@ assert.strictEqual(Core.strPatch('pizz'),45);
 console.log('strings ok',L.map(e=>e.t+':'+e.midi).join(' '));
 // legato and inner lines: four voices sound on every beat (held notes chain across chords), inner lines keeps
 // the inner voices moving with chord tones on strong beats, and stays in range
-{['legato','lines'].forEach(function(st){
+{['legato','lines','lines2'].forEach(function(st){
   const p=Core.defaults();Core.applyStyle(p,'pad');p.str=st;p.bass=false;
   const prog=[0,10,6,8,0,4,6,8];p.chords=[];prog.forEach(c=>{for(let i=0;i<4;i++)p.chords.push(c)});p.bars=8;
   const M=Core.meter(p), ev=[];
@@ -30,7 +30,8 @@ console.log('strings ok',L.map(e=>e.t+':'+e.midi).join(' '));
   for(let b=0;b<32;b++){const t=b+0.5, n=ev.filter(e=>e.t<=t&&e.t+e.d>t).length;assert.strictEqual(n,4,st+' voices at beat '+b+': '+n);}
   ev.forEach(e=>assert(e.m>=36&&e.m<=84,st+' range '+e.m));
   const late=ev.filter(e=>e.t%4!==0);
-  if(st==='lines'){
+  if(st==='lines2'){assert(late.length>=8&&ev.every(e=>e.t%2===0),'lines2 moves on half notes');}
+  else if(st==='lines'){
     // the inner voices move on most beats; on beats 1 and 3 every sounding string note is a tone of the chord
     assert(late.length>=16,'too little movement '+late.length);
     for(let b=0;b<32;b+=2){const inf=Core.chordInfo(p.chords[b],0,'major'), pcs=inf.tones.slice(0,inf.sev?4:3).map(x=>x%12);

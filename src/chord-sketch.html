@@ -1138,7 +1138,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.6</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.7</p>
   </div>
 </section>
 
@@ -1526,9 +1526,9 @@ const Core=(function(){
     return KIND_PATCH[k];
   }
   /* strings: a part of its own that plays along with the keys or guitar ('off' = silent) */
-  const STRS=[['pad','Pad'],['legato','4-part legato'],['lines','Inner lines'],['pizz','Pizzicato'],['trem','Tremolo'],['oct','High octaves']];
+  const STRS=[['pad','Pad'],['legato','4-part legato'],['lines','Inner lines 1'],['lines2','Inner lines 2'],['pizz','Pizzicato'],['trem','Tremolo'],['oct','High octaves']];
   const STR_IDS=['off'].concat(STRS.map(function(x){return x[0];}));
-  const STR_PATCH={pad:49,legato:48,lines:48,pizz:45,trem:44,oct:49};
+  const STR_PATCH={pad:49,legato:48,lines:48,lines2:48,pizz:45,trem:44,oct:49};
   function strPatch(id){return STR_PATCH[id]!=null?STR_PATCH[id]:49;}
   const STR_REG={low:55,mid:62,high:69};
   /* four voices: the root below, three upper voices (3rd 5th 7th on a seventh chord, else root 3rd 5th) packed close
@@ -1592,28 +1592,32 @@ const Core=(function(){
     const out=new Array(n);let j=end.j;for(let k=n-1;k>=0;k--){out[k]=hist[k][j].m;j=hist[k][j].from;}
     return out;
   }
-  function innerLines(p,SC,spans){
+  function innerLines(p,SC,spans,every){
     const M=meter(p), sc=[0,1,2,3,4,5,6].map(function(d){return ((p.key+tone(p.scale,d,0))%12+12)%12;});
     const alto={}, ten={};
     spans.forEach(function(sp,k){
       const V=SC[sp.s], info=chordInfo(p.chords[sp.s],p.key,p.scale), n=sp.e-sp.s;
       const ct=info.tones.slice(0,info.sev?4:3).map(function(x){return ((p.key+x)%12+12)%12;});
       const nxt=k+1<spans.length&&spans[k+1].s===sp.e?SC[spans[k+1].s]:null;
-      /* alto: one note a beat */
+      /* alto: one note a beat (Inner lines 1) or every two beats (Inner lines 2) */
       const ac=[];
-      for(let b=sp.s;b<sp.e;b++){
-        const strong=(b%M.bpb)%2===0, o=[];
+      for(let b=sp.s;b<sp.e;b+=every){
+        /* Inner lines 2 holds each note two beats, so a note outside the chord (a 6th, 9th or suspended 4th, by step)
+           is only used when it is not a half step from another voice */
+        const strong=every===1&&(b%M.bpb)%2===0, others=[V[0],V[1],V[3]].map(function(x){return ((x%12)+12)%12;}), o=[];
+        const rub=function(pc){return others.some(function(q){const d=Math.abs(pc-q)%12;return d===1||d===11;});};
         for(let m=V[1]+1;m<V[3];m++){const pc=((m%12)+12)%12;if(Math.abs(m-V[2])>7)continue;
-          if(ct.indexOf(pc)>=0)o.push({m:m,nct:false});else if(!strong&&sc.indexOf(pc)>=0)o.push({m:m,nct:true});}
+          if(ct.indexOf(pc)>=0)o.push({m:m,nct:false});else if(!strong&&sc.indexOf(pc)>=0&&(every===1||!rub(pc)))o.push({m:m,nct:true});}
         ac.push(b===sp.s?[{m:V[2],nct:false}]:o);
       }
-      alto[sp.s]=n>1?(bestLine(ac,V[2],nxt?nxt[2]:null)||null):null;
+      alto[sp.s]=n>every?(bestLine(ac,V[2],nxt?nxt[2]:null)||null):null;
       /* tenor: every two beats, chord tones only, below the alto */
       if(n>=3){
         const tc=[];
         for(let b=sp.s;b<sp.e;b+=2){
-          const top=Math.min.apply(null,(alto[sp.s]||[V[2]]).slice(b-sp.s,b-sp.s+2)), o=[];
-          for(let m=V[0]+1;m<top;m++){const pc=((m%12)+12)%12;if(Math.abs(m-V[1])<=5&&ct.indexOf(pc)>=0)o.push({m:m,nct:false});}
+          const A=alto[sp.s], top=A?Math.min.apply(null,A.slice(Math.floor((b-sp.s)/every),Math.floor((b-sp.s)/every)+Math.max(1,2/every))):V[2], o=[];
+          const aw=A?A.slice(Math.floor((b-sp.s)/every),Math.floor((b-sp.s)/every)+Math.max(1,2/every)):[V[2]];
+          for(let m=V[0]+1;m<top;m++){const pc=((m%12)+12)%12;if(Math.abs(m-V[1])<=5&&ct.indexOf(pc)>=0&&!aw.some(function(x){const d=Math.abs(x-m);return d<=2;}))o.push({m:m,nct:false});}
           tc.push(b===sp.s?[{m:V[1],nct:false}]:o);
         }
         ten[sp.s]=bestLine(tc,V[1],nxt?nxt[1]:null)||null;
@@ -1625,16 +1629,16 @@ const Core=(function(){
      beats from there, m: pitch, d: length in beats, v: velocity factor} */
   const strPMemo={};
   function strPlan(p,reg,lines){
-    const ch=p.chords, key=ch.join(',')+'|'+p.key+p.scale+reg+(lines?'L':'');if(strPMemo[key])return strPMemo[key];
+    const ch=p.chords, key=ch.join(',')+'|'+p.key+p.scale+reg+'L'+(lines||0);if(strPMemo[key])return strPMemo[key];
     const SC=strChain(p,reg), spans=[];
     for(let b=0;b<ch.length;){if(ch[b]==null){b++;continue;}let e=b+1;while(e<ch.length&&ch[e]===ch[b])e++;spans.push({s:b,e:e});b=e;}
-    const out=[], IL=lines?innerLines(p,SC,spans):null;
+    const out=[], IL=lines?innerLines(p,SC,spans,lines):null;
     for(let i=0;i<4;i++){
       const seg=[];
       spans.forEach(function(sp){
         const m=SC[sp.s][i], v=i===0?0.95:0.85, L=IL&&(i===2?IL.alto[sp.s]:i===1?IL.ten[sp.s]:null);
         if(!L){seg.push({s:sp.s,e:sp.e,m:m,v:v});return;}
-        const len=i===2?1:2;
+        const len=i===2?lines:2;
         L.forEach(function(x,k){seg.push({s:sp.s+k*len,e:Math.min(sp.e,sp.s+(k+1)*len),m:x,v:k?0.78:v});});
       });
       /* tie a note into the next one of the same pitch */
@@ -1741,10 +1745,10 @@ const Core=(function(){
     if(p.str&&p.str!=='off'&&STR_PATCH[p.str]!=null&&j===0){
       const reg=p.srng||'mid', SC=strChain(p,reg), V=SC[beat]||strVoicing(info,p.key,reg), change=beat===0||ch[beat-1]!==code, st=step*0.5, L=endQ()-st;
       const sv=function(m,v,d){out.push({k:'s',midi:m,vel:clampV(v),dur:Math.max(0.1,d),off:0});};
-      if(p.str==='legato'||p.str==='lines'){
+      if(p.str==='legato'||p.str==='lines'||p.str==='lines2'){
         /* each voice is one line through the slot: a note the next chord keeps in that voice is held, not bowed again */
         const v0=p.vel4[0]*0.72;
-        strPlan(p,reg,p.str==='lines').forEach(function(n){if(n.b!==beat)return;sv(n.m,v0*n.v,n.d*q*0.99);out[out.length-1].off=n.o*q;});
+        strPlan(p,reg,p.str==='lines'?1:p.str==='lines2'?2:0).forEach(function(n){if(n.b!==beat)return;sv(n.m,v0*n.v,n.d*q*0.99);out[out.length-1].off=n.o*q;});
       }else if(p.str==='pizz'){
         /* plucked quarters: the bass voice on the downbeat of each chord and bar, the upper voices on every beat */
         const v0=posVel(p,ps*240)*0.8;
@@ -3824,7 +3828,7 @@ function renderParts(){
     const c=document.createElement('span');c.className='chev';c.textContent='›';el.appendChild(c);
     el.classList.add('tap');el.setAttribute('role','button');el.tabIndex=0;el.setAttribute('aria-label','Change the sound');};
   line($('#cPatch'),'c');line($('#bPatch'),'b');line($('#sPatch'),'s');
-  const sx=Core.STRS.filter(function(x){return x[0]===P.str;})[0];$('#ptStrings').textContent=sx?({legato:'Legato',oct:'Octaves'}[sx[0]]||sx[1]):'Off';
+  const sx=Core.STRS.filter(function(x){return x[0]===P.str;})[0];$('#ptStrings').textContent=sx?({legato:'Legato',oct:'Octaves',lines:'Lines 1',lines2:'Lines 2'}[sx[0]]||sx[1]):'Off';
 }
 /* tap a part's Sound line: the sounds of that part's family first, then everything; the same list as the
    track's Sound menu in Setup, and choosing here sets that menu */
@@ -3870,7 +3874,7 @@ function partNotch(){
 }
 window.addEventListener('resize',function(){partNotch();});
 /* Strings tab: a part on top of the keys or guitar; the switch keeps the last style for turning it back on */
-const STR_HINT={pad:'Sustained chords under the song.',legato:'Four voices (cello to violin), each moving to the nearest note of the next chord; shared notes are held over.',lines:'Four voices where the inner ones keep moving: the alto walks a note a beat (chord tones on 1 and 3, passing notes between), the tenor moves every two beats; the outer voices hold.',pizz:'Plucked quarter notes.',trem:'Fast bowing on held chords, for tension and build-ups.',oct:'The top voice in octaves, high and held (violins).'};
+const STR_HINT={pad:'Sustained chords under the song.',legato:'Four voices (cello to violin), each moving to the nearest note of the next chord; shared notes are held over.',lines:'Four voices where the inner ones keep moving: the alto walks a note a beat (chord tones on 1 and 3, passing notes between), the tenor moves every two beats; the outer voices hold.',lines2:'Like Inner lines 1, calmer: the alto moves every two beats (to a 6th, 9th or 4th and back by step).',pizz:'Plucked quarter notes.',trem:'Fast bowing on held chords, for tension and build-ups.',oct:'The top voice in octaves, high and held (violins).'};
 let lastStr='pad';
 function pickStr(id){edit(function(){P.str=id;});if(id!=='off'){lastStr=id;if(!playing){strAuto(id);Aud.ensure();Aud.audition('s');}}}
 function renderStrings(){
@@ -5754,13 +5758,15 @@ document.addEventListener('keydown',function(e){
     const none={fid:null,pi:-1};
     if(!files.length||isBasic())return none;
     let t=S[k];if(t===null)return none;
-    if(k==='c'&&S.ca)t={f:selFile.c,b:0,n:autoProg};
-    if(k==='b'&&S.ba)t={f:selFile.b,b:0,n:autoB};
-    if(k==='s'&&S.sa)t={f:selFile.s,b:0,n:autoS};
-    if(k==='d'&&S.da)t={f:selFile.d,b:128,n:autoD};
+    /* Auto (and a sound not tied to a file) always looks in GeneralUser GS first, then the other files */
+    if(k==='c'&&S.ca)t={f:null,b:0,n:autoProg};
+    if(k==='b'&&S.ba)t={f:null,b:0,n:autoB};
+    if(k==='s'&&S.sa)t={f:null,b:0,n:autoS};
+    if(k==='d'&&S.da)t={f:null,b:128,n:autoD};
+    const order=guFirst();
     let F=t.f?files.filter(function(x){return x.id===t.f;})[0]:null, i=F?F.m.indexOf(t.b,t.n):-1;
-    if(i<0){for(let j=0;j<files.length&&i<0;j++){const q=files[j].m.indexOf(t.b,t.n);if(q>=0){F=files[j];i=q;}}}
-    if(i<0){F=files[0];i=F.m.indexOf(DEFP[k][0],DEFP[k][1]);}
+    if(i<0){for(let j=0;j<order.length&&i<0;j++){const q=order[j].m.indexOf(t.b,t.n);if(q>=0){F=order[j];i=q;}}}
+    if(i<0){F=order[0];i=F.m.indexOf(DEFP[k][0],DEFP[k][1]);}
     if(i<0){const pool=k==='d'?F.m.kits:F.m.list;if(pool.length)i=pool[0].i;}
     return i<0?none:{fid:F.id,pi:i};
   }
@@ -6096,6 +6102,8 @@ document.addEventListener('keydown',function(e){
   /* GeneralUser GS v2.0.3 by S. Christian Collins, shipped with the app (sf/GeneralUser-GS.sf2, see sf/LICENSE.txt) */
   var GU_URL='sf/GeneralUser-GS.sf2', GU_NAME='GeneralUser-GS.sf2', guBusy=false;
   function hasGu(){return files.some(function(F){return F.name===GU_NAME;});}
+  function isGu(F){return F.name===GU_NAME||/generaluser/i.test(F.name);}
+  function guFirst(){return files.filter(isGu).concat(files.filter(function(F){return !isGu(F);}));}
   function builtin(auto){
     if(guBusy||hasGu())return;guBusy=true;S.gu=1;save();ui();
     fetch(GU_URL,{cache:'no-store'}).then(function(r){
