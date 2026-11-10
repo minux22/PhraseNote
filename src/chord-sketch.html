@@ -1138,7 +1138,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.5</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.6</p>
   </div>
 </section>
 
@@ -2309,6 +2309,8 @@ const Core=(function(){
 
   /* o.prog = {c,b,m} General MIDI program numbers (default EP 1, Finger Bass, Square Lead); o.name = song title */
   /* fader position (0..100) to decibels: 75 = 0 dB, 100 = +12 dB, 0 = silent */
+  /* a channel's starting fader: 0 dB, except Strings at -6 dB (75*(1-0.12^(2/3)) = 56.75) */
+  const MIXDEF={m:75,a:75,c:75,b:75,d:75,s:56.75};
   function faderDb(v){if(v<=0)return -Infinity;if(v>=75)return (v-75)*12/25;return -50*Math.pow(1-v/75,1.5);}
   function buildMidi(p,dpat,o){
     o=o||{};const prog=Object.assign({c:4,b:33,m:80},o.prog||{});
@@ -2535,9 +2537,9 @@ const Core=(function(){
       if(Array.isArray(t.tm)&&t.tm.length&&t.tm.length<=66){const tm=[];t.tm.forEach(function(x){if(Array.isArray(x)&&x.length===2&&isFinite(x[0])&&isFinite(x[1]))tm.push([clamp(x[0],0,256*MB.bar),clamp(x[1],40,200)]);});tm.sort(function(a,b){return a[0]-b[0];});if(tm.length)q.tm=tm;}
       p.takes.push(q);
     });
-    /* mixer: fader 0..100 per channel (75 = 0 dB), mute, solo; reverb 0..100; master fader. Strings start at 57 (about -6 dB). */
+    /* mixer: fader 0..100 per channel (75 = 0 dB), mute, solo; reverb 0..100; master fader. Strings start at -6 dB. */
     const mx=o.mix&&typeof o.mix==='object'?o.mix:{};
-    p.mix={};['m','a','c','b','d','s'].forEach(function(k){const c=mx[k]&&typeof mx[k]==='object'?mx[k]:{};p.mix[k]={v:c.v==null?(k==='s'?57:75):clamp(Math.round(+c.v),0,100),mu:!!c.mu,so:!!c.so};});
+    p.mix={};['m','a','c','b','d','s'].forEach(function(k){const c=mx[k]&&typeof mx[k]==='object'?mx[k]:{};p.mix[k]={v:c.v==null?MIXDEF[k]:Math.max(0,Math.min(100,Math.round((isFinite(+c.v)?+c.v:75)*100)/100)),mu:!!c.mu,so:!!c.so};});
     p.mix.rev=mx.rev==null?35:clamp(Math.round(+mx.rev),0,100);p.mix.mst=mx.mst==null?75:clamp(Math.round(+mx.mst),0,100);
     /* how many recordings each place has had (names never reuse a number) */
     p.recN={};if(o.recN&&typeof o.recN==='object')Object.keys(o.recN).slice(0,500).forEach(function(k){const v=Math.round(+o.recN[k]);if(k.length<=60&&v>0&&v<100000)p.recN[k]=v;});
@@ -2802,7 +2804,7 @@ const Core=(function(){
   }
   return {SCALES:SCALES,SCALE_NAMES:SCALE_NAMES,KEY_NAMES:KEY_NAMES,chordInfo:chordInfo,voicing:voicing,
     noteName:noteName,bassNote:bassNote,notesFor:notesFor,
-    DTYPES:DTYPES,DKITS:DKITS,TKITS:TKITS,dtypeOf:dtypeOf,kitOf:kitOf,COMPS:COMPS,GSHARED:GSHARED,instP:instP,compsFor:compsFor,recipeOf:recipeOf,recipeDiff:recipeDiff,BASS_BY_KIND:BASS_BY_KIND,STRS:STRS,strPatch:strPatch,strVoicing:strVoicing,BASSES:BASSES,bassKind:bassKind,bassPatch:bassPatch,GUITAR:GUITAR,instOf:instOf,compPatch:compPatch,gtrVoicing:gtrVoicing,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,mkMap:mkMap,tempoMap:tempoMap,secAt:secAt,tickAt:tickAt,bpmAt:bpmAt,mapPairs:mapPairs,takeMap:takeMap,takeLen:takeLen,nextSection:nextSection,NEXT_ROLE:NEXT_ROLE,slotStats:slotStats,
+    DTYPES:DTYPES,DKITS:DKITS,TKITS:TKITS,dtypeOf:dtypeOf,kitOf:kitOf,COMPS:COMPS,MIXDEF:MIXDEF,GSHARED:GSHARED,instP:instP,compsFor:compsFor,recipeOf:recipeOf,recipeDiff:recipeDiff,BASS_BY_KIND:BASS_BY_KIND,STRS:STRS,strPatch:strPatch,strVoicing:strVoicing,BASSES:BASSES,bassKind:bassKind,bassPatch:bassPatch,GUITAR:GUITAR,instOf:instOf,compPatch:compPatch,gtrVoicing:gtrVoicing,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,mkMap:mkMap,tempoMap:tempoMap,secAt:secAt,tickAt:tickAt,bpmAt:bpmAt,mapPairs:mapPairs,takeMap:takeMap,takeLen:takeLen,nextSection:nextSection,NEXT_ROLE:NEXT_ROLE,slotStats:slotStats,
     POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM,suggestChords:suggestChords,guessKey:guessKey,rekey:rekey,recode:recode,SEC_IDS:SEC_IDS,ROLES:ROLES,SECF:SECF,normSec:normSec,copySec:copySec,secOf:secOf,curId:curId,storeCur:storeCur,loadCur:loadCur,layout:layout,formTicks:formTicks,secView:secView,secDrums:secDrums,songAt:songAt,melInsert:melInsert,melDelete:melDelete,melSlice:melSlice,melPaste:melPaste,resizeSec:resizeSec,xcode:xcode,isX:isX,xWith:xWith,extraPalette:extraPalette};
 })();
 
@@ -6593,8 +6595,8 @@ $('#mxIn').addEventListener('input',function(e){
   st.querySelector('.mv').textContent=k==='rev'?v+'%':mixDbText(v);
   applyMix();mixSave();
 });
-/* double-tap a fader: back to 0 dB (reverb: 35%). Taps are timed here: phones do not send dblclick to sliders */
-function mixReset(k){const v=k==='rev'?35:75;if(k==='rev')P.mix.rev=v;else if(k==='mst')P.mix.mst=v;else P.mix[k].v=v;applyMix();mixRender();mixSave();if(navigator.vibrate)try{navigator.vibrate(18);}catch(x){}}
+/* double-tap a fader: back to its start (0 dB, Strings -6 dB; reverb 35%). Taps are timed here: phones do not send dblclick to sliders */
+function mixReset(k){const v=k==='rev'?35:k==='mst'?75:(Core.MIXDEF[k]!=null?Core.MIXDEF[k]:75);if(k==='rev')P.mix.rev=v;else if(k==='mst')P.mix.mst=v;else P.mix[k].v=v;applyMix();mixRender();mixSave();if(navigator.vibrate)try{navigator.vibrate(18);}catch(x){}}
 let mxTap={k:null,t:0,y:0};
 $('#mxIn').addEventListener('pointerdown',function(e){
   const st=e.target.closest('.mx');if(!st||!e.target.closest('.fw'))return;const k=st.dataset.k, now=Date.now();
