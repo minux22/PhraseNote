@@ -10,7 +10,7 @@ for(const [pat] of Core.DPATS){
     const a=Core.drumsAt(q,s,'custom').map(e=>e.n+'@'+e.off).sort().join();
     const b=Core.drumsAt(p,s,pat).map(e=>e.n+'@'+e.off).filter(x=>true).sort().join();
     // preset notes not mapped (e.g. 51->42) are folded; compare kick/snare only
-    const f=x=>x.replace(/37@/g,'38@').split(',').filter(y=>/^(36|38)@/.test(y)).join();
+    const f=x=>[...new Set(x.replace(/37@/g,'38@').replace(/35@/g,'36@').replace(/40@/g,'38@').split(',').filter(y=>/^(36|38)@/.test(y)))].join(); // two snare lanes on one cell fold into one
     assert.strictEqual(f(a),f(b),pat+' step '+s);
   }
 }

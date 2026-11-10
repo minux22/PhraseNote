@@ -519,6 +519,10 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 .instseg{margin:0}
 .strrow{padding:0 4px}
 .instseg button{height:38px; font-size:14.5px; font-weight:700}
+#dtypeSeg{display:grid; grid-template-columns:1.05fr .75fr .7fr 1.2fr 1.25fr}
+#dtypeSeg button{font-size:11.5px; padding:0 1px; min-width:0; white-space:nowrap}
+#dkitRow{padding:0 4px}
+.crow #dkitSeg button{width:auto; padding:0 12px}
 .patchln{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--dim); padding:0 4px}
 .patchln b{color:var(--text); font-weight:700}
 .patchln .auto{font-size:10px; font-weight:800; letter-spacing:.06em; color:var(--mint); border:1px solid var(--mint); border-radius:7px; padding:0 5px}
@@ -929,6 +933,8 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       <div class="patchln" id="sPatch"></div>
       </div>
       <div id="pRhythm" class="ppane" hidden>
+      <div class="seg big instseg dtseg" id="dtypeSeg" role="group" aria-label="Rhythm type"><button type="button" data-dt="std">Standard</button><button type="button" data-dt="rock">Rock</button><button type="button" data-dt="jazz">Jazz</button><button type="button" data-dt="elec">Electronic</button><button type="button" data-dt="perc">Percussion</button></div>
+      <div class="crow" id="dkitRow"><span class="lbl">Kit</span><div class="seg cs" id="dkitSeg"></div></div>
       <div class="cbox">
       <div class="chips cchips" id="rhyChips"></div>
       <div class="crow" id="rhyEditRow" hidden><span class="hint" style="margin:0">Your own step pattern.</span><button class="btn" id="rhyEdit" type="button">Edit</button></div>
@@ -1090,7 +1096,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.28.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.29.0</p>
   </div>
 </section>
 
@@ -1932,7 +1938,27 @@ const Core=(function(){
 
   /* ---- drums: GM note numbers (36 kick, 38 snare, 37 side stick, 39 clap, 42/46 hats, 51 ride) ----
      A pattern is generated per 8th-note step. Velocity comes from the same accent pattern as chords and melody. */
-  const DPATS=[['rock8','Rock 8th','Basic'],['pop16','Pop 16th','Basic'],['half','Half-time','Basic'],['four','Four on the floor','Basic'],['ballad','Ballad (side stick)','Basic'],['rock16','Rock 16th hats','Rock'],['driving','Driving 8ths (4 kicks)','Rock'],['hardrock','Hard rock (open hat)','Rock'],['indie','Indie rock','Rock'],['punk','Punk (skate beat)','Rock'],['softpop','Soft pop (side stick)','Pop'],['syncpop','Pop syncopated kick','Pop'],['danceclap','Dance pop (clap)','Pop'],['motown','Motown','Pop'],['funk16','Funk 16th','Funk / Soul'],['funk2','Funk (open hat)','Funk / Soul'],['disco','Disco','Funk / Soul'],['rnb','R&B slow jam','Funk / Soul'],['boombap','Hip-hop boom bap','Hip-hop'],['lofi','Lo-fi hip-hop','Hip-hop'],['trap','Trap (half-time)','Hip-hop'],['dembow','Reggaeton (dembow)','Reggae / Latin'],['onedrop','Reggae one drop','Reggae / Latin'],['steppers','Reggae steppers','Reggae / Latin'],['ska','Ska','Reggae / Latin'],['bossa','Bossa nova','Reggae / Latin'],['sonclave','Son clave 3-2','Reggae / Latin'],['afrobeats','Afrobeats (approx.)','Reggae / Latin'],['techno','Techno','Electronic'],['house','House','Electronic'],['dnb','Drum & bass (two-step)','Electronic'],['dubstep','Dubstep (half-time)','Electronic'],['metal','Metal double kick','Metal'],['blast','Blast beat','Metal'],['trot','Trot (뽕짝, approx.)','Korean'],['custom','My pattern','Custom']];
+  /* [id, name, group, type]. Types: std (Standard), rock, jazz, elec (Electronic), perc (Percussion: hand percussion instead of a kit) */
+  const DPATS=[['rock8','Rock 8th','Basic','std'],['pop16','Pop 16th','Basic','std'],['half','Half-time','Basic','std'],['four','Four on the floor','Basic','std'],['ballad','Ballad (side stick)','Basic','std'],
+    ['softpop','Soft pop (side stick)','Pop','std'],['syncpop','Pop syncopated kick','Pop','std'],['danceclap','Dance pop (clap)','Pop','std'],['motown','Motown','Pop','std'],
+    ['funk16','Funk 16th','Funk / Soul','std'],['funk2','Funk (open hat)','Funk / Soul','std'],['disco','Disco','Funk / Soul','std'],['rnb','R&B slow jam','Funk / Soul','std'],
+    ['onedrop','Reggae one drop','Reggae / Latin','std'],['steppers','Reggae steppers','Reggae / Latin','std'],['ska','Ska','Reggae / Latin','std'],['sonclave','Son clave 3-2','Reggae / Latin','std'],['afrobeats','Afrobeats (approx.)','Reggae / Latin','std'],
+    ['rock16','Rock 16th hats','Rock','rock'],['driving','Driving 8ths (4 kicks)','Rock','rock'],['hardrock','Hard rock (open hat)','Rock','rock'],['indie','Indie rock','Rock','rock'],['shuffle','Blues shuffle','Rock','rock'],['punk','Punk (skate beat)','Rock','rock'],
+    ['metal','Metal double kick','Metal','rock'],['blast','Blast beat','Metal','rock'],
+    ['swing','Swing (ride)','Jazz','jazz'],['swingfast','Up-tempo swing','Jazz','jazz'],['brushes','Brush ballad','Jazz','jazz'],['bossa','Bossa nova','Jazz','jazz'],['jazzfunk','Jazz funk','Jazz','jazz'],
+    ['boombap','Hip-hop boom bap','Hip-hop','elec'],['lofi','Lo-fi hip-hop','Hip-hop','elec'],['trap','Trap (half-time)','Hip-hop','elec'],['dembow','Reggaeton (dembow)','Hip-hop','elec'],
+    ['house','House','Dance','elec'],['techno','Techno','Dance','elec'],['electro','Electro (808)','Dance','elec'],['dnb','Drum & bass (two-step)','Dance','elec'],['dubstep','Dubstep (half-time)','Dance','elec'],
+    ['shaker','Shaker & tambourine','Acoustic','perc'],['cajonish','Hand claps & shaker','Acoustic','perc'],['tumbao','Conga tumbao','Latin','perc'],['martillo','Bongo martillo','Latin','perc'],['clave','Son clave & congas','Latin','perc'],['afroperc','Afro percussion','Latin','perc'],
+    ['custom','My pattern','Custom','std']];
+  const DTYPES=[['std','Standard'],['rock','Rock'],['jazz','Jazz'],['elec','Electronic'],['perc','Percussion']];
+  function dtypeOf(id){const d=DPATS.filter(function(x){return x[0]===id;})[0];return d?d[3]:'std';}
+  /* drum kits (GS bank 128 programs). map: note changes, e.g. 808 = the 808 kick and snare of the 808/909 kit (35, 38), 909 = its 909 ones (36, 40) */
+  const DKITS={std:{n:'Standard',pg:0},room:{n:'Room',pg:8},power:{n:'Power',pg:16},jazz:{n:'Jazz',pg:32},brush:{n:'Brush',pg:40},
+    k808:{n:'808',pg:25,map:{36:35,40:38}},k909:{n:'909',pg:25,map:{35:36,38:40}},elec:{n:'Electronic',pg:24},dance:{n:'Dance',pg:26}};
+  const TKITS={std:['std','room'],rock:['power','room','std'],jazz:['jazz','brush'],elec:['k808','k909','elec','dance'],perc:['std']};
+  /* a pattern written for one kit starts on it */
+  const PATKIT={brushes:'brush',electro:'k808',trap:'k808',house:'k909',techno:'k909'};
+  function kitOf(p){const t=dtypeOf(p.dpat);const ks=TKITS[t];return ks.indexOf(p.dkit)>=0?p.dkit:(PATKIT[p.dpat]||ks[0]);}
   const GPAT={
     rock16:{r:16,k:'x.......x.x.....',s:'....x.......x...',h:'xxxxxxxxxxxxxxxx'},
     driving:{r:16,k:'x...x...x...x...',s:'....x.......x...',h:'x.x.x.x.x.x.x.x.'},
@@ -1963,9 +1989,23 @@ const Core=(function(){
     dubstep:{r:16,k:'x.........x.....',s:'........x.......',h:'x.x.x.x.x.x.x.x.'},
     metal:{r:16,k:'xxxxxxxxxxxxxxxx',s:'....x.......x...',d:'x.x.x.x.x.x.x.x.'},
     blast:{r:16,k:'x.x.x.x.x.x.x.x.',s:'.x.x.x.x.x.x.x.x',d:'x.x.x.x.x.x.x.x.'},
-    trot:{r:16,k:'x.......x.......',s:'..x...x...x...x.',h:'x.x.x.x.x.x.x.x.'},
+    shuffle:{r:16,k:'x.......x.......',s:'....x.......x...',h:'x..xx..xx..xx..x'},
+    swing:{r:16,d:'x...x..xx...x..x',p:'....x.......x...',f:'x...x...x...x...'},
+    swingfast:{r:16,d:'x...x...x...x...',p:'....x.......x...',g:'......x.......x.',f:'x.......x.......'},
+    brushes:{r:16,g:'xxxxxxxxxxxxxxxx',s:'....x.......x...',f:'x.......x.......',p:'....x.......x...'},
+    jazzfunk:{r:16,k:'x.....x...x..x..',s:'....x.......x...',d:'x.x.x.x.x.x.x.x.',g:'.x.....x.x...x..'},
+    electro:{r:16,k:'x.....x...x.....',s:'....x.......x...',h:'x.x.x.x.x.x.x.x.',c:'....x.......x...'},
+    shaker:{r:16,a:'xxxxxxxxxxxxxxxx',t:'....x.......x...'},
+    cajonish:{r:16,c:'....x.......x...',a:'x.x.x.x.x.x.x.x.',t:'..x...x...x...x.'},
+    tumbao:{r:16,m:'x.......x.......',q:'......x.......x.',u:'..........x...x.',a:'x.x.x.x.x.x.x.x.'},
+    martillo:{r:16,b:'x.xxx.xxx.xxx.xx',n:'...x.......x....',w:'x...x...x...x...'},
+    clave:{r:16,l:'x..x..x...x.x...',q:'......x.......x.',u:'..........x...x.',m:'x.......x.......'},
+    afroperc:{r:16,a:'x.xxx.xxx.xxx.xx',w:'x..x..x...x..x..',q:'...x..x....x..x.',u:'x.......x.......'},
   };
-  Object.keys(GPAT).forEach(function(id){const d=GPAT[id];['k','s','h','o','c','d','x'].forEach(function(l){const a=[];for(let i=0;i<16;i++)a.push(d[l]&&d[l][i]==='x'?1:0);d[l]=a;});});
+  /* lanes only the built-in patterns use: pedal hat, feathered kick, ghost/brush snare, shaker, tambourine, claves, congas, bongos, cowbell */
+  const XLANES=[['p','Pedal hat',44,0.6],['f','Feathered kick',36,0.35],['g','Ghost snare',38,0.32],['a','Shaker',82,0.55],['t','Tambourine',54,0.7],['l','Claves',75,0.8],
+    ['m','Mute conga',62,0.6],['q','Open conga',63,0.85],['u','Low conga',64,0.85],['b','High bongo',60,0.7],['n','Low bongo',61,0.8],['w','Cowbell',56,0.55]];
+  Object.keys(GPAT).forEach(function(id){const d=GPAT[id];['k','s','h','o','c','d','x','p','f','g','a','t','l','m','q','u','b','n','w'].forEach(function(l){const a=[];for(let i=0;i<16;i++)a.push(d[l]&&d[l][i]==='x'?1:0);d[l]=a;});});
   /* custom pattern: p.dp={r:8|16, k,s,h,o,c:[0/1 per cell of one bar]} */
   const DLANES=[['k','Kick',36,1],['s','Snare',38,1],['x','Side stick',37,1],['h','Hat',42,0.8],['o','Open hat',46,0.7],['d','Ride',51,0.7],['c','Clap',39,0.9]];
   const DNOTE={36:'k',35:'k',37:'x',38:'s',40:'s',39:'c',42:'h',44:'h',51:'d',46:'o',49:'o',57:'o'};
@@ -1989,7 +2029,8 @@ const Core=(function(){
     return {kick:[0,2],snare:[1,3]};
   }
   function drumsAt(p,step,pat){
-    const o=drumsRaw(p,step,pat), sw=swingOff(p,step), s16=swing16(p);
+    const o=drumsRaw(p,step,pat), sw=swingOff(p,step), s16=swing16(p), km=(DKITS[kitOf({dpat:pat||p.dpat,dkit:p.dkit})]||{}).map;
+    if(km)o.forEach(function(e){if(km[e.n])e.n=km[e.n];});
     if(sw||s16)o.forEach(function(e){e.off+=sw+(e.off===0.25?s16:0);});
     return o;
   }
@@ -2001,7 +2042,8 @@ const Core=(function(){
       const d=gp?GPAT[pat]:p.dp, cps=d.r===16?2:1;
       const ad=function(n,off,f){out.push({n:n,off:off,vel:Math.max(1,Math.min(127,Math.round(posVel(p,pos*240+off*480)*f)))});};
       for(let c=0;c<cps;c++){const i=pos*cps+c, off=c*0.25;
-        DLANES.forEach(function(l){if(d[l[0]]&&d[l[0]][i])ad(l[2],off,l[0]==='h'?(c?0.5:(on?0.85:0.7)):l[3]);});}
+        DLANES.forEach(function(l){if(d[l[0]]&&d[l[0]][i])ad(l[2],off,l[0]==='h'?(c?0.5:(on?0.85:0.7)):l[3]);});
+        if(gp)XLANES.forEach(function(l){if(d[l[0]]&&d[l[0]][i])ad(l[2],off,l[3]*(c&&l[0]==='a'?0.75:1));});}
       return out;
     }
     if(pat==='custom'||GPAT[pat])pat='rock8';
@@ -2085,7 +2127,7 @@ const Core=(function(){
       const dp=secDrums(a.view,dpat);
       if(dp)drumsAt(a.view,a.local,dp).forEach(function(e){
         const t0=s*(PPQ/2)+Math.round(e.off*PPQ)+off;if(t0<0)return;
-        dn.push({t:t0,e:Math.min(total,t0+60),st:0x99,n:e.n,v:(e.n===35||e.n===36||e.n===37||e.n===38||e.n===40)?100:Math.max(1,Math.min(127,e.vel))});});
+        dn.push({t:t0,e:Math.min(total,t0+60),st:0x99,n:e.n,v:(e.vel>=45&&(e.n===35||e.n===36||e.n===37||e.n===38||e.n===40))?100:Math.max(1,Math.min(127,e.vel))});});
       if(s<0)continue;
       eventsAt(a.view,a.local,dp).forEach(function(e){
         const t0=s*(PPQ/2)+Math.round((e.off||0)*PPQ)+off, t1=Math.min(total,t0+Math.max(1,Math.round(e.dur*PPQ)));
@@ -2114,6 +2156,8 @@ const Core=(function(){
     /* strings: each slot's style brings its program (a Strings sound chosen in Setup stays) */
     let sp0=o.prog&&o.prog.s!=null&&!o.sauto?o.prog.s:49;
     {let last=null,first=true;layout(p).forEach(function(sl){const v=secView(p,sl.id);if(!v.str||v.str==='off')return;const g=o.sauto===false&&o.prog&&o.prog.s!=null?o.prog.s:strPatch(v.str);if(first){sp0=g;last=g;first=false;return;}if(g!==last&&sl.start+off<total)se.push({t:sl.start+off,o:0,b:[0xC3,g]});last=g;});}
+    let dk0=null;
+    if(o.dauto){let last=null;layout(p).forEach(function(sl,i){const v=secView(p,sl.id), dq=secDrums(v,dpat);if(!dq)return;const g=DKITS[kitOf({dpat:dq,dkit:v.dkit})].pg;if(last===null){dk0=g;last=g;return;}if(g!==last&&sl.start+off<total)de.push({t:sl.start+off,o:0,b:[0xC9,g]});last=g;});}
     let bp0=prog.b;
     if(o.bauto){let last=null;layout(p).forEach(function(sl,i){const g=bassPatch(secView(p,sl.id).bpat);if(i===0){bp0=g;last=g;return;}if(g!==last&&sl.start+off<total)be.push({t:sl.start+off,o:0,b:[0xC1,g]});last=g;});}
     if(o.cauto){let last=null;layout(p).forEach(function(sl,i){const g=compPatch(secView(p,sl.id).comp);if(i===0){cp0=g;last=g;return;}if(g!==last&&sl.start+off<total)ce.push({t:sl.start+off,o:0,b:[0xC0,g]});last=g;});}
@@ -2143,7 +2187,7 @@ const Core=(function(){
     const t1=track(ce,meta(0x03,strBytes('Chords')).concat([0,0xC0,pc(cp0)]).concat(cc7('c',0)));
     const t2=track(be,meta(0x03,strBytes('Bass')).concat([0,0xC1,pc(bp0)]).concat(cc7('b',1)));
     const tl=[t0,t1,t2];
-    if(de.length)tl.push(track(de,meta(0x03,strBytes('Drums')).concat(cc7('d',9))));
+    if(de.length)tl.push(track(de,meta(0x03,strBytes('Drums')).concat(dk0!=null?[0,0xC9,pc(dk0)]:[]).concat(cc7('d',9))));
     if(sn.length)tl.push(track(se,meta(0x03,strBytes('Strings')).concat([0,0xC3,pc(sp0)]).concat(cc7('s',3))));
     if(me.length)tl.push(track(me,meta(0x03,strBytes('Melody')).concat([0,0xC2,pc(prog.m)]).concat(cc7('m',2))));
     const bytes=[0x4D,0x54,0x68,0x64,0,0,0,6,0,1,0,tl.length,(PPQ>>8)&255,PPQ&255];
@@ -2250,6 +2294,7 @@ const Core=(function(){
     q.loose=clamp(o.loose==null?0:o.loose,0,30);
     q.drum=typeof o.drum==='boolean'?o.drum:null;
     q.dpat=DPATS.some(function(d){return d[0]===o.dpat;})?o.dpat:null;
+    q.dkit=DKITS[o.dkit]?o.dkit:null;
     /* the section's key, in semitones from the song's key (a lifted last chorus) */
     q.kofs=clamp(o.kofs==null?0:o.kofs,-6,6);
     /* the section's own tempo (null = the song's BPM) */
@@ -2335,7 +2380,7 @@ const Core=(function(){
   }
   /* ---- song form ---- */
   const SEC_IDS='ABCDEFGH', ROLES=['','Intro','Verse','Pre','Chorus','Bridge','Outro'];
-  const SECF=['bars','chords','comp','voic','inv','color','bpat','strum','lay','swing','swu','loose','drum','dpat','kofs','tempo','str','srng'];
+  const SECF=['bars','chords','comp','voic','inv','color','bpat','strum','lay','swing','swu','loose','drum','dpat','dkit','kofs','tempo','str','srng'];
   function copySec(src,dst){SECF.forEach(function(f){dst[f]=f==='chords'?src.chords.slice():src[f];});return dst;}
   function curId(p){return p.form[p.slot];}
   function secOf(p,id){for(let i=0;i<p.secs.length;i++)if(p.secs[i].id===id)return p.secs[i];return null;}
@@ -2438,7 +2483,8 @@ const Core=(function(){
     eighth:4,pop:4,offbeat:4,strum:4,antic:4,citypop:4,jazzcomp:4,housep:4,funk:5,arp16:5,synth16:5,pluck16:5,gate:5,chug:5,stac8:5};
   const DLV={rock8:3,pop16:4,half:2,four:4,ballad:1,rock16:4,driving:4,hardrock:5,indie:3,punk:5,softpop:2,syncpop:3,danceclap:4,motown:3,
     funk16:4,funk2:4,disco:4,rnb:2,boombap:3,lofi:2,trap:2,dembow:3,onedrop:2,steppers:3,ska:4,bossa:2,sonclave:3,afrobeats:3,
-    techno:4,house:4,dnb:5,dubstep:2,metal:5,blast:5,trot:4,custom:3};
+    techno:4,house:4,dnb:5,dubstep:2,metal:5,blast:5,custom:3,
+    shuffle:3,swing:3,swingfast:4,brushes:1,jazzfunk:4,electro:3,shaker:2,cajonish:2,tumbao:3,martillo:4,clave:3,afroperc:4};
   const RHINT={Intro:'Melody: none yet, or a short hook',Verse:'Melody: middle of your range, more words',Pre:'Melody: climb a little each phrase',
     Chorus:'Melody: higher than the verse, the hook',Bridge:'Melody: a new rhythm or register',Outro:'Melody: echo the hook, then rest'};
   function tokCode(t,scale,sev){
@@ -2553,7 +2599,7 @@ const Core=(function(){
   }
   return {SCALES:SCALES,SCALE_NAMES:SCALE_NAMES,KEY_NAMES:KEY_NAMES,chordInfo:chordInfo,voicing:voicing,
     noteName:noteName,bassNote:bassNote,notesFor:notesFor,
-    COMPS:COMPS,STRS:STRS,strPatch:strPatch,strVoicing:strVoicing,BASSES:BASSES,bassKind:bassKind,bassPatch:bassPatch,GUITAR:GUITAR,instOf:instOf,compPatch:compPatch,gtrVoicing:gtrVoicing,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,mkMap:mkMap,tempoMap:tempoMap,secAt:secAt,tickAt:tickAt,bpmAt:bpmAt,mapPairs:mapPairs,takeMap:takeMap,takeLen:takeLen,nextSection:nextSection,NEXT_ROLE:NEXT_ROLE,slotStats:slotStats,
+    DTYPES:DTYPES,DKITS:DKITS,TKITS:TKITS,dtypeOf:dtypeOf,kitOf:kitOf,COMPS:COMPS,STRS:STRS,strPatch:strPatch,strVoicing:strVoicing,BASSES:BASSES,bassKind:bassKind,bassPatch:bassPatch,GUITAR:GUITAR,instOf:instOf,compPatch:compPatch,gtrVoicing:gtrVoicing,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,mkMap:mkMap,tempoMap:tempoMap,secAt:secAt,tickAt:tickAt,bpmAt:bpmAt,mapPairs:mapPairs,takeMap:takeMap,takeLen:takeLen,nextSection:nextSection,NEXT_ROLE:NEXT_ROLE,slotStats:slotStats,
     POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM,suggestChords:suggestChords,guessKey:guessKey,rekey:rekey,recode:recode,SEC_IDS:SEC_IDS,ROLES:ROLES,SECF:SECF,normSec:normSec,copySec:copySec,secOf:secOf,curId:curId,storeCur:storeCur,loadCur:loadCur,layout:layout,formTicks:formTicks,secView:secView,secDrums:secDrums,songAt:songAt,melInsert:melInsert,melDelete:melDelete,melSlice:melSlice,melPaste:melPaste,resizeSec:resizeSec,xcode:xcode,isX:isX,xWith:xWith,extraPalette:extraPalette};
 })();
 
@@ -2737,7 +2783,7 @@ const LS='chord-sketch-v1';
 const RK='phrasenote-recent', RMAX=10;
 /* General MIDI programs of the sounds in use (set by the Sound section; null = basic synth defaults) */
 let soundPrograms=function(){return null;};
-let chordAuto=function(){}, soundOf=function(){return null;}, chordsAuto=function(){return false;}, bassAuto=function(){}, bassesAuto=function(){return false;}, strAuto=function(){}, stringsAuto=function(){return true;};
+let chordAuto=function(){}, soundOf=function(){return null;}, chordsAuto=function(){return false;}, bassAuto=function(){}, bassesAuto=function(){return false;}, strAuto=function(){}, stringsAuto=function(){return true;}, kitAuto=function(){}, kitsAuto=function(){return false;};
 let recentT=null, storeOk=null;
 let P=Core.fresh(Math.random), sel=0, flashSel=-1, bassSel=0, popOpen=false, undo=[], redo=[], dl=null;
 try{const raw=localStorage.getItem(LS); if(raw)P=Core.normalize(JSON.parse(raw));}catch(e){}
@@ -2951,14 +2997,19 @@ const Aud=(function(){
     else if(n===46){chokeHat(t);nz(t,0.32,'highpass',7000,0.7,0.35*v,true);}
     else if(n===51||n===53||n===59)nz(t,0.7,'highpass',6000,0.8,0.22*v);
     else if(n===49||n===57)nz(t,1.2,'highpass',4500,0.7,0.35*v);
+    else if(n===82||n===69||n===70)nz(t,0.05,'highpass',8000,0.7,0.3*v);
+    else if(n===54){nz(t,0.12,'highpass',6500,1.5,0.35*v);tn(t,4200,4000,0.05,0.08*v,'square');}
+    else if(n===56){tn(t,800,790,0.12,0.25*v,'square');tn(t,540,535,0.12,0.2*v,'square');}
+    else if(n===75||n===76||n===77)tn(t,2500,2450,0.05,0.45*v,'sine');
+    else if(n>=60&&n<=64){const f={60:420,61:300,62:330,63:300,64:210}[n];tn(t,f*1.15,f,n===62?0.06:0.18,0.6*v,'sine');}
     else nz(t,0.08,'bandpass',1200,1,0.35*v);
   }
   /* GM kits mix hats and cymbals far below the kick; lift them so a pattern is audible at its natural velocities */
   const DMIX={42:3.2,44:3.2,46:3.2,51:4,53:4,59:4,49:2,57:2,37:1.6,39:2};
-  /* kick, side stick and snare always play at velocity 100 so they stay audible on small speakers */
+  /* kick, side stick and snare play at velocity 100 so they stay audible on small speakers (not ghost notes or feathered kicks) */
   const DFORCE={35:1,36:1,37:1,38:1,40:1};
   function via(k,fn){OUTB=bus[k]||null;try{return fn();}finally{OUTB=null;}}
-  function drum(n,vel,t,zv){if(!ensure())return;if(DFORCE[n]){vel=100;zv=100;}if(!sfv('d',n,vel,t,0.9,DMIX[n],zv))via('d',function(){drumSyn(n,vel,t);});}
+  function drum(n,vel,t,zv){if(!ensure())return;if(DFORCE[n]&&vel>=45){vel=100;zv=100;}if(!sfv('d',n,vel,t,0.9,DMIX[n],zv))via('d',function(){drumSyn(n,vel,t);});}
   function epV(m,vel,t,dur,zv){if(!sfv('c',m,vel,t,dur,null,zv))via('c',function(){ep(m,vel,t,dur);});}
   function bassV(m,vel,t,dur,zv){if(!sfv('b',m,vel,t,dur,null,zv))via('b',function(){bass(m,vel,t,dur);});}
   function leadV(m,vel,t,dur,zv){return sfv('m',m,vel,t,dur,null,zv)||via('m',function(){return lead(m,vel,t,dur);});}
@@ -3057,7 +3108,7 @@ function schedule(step,t){
   /* the Melody Track's loop chain (copies of one slot, wrapping) pushes and ties across its seam like the Chord Track's Loop; while a recording grows it the real neighbours decide */
   const loopMel=melLoopOn()&&!rec.on&&!(REC.run&&REC.run.b==null);
   const a=step>=0?Core.songAt(P,step,(!inMelody()&&U.cmode!=='song')||loopMel):{view:Core.secView(P,P.form[0]),local:step}, dp=a?Core.secDrums(a.view,null):null;
-  if(a&&step>=0){chordAuto(a.view.comp);bassAuto(a.view.bpat);strAuto(a.view.str);}
+  if(a&&step>=0){chordAuto(a.view.comp);bassAuto(a.view.bpat);strAuto(a.view.str);const dq=Core.secDrums(a.view,U.drum?U.dpat:null);if(dq)kitAuto(Core.kitOf({dpat:dq,dkit:a.view.dkit}));}
   /* the first bar after Play or a jump has no pushed chord before it, so it is struck */
   if(a&&step>=0&&Math.floor(step/bs)===Math.floor(tieFrom/bs))a.view._noTie=true;
   const evs=a&&step>=0?Core.eventsAt(a.view,a.local,dp):[], ms=Core.melAt(P,step), dr=dp?Core.drumsAt(a.view,a.local,dp):[];
@@ -3517,7 +3568,7 @@ function renderParts(){
   const bb=Core.BASSES.filter(function(x){return x[0]===P.bpat;})[0];
   $('#ptBass').textContent=P.bass?(bb?bb[1]:'Root'):'Off';
   const d=Core.DPATS.filter(function(x){return x[0]===U.dpat;})[0];
-  $('#ptRhythm').textContent=U.drum?(d?d[1]:''):'Off';
+  $('#ptRhythm').textContent=U.drum?(d?(d[0]==='custom'?d[1]:({std:'Standard',rock:'Rock',jazz:'Jazz',elec:'Electronic',perc:'Percussion'}[d[3]])):''):'Off';
   $('#partTabs').querySelectorAll('button').forEach(function(b){b.setAttribute('aria-selected',b.dataset.pt===tab?'true':'false');});
   $('#pKeys').hidden=tab!=='keys';$('#pStrings').hidden=tab!=='strings';$('#pBass').hidden=tab!=='bass';$('#pRhythm').hidden=tab!=='rhythm';
   const line=function(el,k){const v=soundOf(k);el.innerHTML='';
@@ -3637,23 +3688,42 @@ $('#rewBtn').addEventListener('click',function(){
 $('#drumBtn').addEventListener('click',function(){setDrums(!U.drum);renderTop();renderParts();renderRhythm();if(U.drum&&!playing){Aud.ensure();Aud.audition('d');}});
 
 /* Rhythm tab: the drum pattern of this slot (the button beside BPM only turns the drums on and off) */
+const lastPat={std:'rock8',rock:'rock16',jazz:'swing',elec:'boombap',perc:'shaker'};
+const SWUNG={swing:1,swingfast:1,brushes:1,shuffle:1};
+function curKit(){return Core.kitOf({dpat:U.dpat,dkit:P.dkit});}
 function renderRhythm(){
+  const ty=U.dpat==='custom'?(U.dtype||'std'):Core.dtypeOf(U.dpat);if(U.dpat!=='custom')lastPat[ty]=U.dpat;
+  $('#dtypeSeg').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.dt===ty);});
+  const ks=Core.TKITS[ty], kit=Core.kitOf({dpat:U.dpat,dkit:P.dkit});
+  if(!playing&&U.dpat!=='custom')kitAuto(kit);
+  const kh=$('#dkitSeg');kh.innerHTML='';
+  ks.forEach(function(k){const b=document.createElement('button');b.type='button';b.textContent=Core.DKITS[k].n;b.className=k===kit?'on':'';
+    b.addEventListener('click',function(){edit(function(){P.dkit=k;});if(!playing){kitAuto(k);Aud.ensure();Aud.audition('d');}});kh.appendChild(b);});
+  $('#dkitRow').hidden=ks.length<2;
   const host=$('#rhyChips');host.innerHTML='';let gn=null;
   Core.DPATS.forEach(function(d){
+    if(d[3]!==ty&&d[0]!=='custom')return;
     if(d[2]!==gn){gn=d[2];const h=document.createElement('div');h.className='gh';h.textContent=gn;host.appendChild(h);}
     const b=document.createElement('button');b.type='button';b.className='pill';b.textContent=d[1];b.dataset.p=d[0];
     b.setAttribute('aria-pressed',d[0]===U.dpat?'true':'false');host.appendChild(b);
   });
   $('#rhyEditRow').hidden=U.dpat!=='custom';
-  $('#rhyHint').textContent=U.drum?'':'Drums are off: turn them on with the drum button beside BPM.';
+  $('#rhyHint').textContent=U.drum?(ty==='perc'?'Hand percussion instead of a drum kit.':''):'Drums are off: turn them on with the drum button beside BPM.';
 }
-$('#rhyChips').addEventListener('click',function(e){
-  const b=e.target.closest?e.target.closest('button[data-p]'):null;if(!b)return;
-  setDrums(U.drum,b.dataset.p);
+function pickPat(id){
+  setDrums(U.drum,id);
   const sel=$('#dPat');if(sel)sel.value=U.dpat;
+  if(SWUNG[id]&&P.swing<40){edit(function(){P.swing=60;});toast('Swing set to 60% for a jazz feel.');}
+  if(!playing)kitAuto(curKit());
   renderTop();renderRhythm();renderParts();
-  if(b.dataset.p==='custom'){if(window.__dOpen)window.__dOpen(true);return;}
+  if(id==='custom'){if(window.__dOpen)window.__dOpen(true);return;}
   if(U.drum&&!playing){Aud.ensure();Aud.audition('d');}
+}
+$('#rhyChips').addEventListener('click',function(e){const b=e.target.closest?e.target.closest('button[data-p]'):null;if(b)pickPat(b.dataset.p);});
+$('#dtypeSeg').addEventListener('click',function(e){
+  const b=e.target.closest?e.target.closest('button[data-dt]'):null;if(!b)return;
+  U.dtype=b.dataset.dt;
+  if(U.dpat==='custom'||Core.dtypeOf(U.dpat)!==b.dataset.dt){edit(function(){P.dkit=null;});pickPat(lastPat[b.dataset.dt]);}
 });
 $('#rhyEdit').addEventListener('click',function(){if(window.__dOpen)window.__dOpen(true);});
 $('#bpmDown').addEventListener('click',function(){setBpm(P.bpm-1);});
@@ -3720,7 +3790,7 @@ $('#btnRand').addEventListener('click',function(){
   /* and a random drum pattern (not My pattern, not the extreme metal ones); the drum button stays as it is */
   const dps=Core.DPATS.filter(function(d){return ['custom','blast','metal'].indexOf(d[0])<0&&d[0]!==U.dpat;});
   const dpk=dps[Math.floor(Math.random()*dps.length)];
-  if(dpk){setDrums(U.drum,dpk[0]);const ds=$('#dPat');if(ds)ds.value=dpk[0];}
+  if(dpk){P.dkit=null;setDrums(U.drum,dpk[0]);const ds=$('#dPat');if(ds)ds.value=dpk[0];}
   pushUndo(s);renderAll();
   toast('Random: '+scTag+r.names+' · '+cname+(dpk?' · '+dpk[1]+(U.drum?'':' (drums off)'):''));
   /* always from the beginning (of the slot) */
@@ -5158,7 +5228,7 @@ function projectFiles(name){
     rs.forEach(function(r){if(r.a)audio[r.t.id]=b64(new Uint8Array(r.a.buffer,r.a.byteOffset,r.a.byteLength));});
     if(Object.keys(audio).length)o.audio=audio;
     const files=[{name:name+ownExt('.phrasenote'),data:new TextEncoder().encode(JSON.stringify(o))},
-      {name:name+'.mid',data:Core.buildMidi(P,U.drum?U.dpat:null,{prog:soundPrograms(),cauto:chordsAuto(),bauto:bassesAuto(),sauto:stringsAuto(),name:P.name})}];
+      {name:name+'.mid',data:Core.buildMidi(P,U.drum?U.dpat:null,{prog:soundPrograms(),cauto:chordsAuto(),bauto:bassesAuto(),sauto:stringsAuto(),dauto:kitsAuto(),name:P.name})}];
     rs.forEach(function(r){if(r.a)files.push({name:name+'-'+fsSafe(r.t.name)+'.wav',data:wavOf(r.t,r.a)});});
     const mw=compWav(rs);if(mw)files.splice(2,0,{name:name+'-Melody.wav',data:mw});
     return files;
@@ -5295,9 +5365,9 @@ document.addEventListener('keydown',function(e){
   const DEFP={c:[0,4],b:[0,33],m:[0,73],d:[128,0],s:[0,49]};
   /* a track's sound is {f:file id, b:bank, n:program}; null = basic synth */
   function pre(a){return {f:null,b:a[0],n:a[1]};}
-  const S={c:pre(DEFP.c),b:pre(DEFP.b),m:pre(DEFP.m),d:pre(DEFP.d),s:pre(DEFP.s),v:{c:70,b:65,m:45,d:36},rev:35,mv:50,ca:true,ba:true,sa:true};
+  const S={c:pre(DEFP.c),b:pre(DEFP.b),m:pre(DEFP.m),d:pre(DEFP.d),s:pre(DEFP.s),v:{c:70,b:65,m:45,d:36},rev:35,mv:50,ca:true,ba:true,sa:true,da:true};
   /* Chords / Bass on Auto: the sound follows the slot's accompaniment style (Core.compPatch) or bass technique (Core.bassPatch) */
-  let autoProg=0, autoB=33, autoS=49;
+  let autoProg=0, autoB=33, autoS=49, autoD=0;
   try{
     const r=localStorage.getItem(KEY);
     if(r){const o=JSON.parse(r);TR.forEach(function(k){
@@ -5305,7 +5375,7 @@ document.addEventListener('keydown',function(e){
       if(v===null)S[k]=null;
       else if(Array.isArray(v))S[k]=pre(v);
       else if(v&&typeof v==='object'&&typeof v.b==='number'&&typeof v.n==='number')S[k]={f:typeof v.f==='string'?v.f:null,b:v.b,n:v.n};
-    });Object.assign(S.v,o.v||{});if(typeof o.rev==='number')S.rev=o.rev;if(typeof o.mv==='number')S.mv=Math.max(0,Math.min(100,o.mv));if(typeof o.basic==='boolean')S.basic=o.basic;S.ca=typeof o.ca==='boolean'?o.ca:!(S.c&&(S.c.b!==DEFP.c[0]||S.c.n!==DEFP.c[1]));S.ba=typeof o.ba==='boolean'?o.ba:!(S.b&&(S.b.b!==DEFP.b[0]||S.b.n!==DEFP.b[1]));S.sa=typeof o.sa==='boolean'?o.sa:true;}
+    });Object.assign(S.v,o.v||{});if(typeof o.rev==='number')S.rev=o.rev;if(typeof o.mv==='number')S.mv=Math.max(0,Math.min(100,o.mv));if(typeof o.basic==='boolean')S.basic=o.basic;S.ca=typeof o.ca==='boolean'?o.ca:!(S.c&&(S.c.b!==DEFP.c[0]||S.c.n!==DEFP.c[1]));S.ba=typeof o.ba==='boolean'?o.ba:!(S.b&&(S.b.b!==DEFP.b[0]||S.b.n!==DEFP.b[1]));S.sa=typeof o.sa==='boolean'?o.sa:true;S.da=typeof o.da==='boolean'?o.da:!(S.d&&(S.d.b!==DEFP.d[0]||S.d.n!==DEFP.d[1]));}
   }catch(e){}
   const files=[], MAXF=4, MAXB=300*1048576;
   function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
@@ -5333,7 +5403,7 @@ document.addEventListener('keydown',function(e){
   function presetOpts(el,F,k){
     el.innerHTML='';el.appendChild(new Option('Basic synth','-1'));
     if(!F)return;
-    if(k==='c'||k==='b'||k==='s')el.appendChild(new Option(k==='c'?'Auto (follows the style)':k==='b'?'Auto (follows the bass part)':'Auto (follows the strings part)','auto'));
+    if(k!=='m')el.appendChild(new Option(k==='c'?'Auto (follows the style)':k==='b'?'Auto (follows the bass part)':k==='s'?'Auto (follows the strings part)':'Auto (follows the rhythm kit)','auto'));
     if(k==='d'){F.m.kits.forEach(function(p){el.appendChild(new Option(p.name,String(p.i)));});return;}
     const g0=grp('General MIDI'), g1=grp('Variations');
     F.m.list.forEach(function(p){
@@ -5360,6 +5430,7 @@ document.addEventListener('keydown',function(e){
     if(k==='c'&&S.ca)t={f:selFile.c,b:0,n:autoProg};
     if(k==='b'&&S.ba)t={f:selFile.b,b:0,n:autoB};
     if(k==='s'&&S.sa)t={f:selFile.s,b:0,n:autoS};
+    if(k==='d'&&S.da)t={f:selFile.d,b:128,n:autoD};
     let F=t.f?files.filter(function(x){return x.id===t.f;})[0]:null, i=F?F.m.indexOf(t.b,t.n):-1;
     if(i<0){for(let j=0;j<files.length&&i<0;j++){const q=files[j].m.indexOf(t.b,t.n);if(q>=0){F=files[j];i=q;}}}
     if(i<0){F=files[0];i=F.m.indexOf(DEFP[k][0],DEFP[k][1]);}
@@ -5374,7 +5445,7 @@ document.addEventListener('keydown',function(e){
       let F=fileById(selFile[k])||files[0]||null;if(F)selFile[k]=F.id;
       const fe=$('#'+IDS[k]+'f');if(F)fe.value=F.id;
       const el=$('#'+IDS[k]);presetOpts(el,F,k);
-      el.value=((k==='c'&&S.ca)||(k==='b'&&S.ba)||(k==='s'&&S.sa))&&r.fid?'auto':r.fid&&r.fid===(F&&F.id)?String(r.pi):'-1';
+      el.value=((k==='c'&&S.ca)||(k==='b'&&S.ba)||(k==='s'&&S.sa)||(k==='d'&&S.da))&&r.fid?'auto':r.fid&&r.fid===(F&&F.id)?String(r.pi):'-1';
     });
     syncLoaded();
     try{renderParts();}catch(e){}
@@ -5398,10 +5469,16 @@ document.addEventListener('keydown',function(e){
     const r=resolve('s');Aud.setTrack('s',r.fid,r.pi,gain(TVOL.s));
   };
   stringsAuto=function(){return !!S.sa;};
+  kitAuto=function(kit){
+    const K=Core.DKITS[kit];if(!K)return;const pg=K.pg;if(pg===autoD)return;autoD=pg;
+    if(!S.da||!files.length||isBasic())return;
+    const r=resolve('d');Aud.setTrack('d',r.fid,r.pi,gain(TVOL.d));
+  };
+  kitsAuto=function(){return !!S.da&&!!files.length&&!isBasic();};
   /* what a track plays, for the Accompaniment panel: {name, auto} or null for the basic synth */
   soundOf=function(k){
     const r=resolve(k),F=r.fid?fileById(r.fid):null;if(!F||r.pi<0)return null;
-    return {name:F.m.presets[r.pi].name,auto:(k==='c'&&!!S.ca)||(k==='b'&&!!S.ba)||(k==='s'&&!!S.sa)};
+    return {name:F.m.presets[r.pi].name,auto:(k==='c'&&!!S.ca)||(k==='b'&&!!S.ba)||(k==='s'&&!!S.sa)||(k==='d'&&!!S.da)};
   };
   chordsAuto=function(){return !!S.ca&&!!files.length&&!isBasic();};
   soundPrograms=function(){
@@ -5488,6 +5565,7 @@ document.addEventListener('keydown',function(e){
       if(k==='c')S.ca=v==='auto';
       if(k==='b')S.ba=v==='auto';
       if(k==='s')S.sa=v==='auto';
+      if(k==='d')S.da=v==='auto';
       if(v==='auto'){if(!S[k])S[k]=pre(DEFP[k]);}
       else if(v==='-1'||!F)S[k]=null;
       else{const pr=F.m.presets[+v];S[k]={f:F.id,b:pr.bank,n:pr.num};}

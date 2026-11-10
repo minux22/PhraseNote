@@ -5,8 +5,8 @@ for(const ts of ['2/4','3/4','4/4','5/4','6/8']){
   const p=Core.normalize({bars:2,ts}),M=Core.meter(p),S=M.bar/240;
   for(const [pat] of Core.DPATS){
     const kicks=[];
-    for(let s=0;s<S;s++)if(Core.drumsAt(p,s,pat).some(e=>e.n===36))kicks.push(s/M.sps);
+    for(let s=0;s<S;s++)if(Core.drumsAt(p,s,pat).some(e=>e.n===36||e.n===35))kicks.push(s/M.sps);
     console.log(ts,pat.padEnd(7),'kick beats',kicks.join(','));
-    if(pat!=='onedrop')assert(kicks.includes(0),'downbeat');
+    if(pat!=='onedrop'&&Core.dtypeOf(pat)!=='perc')assert(kicks.includes(0),'downbeat'); // percussion patterns have no kit
   }
 }
