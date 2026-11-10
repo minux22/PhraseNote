@@ -676,6 +676,30 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 #sfTip[hidden]{display:none}
 .dlgback{position:fixed; inset:0; z-index:40; background:rgba(0,0,0,.45); display:grid; place-items:center; padding:16px}
 .dlgback[hidden]{display:none}
+.stychg{display:grid; grid-template-columns:auto 1fr; gap:4px 12px; font-size:13px; background:var(--panel-2); border-radius:10px; padding:9px 11px}
+.stychg span{color:var(--dim); font-weight:700; font-size:12px}
+.stychg em{font-style:normal; color:var(--dim); font-weight:600}
+.stynoask{display:flex; align-items:center; gap:8px; margin:0}
+.dlg .stynoask input{width:18px; height:18px; padding:0; border-radius:4px; min-width:0; min-height:0; margin:0; flex:none; accent-color:var(--chord)}
+.snddlg{max-height:80vh}
+.sndlist{overflow-y:auto; display:flex; flex-direction:column; gap:1px; margin:0 -6px; padding:0 6px}
+.sndlist .sg{font-size:10px; font-weight:800; letter-spacing:.08em; color:var(--dim); text-transform:uppercase; margin:8px 2px 2px}
+.sndlist button{display:flex; justify-content:space-between; align-items:center; gap:8px; text-align:left; padding:9px 9px; border-radius:8px; border:0; background:transparent; color:var(--text); font:inherit; font-size:13.5px}
+.sndlist button small{color:var(--dim); font-size:11px}
+.sndlist button.on{background:var(--chord); color:var(--chord-ink); font-weight:800}
+.sndlist button.on small{color:inherit}
+.sndlist button.more{color:var(--dim); font-weight:700; justify-content:center; border:1px dashed var(--line); margin-top:6px}
+.patchln.tap{cursor:pointer; background:var(--panel-2); border:1px solid var(--line); border-radius:10px; padding:7px 10px; min-height:36px}
+.patchln .chev{margin-left:auto; color:var(--dim); font-size:16px; line-height:1}
+.rmenu{position:fixed; z-index:45; width:224px; background:var(--panel); border:1px solid var(--line); border-radius:12px; box-shadow:0 8px 24px rgba(0,0,0,.28); padding:5px; display:flex; flex-direction:column}
+.rmenu[hidden]{display:none}
+.rmenu button{display:flex; align-items:center; gap:10px; padding:9px; border-radius:8px; border:0; background:transparent; color:var(--text); font:inherit; font-size:13.5px; font-weight:700; text-align:left}
+.rmenu button small{display:block; font-size:11px; font-weight:600; color:var(--dim); margin-top:1px}
+.rmenu button.on{background:var(--rnd-on,rgba(229,183,101,.22))}
+.rmenu i{font-style:normal; width:24px; height:24px; border-radius:6px; background:var(--panel-2); display:grid; place-items:center; font-size:10.5px; color:var(--dim); flex:none}
+#feelBox{margin-top:10px}
+.feelh{display:flex; align-items:baseline; justify-content:space-between}
+.feelh small{font-size:11px; color:var(--dim); font-weight:700}
 .dlg{width:100%; max-width:320px; background:var(--panel); color:var(--text); border:1px solid var(--line); border-top:2px solid var(--mint); border-radius:14px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; box-shadow:0 10px 30px rgba(0,0,0,.35)}
 .formrow{display:flex; gap:6px; overflow-x:auto; padding:6px 1px 7px; margin:-4px 0 -3px; scrollbar-width:none; -webkit-overflow-scrolling:touch}
 .formrow::-webkit-scrollbar{display:none}
@@ -911,8 +935,6 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       <div class="crow kopt"><button class="lbl tipb" type="button" data-tip="col">Color</button><div class="seg cs" id="colSeg"></div></div>
       <div class="crow"><button class="lbl tipb" type="button" data-tip="strum">Strum</button><div class="cr"><input class="sq" id="strumR" type="range" min="0" max="60" step="1" aria-label="Strum spread"><span class="cv" id="strumV"></span></div></div>
       <div class="crow"><button class="lbl tipb" type="button" data-tip="lay">Late</button><div class="cr"><input class="sq" id="layR" type="range" min="0" max="60" step="1" aria-label="Lay back chords"><span class="cv" id="layV"></span></div></div>
-      <div class="crow"><button class="lbl tipb" type="button" data-tip="swing">Swing</button><div class="cr"><div class="seg cs su" id="swuSeg" role="group" aria-label="Swing unit"></div><input class="sq" id="swingR" type="range" min="0" max="100" step="1" aria-label="Swing amount"><span class="cv" id="swingV"></span></div></div>
-      <div class="crow"><button class="lbl tipb" type="button" data-tip="loose">Loose</button><div class="cr"><input class="sq" id="looseR" type="range" min="0" max="30" step="1" aria-label="Timing looseness"><span class="cv" id="looseV"></span></div></div>
       </div>
       </div>
       <div id="pBass" class="ppane" hidden>
@@ -940,6 +962,11 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       <div class="crow" id="rhyEditRow" hidden><span class="hint" style="margin:0">Your own step pattern.</span><button class="btn" id="rhyEdit" type="button">Edit</button></div>
       </div>
       <p class="hint" id="rhyHint"></p>
+      </div>
+      <div class="cbox feel" id="feelBox">
+      <div class="feelh"><span class="lbl">Feel</span><small>All parts</small></div>
+      <div class="crow"><button class="lbl tipb" type="button" data-tip="swing">Swing</button><div class="cr"><div class="seg cs su" id="swuSeg" role="group" aria-label="Swing unit"></div><input class="sq" id="swingR" type="range" min="0" max="100" step="1" aria-label="Swing amount"><span class="cv" id="swingV"></span></div></div>
+      <div class="crow"><button class="lbl tipb" type="button" data-tip="loose">Loose</button><div class="cr"><input class="sq" id="looseR" type="range" min="0" max="30" step="1" aria-label="Timing looseness"><span class="cv" id="looseV"></span></div></div>
       </div>
     </div>
   </section>
@@ -1046,6 +1073,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
   <div class="sheet-in">
     <div class="sheet-head"><h2>Setup</h2><button class="pill" type="button" data-close>Close</button></div>
     <div class="sbox throw"><span class="lbl">Theme</span><div class="seg" id="themeSeg" role="group" aria-label="Theme"><button type="button" data-th="light">Light</button><button type="button" data-th="dark">Dark</button></div></div>
+    <div class="sbox throw"><span class="lbl" title="When a style comes with its own options">Style options</span><div class="seg" id="styAskSeg" role="group" aria-label="When a style comes with its own options"></div></div>
     <button class="btn danger" id="btnClear" type="button">Clear all chords</button>
     <button class="btn danger" id="btnClearMel" type="button">Clear melody</button>
     <div class="snd">
@@ -1096,7 +1124,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.29.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.0</p>
   </div>
 </section>
 
@@ -1147,6 +1175,29 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
     <p class="note" style="margin:0">Pick a place (for example Documents). PhraseNote makes a <b>PhraseNote</b> folder there. Each project gets its own folder inside it for the project file, MIDI and WAV files; sound presets go straight into the PhraseNote folder. You can change it later in Setup.</p>
     <div class="dlgrow"><button class="btn" type="button" id="fsLater">Not now</button><button class="btn primary" type="button" id="fsGo">Choose a place</button></div>
   </div>
+</div>
+<div class="dlgback" id="styDlg" hidden>
+  <div class="dlg" role="dialog" aria-labelledby="styTitle">
+    <h3 id="styTitle"></h3>
+    <p class="note" style="margin:0">This style was made with these options. Change them too?</p>
+    <div class="stychg" id="styList"></div>
+    <p class="note" id="styFeel" style="margin:0">Swing and Loose apply to every part, the bass and drums too.</p>
+    <div class="dlgrow"><button class="btn" type="button" id="styOnly">Style only</button><button class="btn primary" type="button" id="styAll">With options</button></div>
+    <label class="note stynoask"><input type="checkbox" id="styNoAsk"> Don't ask again; do the same next time</label>
+  </div>
+</div>
+<div class="dlgback" id="sndDlg" hidden>
+  <div class="dlg snddlg" role="dialog" aria-labelledby="sndTitle">
+    <h3 id="sndTitle"></h3>
+    <div class="sndlist" id="sndList"></div>
+    <div class="dlgrow one"><button class="btn" type="button" id="sndClose">Close</button></div>
+  </div>
+</div>
+<div class="rmenu" id="randMenu" role="menu" hidden>
+  <button type="button" role="menuitem" data-rm="all"><i>All</i><span>Everything<small>Chords, style and rhythm</small></span></button>
+  <button type="button" role="menuitem" data-rm="chords"><i>Ch</i><span>Chords only<small>Style and rhythm stay</small></span></button>
+  <button type="button" role="menuitem" data-rm="style"><i>St</i><span>Style only<small>The keys or guitar style</small></span></button>
+  <button type="button" role="menuitem" data-rm="rhythm"><i>Rh</i><span>Rhythm only<small>Another pattern of the same type</small></span></button>
 </div>
 <div class="dlgback" id="formDlg" hidden>
   <div class="dlg" role="dialog" aria-labelledby="formTitle">
@@ -1308,10 +1359,10 @@ const Core=(function(){
   }
   /* Chord notes plus the bass note. With Bass off, a slash chord gets its bass note added below the chord instead. */
   function notesFor(p,info,prev){
-    const c=voicing(info,p.key,p.voic,p.inv?prev:null,p.color);
+    const g=instP(p)==='guitar', c=g?gtrVoicing(info,p.key):voicing(info,p.key,p.voic,p.inv?prev:null,p.color);
     let b=null;
     if(p.bass)b=bassNote(info,p.key);
-    else if(info.slash){
+    else if(info.slash&&!g){
       const pc=bassNote(info,p.key)%12; let m=c[0]-1;
       while(((m%12)+12)%12!==pc)m--;
       c.unshift(m);
@@ -1349,10 +1400,15 @@ const Core=(function(){
   /* guitar styles: played on a six-string shape instead of a keyboard voicing */
   const GUITAR={strum:1,strum8:1,strum16:1,balstrum:1,finger:1,travis:1,boomchick:1,cleancut:1,funkmute:1,garp:1,chug:1,powerhalf:1,freddie:1};
   function instOf(id){return GUITAR[id]?'guitar':'keys';}
+  /* keyboard styles a guitar plays as well, on its six-string shapes, and the guitar sound each suits */
+  const GSHARED={hold:25,beat:25,eighth:25,offbeat:27,funk:28,ballad:24,bossa:24,waltz:25};
+  /* the instrument a slot plays: its own choice, but a guitar-only style is always guitar and a keys-only one keys */
+  function instP(p){return GUITAR[p.comp]?'guitar':(p.inst==='guitar'&&GSHARED[p.comp]!=null)?'guitar':'keys';}
+  function compsFor(inst){return COMPS.filter(function(c){return inst==='guitar'?(GUITAR[c[0]]||GSHARED[c[0]]!=null):!GUITAR[c[0]];});}
   /* the General MIDI program (0-based) that suits each style; the Chords sound follows it when set to Auto */
   const COMP_PATCH={pad:89,gospel:16,citypop:4,rnbstab:4,hiphop:4,lofi:4,neosoul:4,rhodes:4,gate:90,synth16:81,
     strum:25,strum8:25,strum16:25,balstrum:25,finger:24,travis:25,boomchick:25,cleancut:27,funkmute:28,garp:27,chug:29,powerhalf:30,freddie:26};
-  function compPatch(id){return COMP_PATCH[id]!=null?COMP_PATCH[id]:0;}
+  function compPatch(id,inst){if(inst==='guitar'&&!GUITAR[id]&&GSHARED[id]!=null)return GSHARED[id];return COMP_PATCH[id]!=null?COMP_PATCH[id]:0;}
   const STY={
     pop:[[0,'C',5,1],[6,'C',2,.85],[8,'C',5,.95],[14,'C',2,.8]],
     funk:[[0,'C',1,1],[3,'C',1,.8],[6,'C',1,.9],[8,'C',1,.85],[10,'C',1,.7],[11,'C',1,.8],[14,'C',1,.9]],
@@ -1398,7 +1454,7 @@ const Core=(function(){
   const ARP={ballad:[0,1,2,3,4,3,2,1],arpup:[0,1,2,3,0,1,2,3],arpud:[0,1,2,3,2,1,0,1],alberti:[0,2,1,2,0,2,1,2],finger:[0,2,3,2,1,2,3,2]};
   const ARPD={ballad:1.8,arpup:1,arpud:1,alberti:0.5,finger:1.2};
   /* Choosing a style also sets the options that make it sound right; anything not listed goes back to neutral. */
-  const NEUTRAL={voic:'close',inv:false,color:'off',bpat:'root',strum:0,lay:0,swing:0,swu:'8',loose:0};
+  const NEUTRAL={voic:'close',inv:false,color:'off',strum:0,lay:0,swing:0,swu:'8',loose:0};
   const RECIPES={
     pad:{voic:'open',color:'add9'},
     kballad:{color:'nine',voic:'open',inv:true,bpat:'r5',loose:4},
@@ -1421,10 +1477,15 @@ const Core=(function(){
     finger:{loose:5},travis:{bpat:'r5',loose:4},strum:{loose:4},strum8:{loose:3},strum16:{loose:3,swu:'16'},balstrum:{bpat:'r5',loose:5},
     boomchick:{bpat:'r5',loose:3},cleancut:{loose:3},funkmute:{bpat:'kick',loose:2},garp:{loose:3},freddie:{swing:55,bpat:'r5',loose:5}
   };
-  function applyStyle(p,id){
-    const r=Object.assign({},NEUTRAL,RECIPES[id]||{});
-    Object.keys(r).forEach(function(k){p[k]=r[k];});
-    p.comp=id;
+  /* a style's options (the bass technique is the Bass tab's own choice and is never changed by a style) */
+  function recipeOf(id){const r=Object.assign({},NEUTRAL,RECIPES[id]||{});delete r.bpat;return r;}
+  /* the options that would change: [[name, from, to]] */
+  function recipeDiff(p,id){const r=recipeOf(id);return Object.keys(r).filter(function(k){return p[k]!==r[k];}).map(function(k){return [k,p[k],r[k]];});}
+  /* only: set the style and keep every option as it is */
+  function applyStyle(p,id,only){
+    const r=recipeOf(id);
+    if(!only)Object.keys(r).forEach(function(k){p[k]=r[k];});
+    p.comp=id;if(GUITAR[id])p.inst='guitar';else if(GSHARED[id]==null)p.inst='keys';
     return r;
   }
   function compOk(p,id){
@@ -1441,7 +1502,15 @@ const Core=(function(){
   const BPATS=BASSES.map(function(b){return b[0];});
   function bassKind(id){const b=BASSES.filter(function(x){return x[0]===id;})[0];return b?b[2]:'electric';}
   const BASS_PATCH={two:32,walk:32,aball:32,root:33,r5:33,r8:34,f16:33,kick:33,slap:36,pulse:38,oct:38,sub:39};
-  function bassPatch(id){return BASS_PATCH[id]!=null?BASS_PATCH[id]:33;}
+  /* the techniques shown for each kind of bass (several on more than one); the kind sets the sound */
+  const BASS_BY_KIND={acoustic:['two','walk','aball','root','r5','r8','kick'],electric:['root','r5','r8','f16','kick','slap','walk','two','oct'],synth:['pulse','oct','sub','root','r8','kick']};
+  const KIND_PATCH={acoustic:32,electric:33,synth:38};
+  function bassPatch(id,kind){
+    const k=KIND_PATCH[kind]!=null?kind:bassKind(id);
+    if(k===bassKind(id)&&BASS_PATCH[id]!=null)return BASS_PATCH[id];
+    if(k==='electric'&&id==='r8')return 34;
+    return KIND_PATCH[k];
+  }
   /* strings: a part of its own that plays along with the keys or guitar ('off' = silent) */
   const STRS=[['pad','Pad'],['legato','4-part legato'],['lines','Inner lines'],['pizz','Pizzicato'],['trem','Tremolo'],['oct','High octaves']];
   const STR_IDS=['off'].concat(STRS.map(function(x){return x[0];}));
@@ -1558,7 +1627,7 @@ const Core=(function(){
     let prevInfo=null;
     if(p.inv){let pc=null;for(let i=beat-1;i>=0&&pc==null;i--)if(ch[i]!=null&&ch[i]!==code)pc=ch[i];for(let i=ch.length-1;i>beat&&pc==null;i--)if(ch[i]!=null&&ch[i]!==code)pc=ch[i];if(pc!=null)prevInfo=chordInfo(pc,p.key,p.scale);}
     const endQ=function(){let e=beat+1;while(e<ch.length&&ch[e]===code)e++;return e*q;};
-    const strumQ=function(def){const ms=p.strum>0?p.strum:def;return ms/1000*p.bpm/60;};
+    const strumQ=function(def){const ms=p.strum>0?p.strum:(def||(instP(p)==='guitar'&&!GUITAR[style]?12:0));return ms/1000*p.bpm/60;};
     const put=function(notes,off,dur,vel,dir,def){
       const st=strumQ(def||0), L=dir==='U'?notes.slice().reverse():notes;
       L.forEach(function(m,i){out.push({k:'c',midi:m,vel:vel,dur:dur,off:off+i*st});});
@@ -1579,7 +1648,7 @@ const Core=(function(){
     }else if(style==='waltz'){
       if(j===0&&bi>=1){attack=true;dur=0.95*q;vel=p.vel4[bslot(bi)];}
     }else if(ARP[style]){
-      const pat=ARP[style], k=pat[ps%pat.length], V=GUITAR[style]?gtrVoicing(info,p.key):voicing(info,p.key,p.voic,p.inv?prevInfo:null,p.color), n=V.length;
+      const pat=ARP[style], k=pat[ps%pat.length], V=(GUITAR[style]||instP(p)==='guitar')?gtrVoicing(info,p.key):voicing(info,p.key,p.voic,p.inv?prevInfo:null,p.color), n=V.length;
       const m=V[k%n]+12*Math.floor(k/n), st=step*0.5;
       out.push({k:'c',midi:m,vel:clampV(posVel(p,ps*240)*(k>=3?0.92:1)),dur:Math.max(0.1,Math.min(ARPD[style]*0.98,endQ()-st)),off:0});
     }else if(STY[style]){
@@ -1605,7 +1674,7 @@ const Core=(function(){
           if(dn)v=Math.max(v,clampV(posVel(p,0)*dn[3]*0.9));
         }else d=Math.max(0.08,Math.min(t[2]*0.25*0.95,endQ()-st));
         const n0=out.length;
-        const G=!!GUITAR[style], V=G?gtrVoicing(inf,p.key):voicing(inf,p.key,p.voic,p.inv?prv:null,p.color), n=V.length, k0=kind[0];
+        const G=!!GUITAR[style]||instP(p)==='guitar', V=G?gtrVoicing(inf,p.key):voicing(inf,p.key,p.voic,p.inv?prv:null,p.color), n=V.length, k0=kind[0];
         if(k0==='T'){put(G?V.slice(-4):V.slice(1),off,d,v,'D',G?6:0);}
         else if(k0==='P'){const r=G?V[0]:48+((p.key+inf.tones[0])%12), f=inf.slash?7:inf.tones[2]-inf.tones[0];put(G?[r,r+f,r+12]:[r,r+f],off,d,v,'D',G?7:0);}
         else if(k0==='G'){const k=+kind.slice(1);out.push({k:'c',midi:V[Math.min(k,n-1)],vel:v,dur:d,off:off});}
@@ -2243,8 +2312,8 @@ const Core=(function(){
     let dk0=null;
     if(o.dauto){let last=null;layout(p).forEach(function(sl,i){const v=secView(p,sl.id), dq=secDrums(v,dpat);if(!dq)return;const g=DKITS[kitOf({dpat:dq,dkit:v.dkit})].pg;if(last===null){dk0=g;last=g;return;}if(g!==last&&sl.start+off<total)de.push({t:sl.start+off,o:0,b:[0xC9,g]});last=g;});}
     let bp0=prog.b;
-    if(o.bauto){let last=null;layout(p).forEach(function(sl,i){const g=bassPatch(secView(p,sl.id).bpat);if(i===0){bp0=g;last=g;return;}if(g!==last&&sl.start+off<total)be.push({t:sl.start+off,o:0,b:[0xC1,g]});last=g;});}
-    if(o.cauto){let last=null;layout(p).forEach(function(sl,i){const g=compPatch(secView(p,sl.id).comp);if(i===0){cp0=g;last=g;return;}if(g!==last&&sl.start+off<total)ce.push({t:sl.start+off,o:0,b:[0xC0,g]});last=g;});}
+    if(o.bauto){let last=null;layout(p).forEach(function(sl,i){const v=secView(p,sl.id), g=bassPatch(v.bpat,v.bkind);if(i===0){bp0=g;last=g;return;}if(g!==last&&sl.start+off<total)be.push({t:sl.start+off,o:0,b:[0xC1,g]});last=g;});}
+    if(o.cauto){let last=null;layout(p).forEach(function(sl,i){const v=secView(p,sl.id), g=compPatch(v.comp,instP(v));if(i===0){cp0=g;last=g;return;}if(g!==last&&sl.start+off<total)ce.push({t:sl.start+off,o:0,b:[0xC0,g]});last=g;});}
     function track(evs,head){
       evs.sort(function(a,b){return a.t-b.t||a.o-b.o;});
       const out=head.slice(); let last=0;
@@ -2366,10 +2435,12 @@ const Core=(function(){
       q.chords.push(c==null?null:(Number.isInteger(c)&&((c>=0&&c<=111)||validX(c))?c:null));
     }
     q.comp=COMP_IDS.indexOf(o.comp)>=0?o.comp:'beat';
+    q.inst=GUITAR[q.comp]||(o.inst==='guitar'&&GSHARED[q.comp]!=null)?'guitar':'keys';
     q.voic=['close','open','spread'].indexOf(o.voic)>=0?o.voic:'close';
     q.inv=!!o.inv;
     q.strum=clamp(o.strum==null?0:o.strum,0,60);
     q.bpat=BPATS.indexOf(o.bpat)>=0?o.bpat:'root';
+    q.bkind=KIND_PATCH[o.bkind]!=null&&BASS_BY_KIND[o.bkind].indexOf(q.bpat)>=0?o.bkind:bassKind(q.bpat);
     q.str=STR_IDS.indexOf(o.str)>=0?o.str:'off';q.srng=STR_REG[o.srng]?o.srng:'mid';
     q.swing=clamp(o.swing==null?0:o.swing,0,100);
     q.swu=o.swu==='16'?'16':'8';
@@ -2464,7 +2535,7 @@ const Core=(function(){
   }
   /* ---- song form ---- */
   const SEC_IDS='ABCDEFGH', ROLES=['','Intro','Verse','Pre','Chorus','Bridge','Outro'];
-  const SECF=['bars','chords','comp','voic','inv','color','bpat','strum','lay','swing','swu','loose','drum','dpat','dkit','kofs','tempo','str','srng'];
+  const SECF=['bars','chords','comp','inst','voic','inv','color','bpat','bkind','strum','lay','swing','swu','loose','drum','dpat','dkit','kofs','tempo','str','srng'];
   function copySec(src,dst){SECF.forEach(function(f){dst[f]=f==='chords'?src.chords.slice():src[f];});return dst;}
   function curId(p){return p.form[p.slot];}
   function secOf(p,id){for(let i=0;i<p.secs.length;i++)if(p.secs[i].id===id)return p.secs[i];return null;}
@@ -2683,7 +2754,7 @@ const Core=(function(){
   }
   return {SCALES:SCALES,SCALE_NAMES:SCALE_NAMES,KEY_NAMES:KEY_NAMES,chordInfo:chordInfo,voicing:voicing,
     noteName:noteName,bassNote:bassNote,notesFor:notesFor,
-    DTYPES:DTYPES,DKITS:DKITS,TKITS:TKITS,dtypeOf:dtypeOf,kitOf:kitOf,COMPS:COMPS,STRS:STRS,strPatch:strPatch,strVoicing:strVoicing,BASSES:BASSES,bassKind:bassKind,bassPatch:bassPatch,GUITAR:GUITAR,instOf:instOf,compPatch:compPatch,gtrVoicing:gtrVoicing,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,mkMap:mkMap,tempoMap:tempoMap,secAt:secAt,tickAt:tickAt,bpmAt:bpmAt,mapPairs:mapPairs,takeMap:takeMap,takeLen:takeLen,nextSection:nextSection,NEXT_ROLE:NEXT_ROLE,slotStats:slotStats,
+    DTYPES:DTYPES,DKITS:DKITS,TKITS:TKITS,dtypeOf:dtypeOf,kitOf:kitOf,COMPS:COMPS,GSHARED:GSHARED,instP:instP,compsFor:compsFor,recipeOf:recipeOf,recipeDiff:recipeDiff,BASS_BY_KIND:BASS_BY_KIND,STRS:STRS,strPatch:strPatch,strVoicing:strVoicing,BASSES:BASSES,bassKind:bassKind,bassPatch:bassPatch,GUITAR:GUITAR,instOf:instOf,compPatch:compPatch,gtrVoicing:gtrVoicing,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,mkMap:mkMap,tempoMap:tempoMap,secAt:secAt,tickAt:tickAt,bpmAt:bpmAt,mapPairs:mapPairs,takeMap:takeMap,takeLen:takeLen,nextSection:nextSection,NEXT_ROLE:NEXT_ROLE,slotStats:slotStats,
     POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM,suggestChords:suggestChords,guessKey:guessKey,rekey:rekey,recode:recode,SEC_IDS:SEC_IDS,ROLES:ROLES,SECF:SECF,normSec:normSec,copySec:copySec,secOf:secOf,curId:curId,storeCur:storeCur,loadCur:loadCur,layout:layout,formTicks:formTicks,secView:secView,secDrums:secDrums,songAt:songAt,melInsert:melInsert,melDelete:melDelete,melSlice:melSlice,melPaste:melPaste,resizeSec:resizeSec,xcode:xcode,isX:isX,xWith:xWith,extraPalette:extraPalette};
 })();
 
@@ -3192,7 +3263,7 @@ function schedule(step,t){
   /* the Melody Track's loop chain (copies of one slot, wrapping) pushes and ties across its seam like the Chord Track's Loop; while a recording grows it the real neighbours decide */
   const loopMel=melLoopOn()&&!rec.on&&!(REC.run&&REC.run.b==null);
   const a=step>=0?Core.songAt(P,step,(!inMelody()&&U.cmode!=='song')||loopMel):{view:Core.secView(P,P.form[0]),local:step}, dp=a?Core.secDrums(a.view,null):null;
-  if(a&&step>=0){chordAuto(a.view.comp);bassAuto(a.view.bpat);strAuto(a.view.str);const dq=Core.secDrums(a.view,U.drum?U.dpat:null);if(dq)kitAuto(Core.kitOf({dpat:dq,dkit:a.view.dkit}));}
+  if(a&&step>=0){chordAuto(a.view.comp,Core.instP(a.view));bassAuto(a.view.bpat,a.view.bkind);strAuto(a.view.str);const dq=Core.secDrums(a.view,U.drum?U.dpat:null);if(dq)kitAuto(Core.kitOf({dpat:dq,dkit:a.view.dkit}));}
   /* the first bar after Play or a jump has no pushed chord before it, so it is struck */
   if(a&&step>=0&&Math.floor(step/bs)===Math.floor(tieFrom/bs))a.view._noTie=true;
   const evs=a&&step>=0?Core.eventsAt(a.view,a.local,dp):[], ms=Core.melAt(P,step), dr=dp?Core.drumsAt(a.view,a.local,dp):[];
@@ -3535,7 +3606,7 @@ function pickSlash(i,btn){
   if(sel!==7)Aud.preview(selCode());
   setTimeout(function(){popOpen=false;renderSlash(true);},220);
 }
-function renderAll(){applyMix();if(MIX.open)mixRender();drumsFromP();renderForm();renderTop();renderPalette();renderOpts();renderGrid();renderVel();renderComp();renderSlash();renderMelody();if(window.__dRender)window.__dRender();}
+function renderAll(){applyMix();renderStyAsk();if(MIX.open)mixRender();drumsFromP();renderForm();renderTop();renderPalette();renderOpts();renderGrid();renderVel();renderComp();renderSlash();renderMelody();if(window.__dRender)window.__dRender();}
 
 /* ---------- grid painting ---------- */
 let paint=null;
@@ -3607,24 +3678,60 @@ vhost.addEventListener('pointercancel',endVel);
 const COMP_HINT={kballad:'Low root and fifth with short upper chords, pushed into the next chord.',antic:'Chord stabs with a push on 4& into the next chord.',citypop:'16th syncopation, best with the 9th colour.',rnbstab:'Sparse, syncopated chord hits.',hiphop:'Laid-back chords with a short echo.',lofi:'Soft, loose chords, played a little late.',pluck16:'Short 16th-note plucks with accents.',housep:'Piano house stabs on a 16th grid.',gate:'Gated 16th chord pulses (trance).',arp16:'16th-note arpeggio that climbs to the 9th-ish top and back.',synth16:'Fast 16th-note synth arpeggio.',rolled:'Slowly rolled block chords.',charleston:'Beat 1 long, then a short hit on 2&.',freddie:'Light, short quarter-note chords (no root).',jazzcomp:'Syncopated hits that change every bar. Try Swing 50-60%.',neosoul:'Rolled, late chords with a push. Try the 9th colour and Late.',rhodes:'Long overlapping chords.',shell:'Low root and fifth with a short upper hit.',chug:'Palm-muted power-chord 8ths.',powerhalf:'Sustained power chords.',boomchick:'Low pair, chord, low pair, chord.',finger:'Fingerpicked pattern, 8th notes.',stac8:'Short chords on every 8th note.',hold:'Chords held for as long as they last.',beat:'One chord stab on every beat.',eighth:'Chords on every 8th note.',pop:'Syncopated stabs on 1, 2&, 3 and 4&.',ballad:'Slow rolling arpeggio, notes ring together.',arpup:'Chord tones climbing, 8th notes.',arpud:'Chord tones up and back down.',alberti:'Low-high-middle-high figure (classical).',offbeat:'Short chords on the off-beats (reggae, ska).',funk:'Short 16th-note stabs.',strum:'Guitar-like down and up strums.',pad:'Long chords with a doubled root, for atmosphere.',waltz:'Bass on 1, chords on 2 and 3 (3/4 only).',bossa:'Bossa clave rhythm.',gospel:'Block chords with passing top notes.'};
 /* the last style used on each instrument, to come back to when switching Keys / Guitar */
 const lastComp={keys:'beat',guitar:'strum8'};
-function pickComp(id,quiet){
-  edit(function(){Core.applyStyle(P,id);});
+/* picking a style: when its recommended options differ from the ones in use, ask (or follow the Setup choice) */
+const OPT_NAME={voic:'Voicing',inv:'Smooth',color:'Color',strum:'Strum',lay:'Late',swing:'Swing',swu:'Swing unit',loose:'Loose'};
+function optText(k,v){
+  if(k==='inv')return v?'On':'Off';
+  if(k==='voic')return {close:'Close',open:'Open',spread:'Spread'}[v]||v;
+  if(k==='color')return {off:'Off',add9:'add9',sus:'sus','69':'6/9',nine:'9th'}[v]||v;
+  if(k==='swu')return v==='16'?'16th':'8th';
+  if(k==='swing')return v?v+'%':'Off';
+  return v?v+' ms':'Off';
+}
+function compName(id){const c=Core.COMPS.filter(function(x){return x[0]===id;})[0];return c?c[1]:id;}
+function pickComp(id){
+  const diff=Core.recipeDiff(P,id);
+  if(!diff.length||U.styAsk==='all'){setComp(id,false,diff.length>0);return;}
+  if(U.styAsk==='style'){setComp(id,true,false);return;}
+  /* ask */
+  $('#styTitle').textContent=compName(id)+': recommended options';
+  const L=$('#styList');L.innerHTML='';
+  diff.forEach(function(d){const a=document.createElement('span');a.textContent=OPT_NAME[d[0]]||d[0];
+    const b=document.createElement('b');const em=document.createElement('em');em.textContent=optText(d[0],d[1])+' → ';b.appendChild(em);b.appendChild(document.createTextNode(optText(d[0],d[2])));
+    L.appendChild(a);L.appendChild(b);});
+  $('#styFeel').hidden=!diff.some(function(d){return d[0]==='swing'||d[0]==='swu'||d[0]==='loose';});
+  $('#styNoAsk').checked=false;
+  styPending=id;$('#styDlg').hidden=false;
+}
+let styPending=null;
+function setComp(id,only,said){
+  edit(function(){Core.applyStyle(P,id,only);});
   if(MIX.open)mixRender();
-  lastComp[Core.instOf(id)]=id;
-  if(!playing)chordAuto(P.comp);
-  if(!quiet){const c=Core.COMPS.filter(function(x){return x[0]===id;})[0];toast((c?c[1]:id)+': recommended options applied.');}
+  lastComp[Core.instP(P)]=id;
+  if(!playing)chordAuto(P.comp,Core.instP(P));
+  if(said)toast(compName(id)+': recommended options applied.');
   if(!playing){Aud.ensure();Aud.audition('c');}
 }
+function styAnswer(only){
+  const id=styPending;styPending=null;$('#styDlg').hidden=true;if(!id)return;
+  if($('#styNoAsk').checked){U.styAsk=only?'style':'all';saveU();renderStyAsk();toast('Saved. You can change this in Setup.');}
+  setComp(id,only,false);
+}
+$('#styOnly').addEventListener('click',function(){styAnswer(true);});
+$('#styAll').addEventListener('click',function(){styAnswer(false);});
+$('#styDlg').addEventListener('click',function(e){if(e.target===$('#styDlg')){styPending=null;$('#styDlg').hidden=true;}});
+function renderStyAsk(){mkSeg($('#styAskSeg'),[['ask','Ask'],['all','Apply'],['style','Keep']],function(){return U.styAsk;},function(v){U.styAsk=v;saveU();renderStyAsk();});}
 function renderComp(){
   const host=$('#compChips');host.innerHTML='';
-  const inst=Core.instOf(P.comp);lastComp[inst]=P.comp;
-  if(!playing)chordAuto(P.comp);
+  const inst=Core.instP(P);lastComp[inst]=P.comp;
+  if(!playing)chordAuto(P.comp,inst);
   $('#instSeg').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.inst===inst);});
   document.querySelectorAll('#pKeys .kopt').forEach(function(r){r.hidden=inst==='guitar';});
   let gn=null;
-  Core.COMPS.forEach(function(c){
-    if(!Core.compOk(P,c[0])||Core.instOf(c[0])!==inst)return;
-    if(c[2]!==gn){gn=c[2];const h=document.createElement('div');h.className='gh';h.textContent=gn;host.appendChild(h);}
+  Core.compsFor(inst).forEach(function(c){
+    if(!Core.compOk(P,c[0]))return;
+    const g=inst==='guitar'&&Core.GSHARED[c[0]]!=null?'Keys & guitar':c[2];
+    if(g!==gn){gn=g;const h=document.createElement('div');h.className='gh';h.textContent=gn;host.appendChild(h);}
     const b=document.createElement('button');b.type='button';b.className='pill';b.textContent=c[1];
     b.setAttribute('aria-pressed',P.comp===c[0]?'true':'false');
     b.addEventListener('click',function(){pickComp(c[0]);});
@@ -3644,7 +3751,7 @@ function renderComp(){
 }
 /* the part tabs (their current choice under each name) and the sound line under each part */
 function renderParts(){
-  const inst=Core.instOf(P.comp), c=Core.COMPS.filter(function(x){return x[0]===P.comp;})[0];
+  const inst=Core.instP(P), c=Core.COMPS.filter(function(x){return x[0]===P.comp;})[0];
   const tab=['keys','bass','strings','rhythm'].indexOf(U.ptab)>=0?U.ptab:'keys';
   $('#partTabs').classList.toggle('gtr',inst==='guitar');
   $('#ptKeysN').textContent=inst==='guitar'?'Guitar':'Keys';
@@ -3659,10 +3766,48 @@ function renderParts(){
     const t=document.createElement('span');t.textContent='Sound';el.appendChild(t);
     const b=document.createElement('b');b.textContent=v?v.name:'Basic synth';el.appendChild(b);
     if(v&&v.auto){const a=document.createElement('span');a.className='auto';a.textContent='AUTO';el.appendChild(a);}
-    if(!v){const n=document.createElement('span');n.textContent='(SoundFont off)';el.appendChild(n);}};
+    if(!v){const n=document.createElement('span');n.textContent='(SoundFont off)';el.appendChild(n);}
+    const c=document.createElement('span');c.className='chev';c.textContent='›';el.appendChild(c);
+    el.classList.add('tap');el.setAttribute('role','button');el.tabIndex=0;el.setAttribute('aria-label','Change the sound');};
   line($('#cPatch'),'c');line($('#bPatch'),'b');line($('#sPatch'),'s');
   const sx=Core.STRS.filter(function(x){return x[0]===P.str;})[0];$('#ptStrings').textContent=sx?({legato:'Legato',oct:'Octaves'}[sx[0]]||sx[1]):'Off';
 }
+/* tap a part's Sound line: the sounds of that part's family first, then everything; the same list as the
+   track's Sound menu in Setup, and choosing here sets that menu */
+const SND_FAM={c:function(){return Core.instP(P)==='guitar'?[25,32,'Guitars']:[1,24,'Pianos, keys and organs'];},b:function(){return [33,40,'Basses'];},s:function(){return [41,56,'Strings and ensembles'];}};
+const SND_SEL={c:'#sfC',b:'#sfB',s:'#sfS'};
+function openSound(k,all){
+  const sel=$(SND_SEL[k]);
+  if(!sel||sel.disabled||sel.options.length<2){toast('Choose SoundFont in Setup > Sound to change the sound.');return;}
+  const fam=SND_FAM[k](), L=$('#sndList');L.innerHTML='';
+  $('#sndTitle').textContent=(k==='c'?(Core.instP(P)==='guitar'?'Guitar':'Keys'):k==='b'?'Bass':'Strings')+' sound';
+  const cur=sel.value;
+  const add=function(o){const b=document.createElement('button');b.type='button';b.dataset.v=o.value;
+    const m=o.text.match(/^(\d+)\. (.*)$/);
+    const t=document.createElement('span');t.textContent=o.value==='auto'?'Auto':m?m[2]:o.text;b.appendChild(t);
+    const sm=document.createElement('small');sm.textContent=o.value==='auto'?'follows the style':m?m[1]:'';b.appendChild(sm);
+    if(o.value===cur)b.classList.add('on');L.appendChild(b);};
+  const head=function(t){const h=document.createElement('div');h.className='sg';h.textContent=t;L.appendChild(h);};
+  const opts=Array.prototype.slice.call(sel.options);
+  opts.filter(function(o){return o.value==='auto';}).forEach(add);
+  head(fam[2]);
+  const inFam=function(o){const m=o.text.match(/^(\d+)\. /);return m&&+m[1]>=fam[0]&&+m[1]<=fam[1];};
+  opts.filter(inFam).forEach(add);
+  if(all){head('All sounds');opts.filter(function(o){return o.value!=='auto'&&!inFam(o);}).forEach(add);}
+  else{const m=document.createElement('button');m.type='button';m.className='more';m.textContent='Show all sounds';m.dataset.more='1';L.appendChild(m);}
+  sndKey=k;$('#sndDlg').hidden=false;
+  const on=L.querySelector('.on');if(on&&all)on.scrollIntoView({block:'center'});
+}
+let sndKey=null;
+$('#sndList').addEventListener('click',function(e){const b=e.target.closest?e.target.closest('button'):null;if(!b||!sndKey)return;
+  if(b.dataset.more){openSound(sndKey,true);return;}
+  const sel=$(SND_SEL[sndKey]);sel.value=b.dataset.v;sel.dispatchEvent(new Event('change'));
+  $('#sndList').querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x===b);});});
+$('#sndClose').addEventListener('click',function(){$('#sndDlg').hidden=true;sndKey=null;});
+$('#sndDlg').addEventListener('click',function(e){if(e.target===$('#sndDlg')){$('#sndDlg').hidden=true;sndKey=null;}});
+[['#cPatch','c'],['#bPatch','b'],['#sPatch','s']].forEach(function(x){const el=$(x[0]);
+  el.addEventListener('click',function(){openSound(x[1]);});
+  el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();openSound(x[1]);}});});
 /* Strings tab: a part on top of the keys or guitar; the switch keeps the last style for turning it back on */
 const STR_HINT={pad:'Sustained chords under the song.',legato:'Four voices (cello to violin), each moving to the nearest note of the next chord; shared notes are held over.',lines:'Like 4-part legato, and one voice moves on its own: it holds the old chord\'s note over the first beat, then steps into the new chord (or walks through a scale note on the last beat).',pizz:'Plucked quarter notes.',trem:'Fast bowing on held chords, for tension and build-ups.',oct:'The top voice in octaves, high and held (violins).'};
 let lastStr='pad';
@@ -3683,23 +3828,28 @@ const BASS_HINT={two:'Half notes: the root, then the fifth while the chord stays
   root:'The root, held.',r5:'The root, then the fifth on beat 3.',r8:'Straight root 8ths (rock, pop).',f16:'A syncopated 16th figure with octave and fifth (funk, R&B). 4/4.',kick:'Plays where the kick drum plays.',slap:'Thumb on the root, popped octaves (funk). 4/4.',
   pulse:'Short root 8ths (synth-pop, dance).',oct:'8ths jumping between the low and high root (disco, dance).',sub:'Long low notes on the kicks (trap, hip-hop). 4/4.'};
 const lastBass={acoustic:'two',electric:'root',synth:'pulse'};
-function pickBass(id){edit(function(){P.bpat=id;if(!P.bass)P.bass=true;});lastBass[Core.bassKind(id)]=id;if(!playing){bassAuto(id);Aud.ensure();Aud.audition('b');}}
+function pickBass(id){edit(function(){P.bpat=id;if(!P.bass)P.bass=true;});lastBass[P.bkind]=id;if(!playing){bassAuto(id,P.bkind);Aud.ensure();Aud.audition('b');}}
 function renderBass(){
-  const kind=Core.bassKind(P.bpat);lastBass[kind]=P.bpat;
-  if(!playing)bassAuto(P.bpat);
+  const kind=P.bkind||Core.bassKind(P.bpat);lastBass[kind]=P.bpat;
+  if(!playing)bassAuto(P.bpat,kind);
   $('#bkindSeg').querySelectorAll('button').forEach(function(b){b.classList.toggle('on',b.dataset.bk===kind);});
   const host=$('#bassChips');host.innerHTML='';
-  Core.BASSES.forEach(function(b){if(b[2]!==kind)return;
+  Core.BASS_BY_KIND[kind].forEach(function(id){const b=Core.BASSES.filter(function(x){return x[0]===id;})[0];
     const x=document.createElement('button');x.type='button';x.className='pill';x.textContent=b[1];
     x.setAttribute('aria-pressed',P.bass&&P.bpat===b[0]?'true':'false');x.addEventListener('click',function(){pickBass(b[0]);});host.appendChild(x);});
   $('#bassHint').textContent=P.bass?(BASS_HINT[P.bpat]||''):'Bass is off: pick a pattern to turn it on.';
 }
-$('#bkindSeg').addEventListener('click',function(e){const b=e.target.closest?e.target.closest('button[data-bk]'):null;if(!b||b.dataset.bk===Core.bassKind(P.bpat))return;pickBass(lastBass[b.dataset.bk]);});
+$('#bkindSeg').addEventListener('click',function(e){const b=e.target.closest?e.target.closest('button[data-bk]'):null, k=b&&b.dataset.bk;if(!b||k===P.bkind)return;
+  /* the technique stays when the new kind has it too; the kind changes the sound */
+  const id=Core.BASS_BY_KIND[k].indexOf(P.bpat)>=0?P.bpat:lastBass[k];
+  edit(function(){P.bkind=k;P.bpat=id;if(!P.bass)P.bass=true;});lastBass[k]=id;if(!playing){bassAuto(id,k);Aud.ensure();Aud.audition('b');}});
 $('#partTabs').addEventListener('click',function(e){const b=e.target.closest?e.target.closest('button[data-pt]'):null;if(!b)return;U.ptab=b.dataset.pt;saveU();renderParts();});
 $('#instSeg').addEventListener('click',function(e){
-  const b=e.target.closest?e.target.closest('button[data-inst]'):null;if(!b||b.dataset.inst===Core.instOf(P.comp))return;
-  let id=lastComp[b.dataset.inst];if(!Core.compOk(P,id))id=b.dataset.inst==='guitar'?'finger':'beat';
-  pickComp(id);
+  const b=e.target.closest?e.target.closest('button[data-inst]'):null, to=b&&b.dataset.inst;if(!b||to===Core.instP(P))return;
+  /* a style both instruments play stays; otherwise the instrument's last style */
+  if(Core.GSHARED[P.comp]!=null){edit(function(){P.inst=to;});if(!playing){chordAuto(P.comp,to);Aud.ensure();Aud.audition('c');}return;}
+  let id=lastComp[to];if(!Core.compOk(P,id))id=to==='guitar'?'finger':'beat';
+  edit(function(){P.inst=to;});pickComp(id);
 });
 
 /* tap a setting's name for a short explanation (English + Korean) */
@@ -3856,34 +4006,57 @@ function suggestNow(){
   K.cur=slotRange().t0;showCursor(true);
   if(playing)stopPlay();
 }
-$('#btnRand').addEventListener('click',function(){
+/* the dice opens a menu: everything, or only the chords, the style or the rhythm (the last choice is highlighted) */
+function randMenu(open){
+  const m=$('#randMenu');
+  if(!open){m.hidden=true;return;}
+  m.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x.dataset.rm===U.rmode);});
+  m.hidden=false;
+  const r=$('#btnRand').getBoundingClientRect(), w=m.offsetWidth;
+  m.style.left=Math.max(8,Math.min(window.innerWidth-w-8,r.right-w))+'px';m.style.top=(r.bottom+6)+'px';
+}
+$('#btnRand').addEventListener('click',function(e){
   if($('#btnRand').classList.contains('sug')){suggestNow();return;}
+  e.stopPropagation();randMenu($('#randMenu').hidden);
+});
+$('#randMenu').addEventListener('click',function(e){const b=e.target.closest?e.target.closest('button[data-rm]'):null;if(!b)return;
+  randMenu(false);U.rmode=b.dataset.rm;saveU();doRandom(U.rmode);});
+document.addEventListener('pointerdown',function(e){const m=$('#randMenu');if(!m.hidden&&!m.contains(e.target)&&!$('#btnRand').contains(e.target))randMenu(false);},true);
+window.addEventListener('scroll',function(){randMenu(false);},true);
+function doRandom(mode){
+  const doC=mode==='all'||mode==='chords', doS=mode==='all'||mode==='style', doR=mode==='all'||mode==='rhythm';
   Aud.ensure();
   const s=serialize();
   /* a fresh sketch (one slot, no melody): major or minor at random too; once the song has grown, key and scale stay */
-  let scTag='';
+  let scTag='';const said=[];
   /* major 70%, natural minor 15%, harmonic minor 15%; C major or A minor, so it stays on the white keys as much as possible */
-  if(P.form.length===1&&!P.mel.length){const q=Math.random(), sc=q<0.7?'major':q<0.85?'minor':'harm';if(sc!==P.scale)lastRand=-1;P.scale=sc;P.key=sc==='major'?0:9;
+  if(doC&&P.form.length===1&&!P.mel.length){const q=Math.random(), sc=q<0.7?'major':q<0.85?'minor':'harm';if(sc!==P.scale)lastRand=-1;P.scale=sc;P.key=sc==='major'?0:9;
     scTag=(sc==='major'?'C major':sc==='minor'?'A minor':'A harm. minor')+' · ';}
-  const r=Core.randomChords(P,Math.random,lastRand);
-  lastRand=r.i;P.chords=r.chords;P.sample=false;
+  if(doC){const r=Core.randomChords(P,Math.random,lastRand);
+  lastRand=r.i;P.chords=r.chords;P.sample=false;said.push(scTag+r.names);}
   /* a random accompaniment style too (one that fits the meter, not the one in use); Color starts off */
-  const ids=Core.COMPS.map(function(c){return c[0];}).filter(function(id){return Core.compOk(P,id)&&id!==P.comp;});
-  const cid=ids[Math.floor(Math.random()*ids.length)]||P.comp, cname=(Core.COMPS.filter(function(c){return c[0]===cid;})[0]||[0,cid])[1];
-  Core.applyStyle(P,cid);P.color='off';
+  if(doS){
+  /* Style only stays on the instrument in use; Everything picks from all styles */
+  const pool=mode==='style'?Core.compsFor(Core.instP(P)):Core.COMPS;
+  const ids=pool.map(function(c){return c[0];}).filter(function(id){return Core.compOk(P,id)&&id!==P.comp;});
+  const cid=ids[Math.floor(Math.random()*ids.length)]||P.comp;
+  Core.applyStyle(P,cid,U.styAsk==='style');if(U.styAsk!=='style')P.color='off';lastComp[Core.instP(P)]=cid;said.push(compName(cid));}
   /* and a random drum pattern (not My pattern, not the extreme metal ones); the drum button stays as it is */
-  const dps=Core.DPATS.filter(function(d){return ['custom','blast','metal'].indexOf(d[0])<0&&d[0]!==U.dpat;});
+  if(doR){
+  /* Rhythm only keeps the rhythm type (and its kit); Everything picks from all patterns */
+  const ty=Core.dtypeOf(U.dpat);
+  const dps=Core.DPATS.filter(function(d){return ['custom','blast','metal'].indexOf(d[0])<0&&d[0]!==U.dpat&&(mode!=='rhythm'||U.dpat==='custom'||d[3]===ty);});
   const dpk=dps[Math.floor(Math.random()*dps.length)];
-  if(dpk){P.dkit=null;setDrums(U.drum,dpk[0]);const ds=$('#dPat');if(ds)ds.value=dpk[0];}
+  if(dpk){if(mode!=='rhythm')P.dkit=null;setDrums(U.drum,dpk[0]);const ds=$('#dPat');if(ds)ds.value=dpk[0];said.push(dpk[1]+(U.drum?'':' (drums off)'));}}
   pushUndo(s);renderAll();
-  toast('Random: '+scTag+r.names+' · '+cname+(dpk?' · '+dpk[1]+(U.drum?'':' (drums off)'):''));
+  toast('Random: '+said.join(' · '));
   /* always from the beginning (of the slot) */
   K.cur=inMelody()?loTick():slotRange().t0;
   roll.scrollLeft=0;$('#stWrap').scrollLeft=0;
   showCursor(true);
   /* stop and wait: press Play to hear it */
   if(playing)stopPlay();
-});
+}
 
 function showTab(which){
   const chord=which==='chord';
@@ -3913,6 +4086,7 @@ if(['roll','staff','rec'].indexOf(U.view)<0)U.view='roll';
 if([16,8,4,2,1].indexOf(U.nv)<0)U.nv=4;
 U.dot=!!U.dot&&U.nv>1;if([0,1,-1,2].indexOf(U.acc)<0)U.acc=0;
 U.drum=!!U.drum;U.abuf=['interactive','balanced','playback'].indexOf(U.abuf)<0?'balanced':U.abuf;if(!Core.DPATS.some(function(d){return d[0]===U.dpat;}))U.dpat='rock8';U.clk=Math.max(0,Math.min(100,Math.round(+U.clk||0)));
+U.styAsk=['ask','all','style'].indexOf(U.styAsk)<0?'ask':U.styAsk;U.rmode=['all','chords','style','rhythm'].indexOf(U.rmode)<0?'all':U.rmode;
 U.qStr=Math.max(0,Math.min(100,Math.round(+U.qStr||0)));U.qLen=U.qLen!==false;U.melc=U.melc!==false;U.more=!!U.more;U.cmode=U.cmode==='song'?'song':'loop';
 /* new starting setup (applied once to settings saved earlier): Roll view, Len 8, Snap 8, keyboard on, pickup off, auto-velocity on */
 try{if(!localStorage.getItem('phrasenote-init-1')){U.view='roll';U.snap=240;U.len=240;U.kbd=false;P.pick=false;localStorage.setItem('phrasenote-init-1','1');persist();saveU();}}catch(e){}
@@ -5536,13 +5710,13 @@ document.addEventListener('keydown',function(e){
   }
   function mb(n){return (n/1048576).toFixed(n<1048576*10?1:0)+' MB';}
   /* switch the Chords sound to the style's program (only when Chords is on Auto and the program changes) */
-  chordAuto=function(comp){
-    const pg=Core.compPatch(comp);if(pg===autoProg)return;autoProg=pg;
+  chordAuto=function(comp,inst){
+    const pg=Core.compPatch(comp,inst);if(pg===autoProg)return;autoProg=pg;
     if(!S.ca||!files.length||isBasic())return;
     const r=resolve('c');Aud.setTrack('c',r.fid,r.pi,gain(TVOL.c));
   };
-  bassAuto=function(bpat){
-    const pg=Core.bassPatch(bpat);if(pg===autoB)return;autoB=pg;
+  bassAuto=function(bpat,kind){
+    const pg=Core.bassPatch(bpat,kind);if(pg===autoB)return;autoB=pg;
     if(!S.ba||!files.length||isBasic())return;
     const r=resolve('b');Aud.setTrack('b',r.fid,r.pi,gain(TVOL.b));
   };
@@ -6313,7 +6487,7 @@ function mixRender(){
     host.appendChild(d);const inp=d.querySelector('input');inp.value=v;if(window.__rangeRO)window.__rangeRO.observe(inp);
   };
   /* the Chords strip is named after the instrument of the current slot (Keys or Guitar) */
-  MXCH.forEach(function(c){const ch=mx[c[0]], nm=c[0]==='c'?(Core.instOf(P.comp)==='guitar'?'Guitar':'Keys'):c[1];strip(c[0],nm,c[2]||'',ch.v,mixDbText(ch.v),true,ch.mu||(anySolo&&!ch.so),false);});
+  MXCH.forEach(function(c){const ch=mx[c[0]], nm=c[0]==='c'?(Core.instP(P)==='guitar'?'Guitar':'Keys'):c[1];strip(c[0],nm,c[2]||'',ch.v,mixDbText(ch.v),true,ch.mu||(anySolo&&!ch.so),false);});
   strip('rev','Reverb','',mx.rev,mx.rev+'%',false,false,true);
   strip('mst','Master','',mx.mst,mixDbText(mx.mst),false,false,false);
   const ms=host.querySelector('.mx[data-k=mst]');ms.classList.add('mst');

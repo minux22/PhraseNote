@@ -33,6 +33,6 @@ console.log('bass ok',w.map(e=>e.midi).join(' '));
 // MIDI: Bass on Auto writes each slot's program
 const q=Core.defaults();q.chords=[0,0,0,0,0,0,0,0];q.bars=4;q.bpat='walk';
 const n=Core.normalize?Core.normalize(q):q;
-if(n.secs&&n.secs.length){const B=JSON.parse(JSON.stringify(n.secs[0]));B.id='B';B.bpat='slap';n.secs.push(B);n.form=[n.form[0],'B'];}
+if(n.secs&&n.secs.length){const B=JSON.parse(JSON.stringify(n.secs[0]));B.id='B';B.bpat='slap';B.bkind='electric';n.secs.push(B);n.form=[n.form[0],'B'];}
 const mid=Array.from(Core.buildMidi(n,null,{bauto:true}));const pcs=[];for(let i=0;i<mid.length-1;i++)if(mid[i]===0xC1)pcs.push(mid[i+1]);
 assert(pcs.indexOf(32)>=0&&pcs.indexOf(36)>=0,'bass programs '+pcs);console.log('bass midi',pcs);
