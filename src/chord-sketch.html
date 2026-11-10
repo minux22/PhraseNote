@@ -496,15 +496,11 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none; width:14px; hei
 input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; background:linear-gradient(90deg,transparent 5px,var(--blue) 5px 7px,transparent 7px),linear-gradient(180deg,var(--fcap1),var(--fcap2)); border:1px solid var(--fcapb)}
 .cchips{gap:5px}
 /* accompaniment parts: one tab per part, its current choice under the name */
-.parts{display:grid; grid-template-columns:repeat(3,1fr); gap:4px; background:var(--panel-2); border:1px solid var(--line); border-radius:12px; padding:3px; margin:0 0 10px}
-.parts button{border:0; background:none; color:var(--dim); border-radius:9px; padding:6px 2px 5px; display:flex; flex-direction:column; align-items:center; gap:1px; min-width:0; font:inherit}
-.parts .pi{display:block; width:20px; height:20px}
-.parts .pi svg{width:20px; height:20px; display:block}
+.parts{display:grid; grid-template-columns:repeat(4,1fr); gap:4px; background:var(--panel-2); border:1px solid var(--line); border-radius:12px; padding:3px; margin:0 0 10px}
+.parts button{border:0; background:none; color:var(--dim); border-radius:9px; padding:8px 2px 7px; display:flex; flex-direction:column; align-items:center; gap:1px; min-width:0; font:inherit}
 .parts b{font-size:12.5px; font-weight:700; line-height:1.2}
 .parts small{font-size:10px; font-weight:600; opacity:.85; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
 .parts button[aria-selected="true"]{background:var(--blue); color:var(--on-blue)}
-.parts .ig{display:none}
-.parts.gtr .ik{display:none}.parts.gtr .ig{display:block}
 .ppane{display:flex; flex-direction:column; gap:10px}
 .instseg{margin:0}
 .patchln{display:flex; align-items:center; gap:8px; font-size:12px; color:var(--dim); padding:0 4px}
@@ -878,9 +874,10 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
     <div class="panel" id="compPanel">
       <div class="sec"><span class="lbl">Accompaniment</span></div>
       <div class="parts" id="partTabs" role="tablist" aria-label="Accompaniment parts">
-        <button type="button" role="tab" data-pt="keys"><span class="pi ik"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M8 5v14M12 5v14M16 5v14" stroke="currentColor" stroke-width="1.4"/><rect x="6.6" y="5" width="2.8" height="8" rx=".6" fill="currentColor"/><rect x="14.6" y="5" width="2.8" height="8" rx=".6" fill="currentColor"/></svg></span><span class="pi ig"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.2 9.8 20.5 3.5M18.6 2.6l2.8 2.8" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/><path d="M13.6 10.4c-1.1-1.1-3-.9-4 .2l-.5.6c-.5.5-1.3.6-2 .5-1.6-.2-3.2.6-3.7 2.2-.7 2 .1 4.3 1.9 5.8 1.5 1.4 3.6 2 5.4 1.3 1.5-.6 2.2-2.1 2-3.6-.1-.7 0-1.4.5-1.9l.6-.5c1.1-1.1 1.3-3 .2-4.1z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><circle cx="10" cy="14.2" r="1.5" fill="currentColor"/></svg></span><b id="ptKeysN">Keys</b><small id="ptKeys"></small></button>
-        <button type="button" role="tab" data-pt="bass"><span class="pi"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9.5c0-3.3 2.6-5.5 5.6-5.5 3.4 0 5.7 2.4 5.7 6.1 0 5.2-4.4 8.8-10.8 10.4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="7.4" cy="9.6" r="2.3" fill="currentColor"/><circle cx="19.6" cy="7.6" r="1.4" fill="currentColor"/><circle cx="19.6" cy="12.6" r="1.4" fill="currentColor"/></svg></span><b>Bass</b><small id="ptBass"></small></button>
-        <button type="button" role="tab" data-pt="rhythm"><span class="pi"><svg viewBox="0 0 24 24" aria-hidden="true"><ellipse cx="12" cy="11.2" rx="9" ry="3.2" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M3 11.2v6.6c0 1.7 4 3 9 3s9-1.3 9-3v-6.6" fill="none" stroke="currentColor" stroke-width="1.7"/><path d="M7.5 14.2v5.6M12 14.4v6.4M16.5 14.2v5.6" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><path d="M6.6 3.8 10.6 10M17.4 3.8 13.4 10" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></span><b>Rhythm</b><small id="ptRhythm"></small></button>
+        <button type="button" role="tab" data-pt="keys"><b id="ptKeysN">Keys</b><small id="ptKeys"></small></button>
+        <button type="button" role="tab" data-pt="bass"><b>Bass</b><small id="ptBass"></small></button>
+        <button type="button" role="tab" data-pt="strings"><b>Strings</b><small id="ptStrings">Off</small></button>
+        <button type="button" role="tab" data-pt="rhythm"><b>Rhythm</b><small id="ptRhythm"></small></button>
       </div>
       <div id="pKeys" class="ppane">
       <div class="seg big instseg" id="instSeg" role="group" aria-label="Instrument"><button type="button" data-inst="keys">Keys</button><button type="button" data-inst="guitar">Guitar</button></div>
@@ -903,6 +900,9 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       <div class="crow"><button class="lbl tipb" type="button" data-tip="bpat">Pattern</button><div class="seg cs" id="bpatSeg"></div></div>
       </div>
       <div class="patchln" id="bPatch"></div>
+      </div>
+      <div id="pStrings" class="ppane" hidden>
+      <div class="cbox"><p class="hint" style="margin:0">A string part that plays along with the keys or guitar is being added in the next update.</p></div>
       </div>
       <div id="pRhythm" class="ppane" hidden>
       <div class="cbox">
@@ -1065,7 +1065,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.26.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.26.1</p>
   </div>
 </section>
 
@@ -3373,7 +3373,7 @@ function renderComp(){
 /* the part tabs (their current choice under each name) and the sound line under each part */
 function renderParts(){
   const inst=Core.instOf(P.comp), c=Core.COMPS.filter(function(x){return x[0]===P.comp;})[0];
-  const tab=['keys','bass','rhythm'].indexOf(U.ptab)>=0?U.ptab:'keys';
+  const tab=['keys','bass','strings','rhythm'].indexOf(U.ptab)>=0?U.ptab:'keys';
   $('#partTabs').classList.toggle('gtr',inst==='guitar');
   $('#ptKeysN').textContent=inst==='guitar'?'Guitar':'Keys';
   $('#ptKeys').textContent=c?c[1]:'';
@@ -3381,7 +3381,7 @@ function renderParts(){
   const d=Core.DPATS.filter(function(x){return x[0]===U.dpat;})[0];
   $('#ptRhythm').textContent=U.drum?(d?d[1]:''):'Off';
   $('#partTabs').querySelectorAll('button').forEach(function(b){b.setAttribute('aria-selected',b.dataset.pt===tab?'true':'false');});
-  $('#pKeys').hidden=tab!=='keys';$('#pBass').hidden=tab!=='bass';$('#pRhythm').hidden=tab!=='rhythm';
+  $('#pKeys').hidden=tab!=='keys';$('#pStrings').hidden=tab!=='strings';$('#pBass').hidden=tab!=='bass';$('#pRhythm').hidden=tab!=='rhythm';
   const line=function(el,k){const v=soundOf(k);el.innerHTML='';
     const t=document.createElement('span');t.textContent='Sound';el.appendChild(t);
     const b=document.createElement('b');b.textContent=v?v.name:'Basic synth';el.appendChild(b);
