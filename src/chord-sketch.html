@@ -483,6 +483,9 @@ body.kbd-open:not(.kstep)::after{content:''; position:fixed; inset:0; z-index:6;
 .crow .seg.cs button{height:30px; width:40px; flex:none; padding:0; font-size:10.5px; white-space:nowrap}
 .crow .seg.su button{width:34px}
 .crow .pill.smt{height:30px; flex:none; width:68px; white-space:nowrap; padding:0; font-size:11px}
+#pKeys .crow .seg.cs{display:flex; flex:1 1 auto; min-width:0; justify-self:stretch}
+#pKeys .crow .seg.cs button{flex:1 1 0; width:auto; min-width:0}
+#pKeys .crow .pill.smt{width:58px}
 .cr{display:flex; align-items:center; gap:6px; min-width:0}
 .cv{flex:none; width:48px; text-align:right; font-size:12px; font-weight:700; color:var(--dim)}
 /* sliders: a fader in a dark groove, a cap with a coloured centre line, a scale of ticks underneath */
@@ -970,7 +973,6 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       <div class="cbox lv3">
       <div class="kitrow" id="dkitRow"><div class="seg cs" id="dkitSeg" role="group" aria-label="Kit"></div></div>
       <div class="chips cchips" id="rhyChips"></div>
-      <div class="crow" id="rhyEditRow" hidden><span class="hint" style="margin:0">Your own step pattern.</span><button class="btn" id="rhyEdit" type="button">Edit</button></div>
       </div>
       <p class="hint" id="rhyHint"></p>
       </div>
@@ -1136,7 +1138,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.3</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.4</p>
   </div>
 </section>
 
@@ -1404,7 +1406,7 @@ const Core=(function(){
 
   /* Accompaniment styles. Grid styles ([cell on a 16th grid, kind, length in 16ths, velocity factor]) are 4/4 only; others fall back to Beat.
      Kinds: C chord, D/U strum down/up, N<k> one chord tone an octave up. Arpeggios index the chord tones (k>=n = next octave) per 8th step. */
-  const COMPS=[['hold','Block','Classic'],['beat','Beat','Classic'],['eighth','8th','Classic'],['stac8','Staccato 8ths','Classic'],['pop','Pop stabs','Classic'],['ballad','Ballad arp','Classic'],['arpup','Arp up','Classic'],['arpud','Arp up-down','Classic'],['alberti','Alberti','Classic'],['offbeat','Offbeat','Classic'],['funk','Funk stabs','Classic'],['pad','Pad','Classic'],['waltz','Waltz','Classic'],['bossa','Bossa comp','Classic'],['gospel','Gospel','Classic'],
+  const COMPS=[['hold','Block','Classic'],['beat','Beat','Classic'],['eighth','8th','Classic'],['stac8','Staccato 8ths','Classic'],['pop','Pop stabs','Classic'],['ballad','Ballad arp','Classic'],['arpup','Arp up','Classic'],['arpud','Arp up-down','Classic'],['alberti','Alberti','Classic'],['offbeat','Offbeat','Classic'],['funk','Funk stabs','Classic'],['waltz','Waltz','Classic'],['bossa','Bossa comp','Classic'],['gospel','Gospel','Classic'],
     ['kballad','K-ballad piano','Modern'],['antic','Anticipation','Modern'],['citypop','City pop','Modern'],['rnbstab','R&B stabs','Modern'],['hiphop','Hip-hop keys','Modern'],['lofi','Lo-fi keys','Modern'],['pluck16','Pluck 16th','Modern'],['housep','House piano','Modern'],['gate','Trance gate','Modern'],['arp16','Arp 16th','Modern'],['synth16','Synth arp','Modern'],['rolled','Rolled chords','Modern'],
     ['charleston','Charleston','Jazz / Soul'],['jazzcomp','Jazz comping','Jazz / Soul'],['neosoul','Neo-soul','Jazz / Soul'],['rhodes','Rhodes sustain','Jazz / Soul'],['shell','Shell voicing','Jazz / Soul'],
     ['strum','Folk strum','Acoustic'],['strum8','Strum 8th','Acoustic'],['strum16','Strum 16th','Acoustic'],['balstrum','Ballad strum','Acoustic'],['finger','Fingerpick','Acoustic'],['travis','Travis pick','Acoustic'],['boomchick','Boom-chick','Acoustic'],
@@ -1428,7 +1430,7 @@ const Core=(function(){
     strum:[[0,'D',4,1],[4,'D',2,.8],[6,'U',2,.75],[10,'U',2,.75],[12,'D',3,.9],[14,'U',2,.75]],
     bossa:[[0,'C',3,1],[3,'C',3,.85],[6,'C',4,.9],[10,'C',2,.85],[12,'C',3,.9]],
     gospel:[[0,'C',4,1],[4,'N1',2,.7],[6,'N2',2,.7],[8,'C',4,.95],[12,'N2',2,.7],[14,'N1',2,.6]],
-    kballad:[[0,'L0',8,.85],[0,'T',8,.62],[2,'L1',6,.6],[4,'L2',4,.66],[6,'L3',2,.6],[8,'L0',8,.78],[8,'T',8,.58],[10,'L1',6,.58],[12,'L2',4,.64],[14,'L3',2,.58]],
+    kballad:[[0,'L0',8,.85],[0,'T',8,.62],[2,'L1',6,.6],[4,'L2',4,.66],[6,'L3',2,.6],[8,'L0',8,.7],[8,'T',8,.5],[10,'L1',6,.56],[12,'L2',4,.62],[14,'L3',2,.58]],
     antic:[[0,'C',5,1],[6,'C',2,.85],[10,'C',3,.9],[14,'>C',3,.95]],
     citypop:[[0,'C',2,1],[3,'C',2,.75],[5,'T',1,.6],[6,'C',2,.9],[10,'C',2,.85],[12,'T',1,.7],[14,'>C',2,.9]],
     rnbstab:[[0,'C',2,1],[3,'T',1,.7],[6,'C',2,.85],[10,'T',2,.75],[13,'C',2,.8]],
@@ -2453,14 +2455,15 @@ const Core=(function(){
       const c=o.chords&&o.chords[i];
       q.chords.push(c==null?null:(Number.isInteger(c)&&((c>=0&&c<=111)||validX(c))?c:null));
     }
-    q.comp=COMP_IDS.indexOf(o.comp)>=0?o.comp:'beat';
+    const wasPad=o.comp==='pad';
+    q.comp=wasPad?'hold':COMP_IDS.indexOf(o.comp)>=0?o.comp:'beat';
     q.inst=GUITAR[q.comp]||(o.inst==='guitar'&&GSHARED[q.comp]!=null)?'guitar':'keys';
     q.voic=['close','open','spread'].indexOf(o.voic)>=0?o.voic:'close';
     q.inv=!!o.inv;
     q.strum=clamp(o.strum==null?0:o.strum,0,60);
     q.bpat=BPATS.indexOf(o.bpat)>=0?o.bpat:'root';
     q.bkind=KIND_PATCH[o.bkind]!=null&&BASS_BY_KIND[o.bkind].indexOf(q.bpat)>=0?o.bkind:bassKind(q.bpat);
-    q.str=STR_IDS.indexOf(o.str)>=0?o.str:'off';q.srng=STR_REG[o.srng]?o.srng:'mid';
+    q.str=STR_IDS.indexOf(o.str)>=0?o.str:'off';if(wasPad&&q.str==='off')q.str='pad';q.srng=STR_REG[o.srng]?o.srng:'mid';
     q.swing=clamp(o.swing==null?0:o.swing,0,100);
     q.swu=o.swu==='16'?'16':'8';
     q.color=['off','add9','sus','69','nine'].indexOf(o.color)>=0?o.color:'off';
@@ -3971,8 +3974,7 @@ function renderRhythm(){
     const b=document.createElement('button');b.type='button';b.className='pill';b.textContent=d[1];b.dataset.p=d[0];
     b.setAttribute('aria-pressed',d[0]===U.dpat?'true':'false');host.appendChild(b);
   });
-  $('#rhyEditRow').hidden=U.dpat!=='custom';
-  $('#rhyHint').textContent=U.drum?(ty==='perc'?'Hand percussion instead of a drum kit.':''):'Drums are off: turn them on with the drum button beside BPM.';
+  $('#rhyHint').textContent=U.drum?(U.dpat==='custom'?'Your own step pattern. Tap My pattern again to edit it.':ty==='perc'?'Hand percussion instead of a drum kit.':''):'Drums are off: turn them on with the drum button beside BPM.';
 }
 function pickPat(id){
   /* swing patterns come with 60% swing (on 8ths) */
@@ -3997,7 +3999,7 @@ $('#dtypeSeg').addEventListener('click',function(e){
   U.dtype=b.dataset.dt;
   if(U.dpat==='custom'||Core.dtypeOf(U.dpat)!==b.dataset.dt){edit(function(){P.dkit=null;});pickPat(lastPat[b.dataset.dt]);}
 });
-$('#rhyEdit').addEventListener('click',function(){if(window.__dOpen)window.__dOpen(true);});
+
 $('#bpmDown').addEventListener('click',function(){setBpm(P.bpm-1);});
 $('#bpmUp').addEventListener('click',function(){setBpm(P.bpm+1);});
 $('#bpmVal').addEventListener('change',function(e){setBpm(e.target.value);});
