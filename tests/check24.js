@@ -20,8 +20,8 @@ assert.strictEqual(aStruck.length,4-shared.length);
 shared.forEach(m=>{const e=cStruck.filter(x=>x.midi===m)[0];assert(e&&e.dur>7,'held '+m);});
 assert.strictEqual(Core.strPatch('pizz'),45);
 console.log('strings ok',L.map(e=>e.t+':'+e.midi).join(' '));
-// legato and inner lines: four voices sound on every beat (held notes chain across chords), inner lines adds
-// a suspension somewhere, never two in a row, and stays in range
+// legato and inner lines: four voices sound on every beat (held notes chain across chords), inner lines keeps
+// the inner voices moving with chord tones on strong beats, and stays in range
 {['legato','lines'].forEach(function(st){
   const p=Core.defaults();Core.applyStyle(p,'pad');p.str=st;p.bass=false;
   const prog=[0,10,6,8,0,4,6,8];p.chords=[];prog.forEach(c=>{for(let i=0;i<4;i++)p.chords.push(c)});p.bars=8;
@@ -29,7 +29,11 @@ console.log('strings ok',L.map(e=>e.t+':'+e.midi).join(' '));
   for(let s=0;s<p.chords.length*M.sps;s++)Core.eventsAt(p,s).forEach(e=>{if(e.k==='s')ev.push({t:s*0.5+(e.off||0),m:e.midi,d:e.dur});});
   for(let b=0;b<32;b++){const t=b+0.5, n=ev.filter(e=>e.t<=t&&e.t+e.d>t).length;assert.strictEqual(n,4,st+' voices at beat '+b+': '+n);}
   ev.forEach(e=>assert(e.m>=36&&e.m<=84,st+' range '+e.m));
-  const late=ev.filter(e=>e.t%4!==0).map(e=>Math.floor(e.t/4));
-  if(st==='lines'){assert(late.length>0,'no suspension');for(let i=1;i<late.length;i++)assert(late[i]-late[i-1]>1,'two suspensions in a row');}
-  else assert.strictEqual(late.length,0);
+  const late=ev.filter(e=>e.t%4!==0);
+  if(st==='lines'){
+    // the inner voices move on most beats; on beats 1 and 3 every sounding string note is a tone of the chord
+    assert(late.length>=16,'too little movement '+late.length);
+    for(let b=0;b<32;b+=2){const inf=Core.chordInfo(p.chords[b],0,'major'), pcs=inf.tones.slice(0,inf.sev?4:3).map(x=>x%12);
+      ev.filter(e=>e.t===b).forEach(e=>assert(pcs.indexOf(e.m%12)>=0,'non-chord tone on a strong beat '+e.m+' at '+b));}
+  }else assert.strictEqual(late.length,0);
 });console.log('strings lines ok');}

@@ -1138,7 +1138,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.4</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.5</p>
   </div>
 </section>
 
@@ -1573,24 +1573,53 @@ const Core=(function(){
     if(Object.keys(strMemo).length>200)Object.keys(strMemo).forEach(function(k){delete strMemo[k];});
     strMemo[key]=out;return out;
   }
-  /* Inner lines for the chord that starts on beat b: sus = the voice that holds the previous chord's note over the
-     first beat and then steps down (a 4-3 or 9-8 kind of suspension; or up a half step into a leading-tone resolution);
-     pass = {i, x}: the voice that leaves a third for the next chord walks through the scale note between on the last beat.
-     Only inner and top voices, one of each per chord, only when the chord lasts two beats or more, and never two
-     suspensions in a row (noSus: the chord before had one). */
-  function linesPlan(p,SC,b,noSus){
-    const ch=p.chords, V=SC[b];if(!V||b<0||b>=ch.length)return null;
-    let e=b+1;while(e<ch.length&&ch[e]===ch[b])e++;const n=e-b;if(n<2)return {sus:-1,pass:null};
-    const PV=b>0&&ch[b-1]!==ch[b]?SC[b-1]:null, NV=e<ch.length?SC[e]:null;let sus=-1, pass=null;
-    if(PV&&!noSus){[2,1,3].some(function(i){const d=V[i]-PV[i];if((d===-1||d===-2)&&V.indexOf(PV[i])<0&&PV.indexOf(V[i])<0){sus=i;return true;}return false;});
-      if(sus<0)[2,1].some(function(i){if(V[i]-PV[i]===1&&V.indexOf(PV[i])<0&&PV.indexOf(V[i])<0){sus=i;return true;}return false;});}
-    if(NV&&(sus<0||n>=3)){
-      const sc=[0,1,2,3,4,5,6].map(function(d){return ((p.key+tone(p.scale,d,0))%12+12)%12;});
-      [2,1,3].some(function(i){if(i===sus)return false;const a=V[i], c=NV[i], d=c-a;if(Math.abs(d)<3||Math.abs(d)>4||NV.indexOf(a)>=0)return false;
-        for(let x=Math.min(a,c)+1;x<Math.max(a,c);x++)if(sc.indexOf(((x%12)+12)%12)>=0&&Math.abs(x-a)<=2&&Math.abs(c-x)<=2&&V.indexOf(x)<0){pass={i:i,x:x};return true;}
-        return false;});
+  /* Inner lines: the alto keeps moving, one note a beat, and the tenor moves every two beats, while the outer voices
+     hold. A line is chosen by searching every path through the chord: strong beats (1 and 3) take chord tones, a weak
+     beat may take a scale note between two steps (a passing or neighbour note), repeated notes and leaps cost more,
+     each voice stays between its neighbours, and the last note leads by step into the next chord's note for that voice.
+     line(cands per slot, start pitch, target or null) -> pitches */
+  function bestLine(cands,start,target){
+    const n=cands.length;if(!n)return [];
+    let layer=[{m:start,c:0,from:-1,nct:false}];const hist=[layer];
+    const step=function(a,b,nct){const d=Math.abs(a.m-b);if((a.nct||nct)&&d>2)return Infinity;
+      return d===0?3:d<=2?0:d<=4?1:d<=7?3:Infinity;};
+    for(let k=1;k<n;k++){
+      const nx=cands[k].map(function(o){let best=null;layer.forEach(function(st,j){const c=st.c+step(st,o.m,o.nct);if(c<Infinity&&(!best||c<best.c))best={m:o.m,c:c,from:j,nct:o.nct};});return best;}).filter(Boolean);
+      if(!nx.length)return null;layer=nx;hist.push(layer);
     }
-    return {sus:sus,pass:pass};
+    let end=null;layer.forEach(function(st,j){let c=st.c;if(target!=null){const d=Math.abs(st.m-target);if(st.nct&&d>2)return;c+=d===0?2:d<=2?0:d<=4?1:3;}if(!end||c<end.c)end={c:c,j:j};});
+    if(!end)return null;
+    const out=new Array(n);let j=end.j;for(let k=n-1;k>=0;k--){out[k]=hist[k][j].m;j=hist[k][j].from;}
+    return out;
+  }
+  function innerLines(p,SC,spans){
+    const M=meter(p), sc=[0,1,2,3,4,5,6].map(function(d){return ((p.key+tone(p.scale,d,0))%12+12)%12;});
+    const alto={}, ten={};
+    spans.forEach(function(sp,k){
+      const V=SC[sp.s], info=chordInfo(p.chords[sp.s],p.key,p.scale), n=sp.e-sp.s;
+      const ct=info.tones.slice(0,info.sev?4:3).map(function(x){return ((p.key+x)%12+12)%12;});
+      const nxt=k+1<spans.length&&spans[k+1].s===sp.e?SC[spans[k+1].s]:null;
+      /* alto: one note a beat */
+      const ac=[];
+      for(let b=sp.s;b<sp.e;b++){
+        const strong=(b%M.bpb)%2===0, o=[];
+        for(let m=V[1]+1;m<V[3];m++){const pc=((m%12)+12)%12;if(Math.abs(m-V[2])>7)continue;
+          if(ct.indexOf(pc)>=0)o.push({m:m,nct:false});else if(!strong&&sc.indexOf(pc)>=0)o.push({m:m,nct:true});}
+        ac.push(b===sp.s?[{m:V[2],nct:false}]:o);
+      }
+      alto[sp.s]=n>1?(bestLine(ac,V[2],nxt?nxt[2]:null)||null):null;
+      /* tenor: every two beats, chord tones only, below the alto */
+      if(n>=3){
+        const tc=[];
+        for(let b=sp.s;b<sp.e;b+=2){
+          const top=Math.min.apply(null,(alto[sp.s]||[V[2]]).slice(b-sp.s,b-sp.s+2)), o=[];
+          for(let m=V[0]+1;m<top;m++){const pc=((m%12)+12)%12;if(Math.abs(m-V[1])<=5&&ct.indexOf(pc)>=0)o.push({m:m,nct:false});}
+          tc.push(b===sp.s?[{m:V[1],nct:false}]:o);
+        }
+        ten[sp.s]=bestLine(tc,V[1],nxt?nxt[1]:null)||null;
+      }
+    });
+    return {alto:alto,ten:ten};
   }
   /* the legato / inner-lines strings for the whole slot, as notes: {b: the beat whose step sounds it, o: offset in
      beats from there, m: pitch, d: length in beats, v: velocity factor} */
@@ -1599,17 +1628,14 @@ const Core=(function(){
     const ch=p.chords, key=ch.join(',')+'|'+p.key+p.scale+reg+(lines?'L':'');if(strPMemo[key])return strPMemo[key];
     const SC=strChain(p,reg), spans=[];
     for(let b=0;b<ch.length;){if(ch[b]==null){b++;continue;}let e=b+1;while(e<ch.length&&ch[e]===ch[b])e++;spans.push({s:b,e:e});b=e;}
-    const out=[], plans=[];
-    if(lines)spans.forEach(function(sp,k){const pr=plans[k-1];plans.push(linesPlan(p,SC,sp.s,!!(pr&&pr.sus>=0&&spans[k-1].e===sp.s)));});
+    const out=[], IL=lines?innerLines(p,SC,spans):null;
     for(let i=0;i<4;i++){
       const seg=[];
-      spans.forEach(function(sp,k){
-        const m=SC[sp.s][i], LP=lines?plans[k]:null, prev=seg[seg.length-1];
-        let s0=sp.s, v=i===0?0.95:0.85;
-        if(LP&&LP.sus===i&&prev&&prev.e===sp.s){prev.e+=1;s0+=1;v=0.8;}
-        const pass=LP&&LP.pass&&LP.pass.i===i&&k+1<spans.length&&spans[k+1].s===sp.e;
-        seg.push({s:s0,e:pass?sp.e-1:sp.e,m:m,v:v});
-        if(pass)seg.push({s:sp.e-1,e:sp.e,m:LP.pass.x,v:0.75});
+      spans.forEach(function(sp){
+        const m=SC[sp.s][i], v=i===0?0.95:0.85, L=IL&&(i===2?IL.alto[sp.s]:i===1?IL.ten[sp.s]:null);
+        if(!L){seg.push({s:sp.s,e:sp.e,m:m,v:v});return;}
+        const len=i===2?1:2;
+        L.forEach(function(x,k){seg.push({s:sp.s+k*len,e:Math.min(sp.e,sp.s+(k+1)*len),m:x,v:k?0.78:v});});
       });
       /* tie a note into the next one of the same pitch */
       const merged=[];seg.forEach(function(g){const l=merged[merged.length-1];if(l&&l.e===g.s&&l.m===g.m)l.e=g.e;else merged.push(Object.assign({},g));});
@@ -2509,9 +2535,9 @@ const Core=(function(){
       if(Array.isArray(t.tm)&&t.tm.length&&t.tm.length<=66){const tm=[];t.tm.forEach(function(x){if(Array.isArray(x)&&x.length===2&&isFinite(x[0])&&isFinite(x[1]))tm.push([clamp(x[0],0,256*MB.bar),clamp(x[1],40,200)]);});tm.sort(function(a,b){return a[0]-b[0];});if(tm.length)q.tm=tm;}
       p.takes.push(q);
     });
-    /* mixer: fader 0..100 per channel (75 = 0 dB), mute, solo; reverb 0..100; master fader */
+    /* mixer: fader 0..100 per channel (75 = 0 dB), mute, solo; reverb 0..100; master fader. Strings start at 57 (about -6 dB). */
     const mx=o.mix&&typeof o.mix==='object'?o.mix:{};
-    p.mix={};['m','a','c','b','d','s'].forEach(function(k){const c=mx[k]&&typeof mx[k]==='object'?mx[k]:{};p.mix[k]={v:c.v==null?75:clamp(Math.round(+c.v),0,100),mu:!!c.mu,so:!!c.so};});
+    p.mix={};['m','a','c','b','d','s'].forEach(function(k){const c=mx[k]&&typeof mx[k]==='object'?mx[k]:{};p.mix[k]={v:c.v==null?(k==='s'?57:75):clamp(Math.round(+c.v),0,100),mu:!!c.mu,so:!!c.so};});
     p.mix.rev=mx.rev==null?35:clamp(Math.round(+mx.rev),0,100);p.mix.mst=mx.mst==null?75:clamp(Math.round(+mx.mst),0,100);
     /* how many recordings each place has had (names never reuse a number) */
     p.recN={};if(o.recN&&typeof o.recN==='object')Object.keys(o.recN).slice(0,500).forEach(function(k){const v=Math.round(+o.recN[k]);if(k.length<=60&&v>0&&v<100000)p.recN[k]=v;});
@@ -3842,7 +3868,7 @@ function partNotch(){
 }
 window.addEventListener('resize',function(){partNotch();});
 /* Strings tab: a part on top of the keys or guitar; the switch keeps the last style for turning it back on */
-const STR_HINT={pad:'Sustained chords under the song.',legato:'Four voices (cello to violin), each moving to the nearest note of the next chord; shared notes are held over.',lines:'Like 4-part legato, and one voice moves on its own: it holds the old chord\'s note over the first beat, then steps into the new chord (or walks through a scale note on the last beat).',pizz:'Plucked quarter notes.',trem:'Fast bowing on held chords, for tension and build-ups.',oct:'The top voice in octaves, high and held (violins).'};
+const STR_HINT={pad:'Sustained chords under the song.',legato:'Four voices (cello to violin), each moving to the nearest note of the next chord; shared notes are held over.',lines:'Four voices where the inner ones keep moving: the alto walks a note a beat (chord tones on 1 and 3, passing notes between), the tenor moves every two beats; the outer voices hold.',pizz:'Plucked quarter notes.',trem:'Fast bowing on held chords, for tension and build-ups.',oct:'The top voice in octaves, high and held (violins).'};
 let lastStr='pad';
 function pickStr(id){edit(function(){P.str=id;});if(id!=='off'){lastStr=id;if(!playing){strAuto(id);Aud.ensure();Aud.audition('s');}}}
 function renderStrings(){
