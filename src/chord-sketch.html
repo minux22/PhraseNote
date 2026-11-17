@@ -91,6 +91,46 @@ h1::before{content:'♪'; display:inline-flex; align-items:center; justify-conte
 .tgl{width:30px; height:30px; border-radius:50%; border:1px solid var(--line); background:var(--panel-2); color:var(--dim); display:grid; place-items:center; padding:0; flex:none}
 .tgl svg{display:block}
 #drumBtn{width:46px; height:36px; border-radius:11px}
+/* ---- landscape editing (phone sideways, Melody track in Roll or Staff): left rail + full-height piano roll ---- */
+.lrail,.lrmenu{display:none}
+@media (orientation:landscape) and (max-height:520px){
+  body.tab-edit{padding:0 6px 0 calc(52px + env(safe-area-inset-left,0px))}
+  body.tab-edit .lrail{display:flex; flex-direction:column; align-items:center; gap:2px; position:fixed; z-index:9; left:0; top:0; bottom:0;
+    width:calc(48px + env(safe-area-inset-left,0px)); padding:4px 0 4px env(safe-area-inset-left,0px); overflow-y:auto; background:var(--bg-2); border-right:1px solid var(--line)}
+  body.tab-edit .lr{width:38px; height:30px; flex:none; display:grid; place-items:center; padding:0; border:0; border-radius:8px; background:transparent; color:var(--text); font-size:20px; line-height:1}
+  body.tab-edit .lr svg{width:20px; height:20px}
+  /* no dock in landscape: Continue and the zoom buttons sit on the bottom edge of the roll */
+  body.tab-edit .zoom,body.tab-edit .cont{bottom:env(safe-area-inset-bottom, 0px)}
+  body.tab-edit.kbd-open .zoom,body.tab-edit.kbd-open .cont{bottom:calc(var(--kbdh,150px) + env(safe-area-inset-bottom, 0px))}
+  body.tab-edit .zoom .zb,body.tab-edit .contb{bottom:8px}
+  body.tab-edit .lr[data-lr="smart"]{font-size:10px; font-weight:800; letter-spacing:.02em}
+  body.tab-edit .lr[data-lr="smart"][aria-pressed="true"]{background:var(--mel); color:var(--mel-ink)}
+  body.tab-edit .lr[data-lr="keys"] svg{width:28px; height:16px}
+  body.tab-edit .lr[hidden]{display:none}
+  body.tab-edit .lr[aria-pressed="true"]{background:var(--ctl); color:var(--ctl-ink)}
+  body.tab-edit .lr[data-lr="drum"][aria-pressed="false"]{opacity:.45}
+  body.tab-edit .lr:disabled{opacity:.3}
+  body.tab-edit .lrplay{background:var(--ctl); color:var(--ctl-ink); border-radius:50%; width:34px; height:34px}
+  body.tab-edit .lrplay.on{background:var(--rec); color:#fff}
+  body.tab-edit .lrsep{flex:none; width:24px; height:1px; background:var(--line); margin:2px 0}
+  body.tab-edit .lrmenu:not([hidden]){display:flex; flex-direction:column; gap:4px; position:fixed; z-index:11; left:calc(54px + env(safe-area-inset-left,0px)); bottom:6px;
+    min-width:190px; padding:6px; border:1px solid var(--line); border-radius:12px; background:var(--panel); box-shadow:0 8px 24px rgba(0,0,0,.25)}
+  body.tab-edit .lrmenu button{min-height:36px; padding:0 10px; display:flex; align-items:center; gap:8px; justify-content:space-between;
+    border:0; border-radius:8px; background:transparent; color:var(--text); font-size:14px; font-weight:700; text-align:left}
+  body.tab-edit .lrmenu button:active{background:var(--panel-2)}
+  body.tab-edit .wrap{max-width:none; gap:4px}
+  body.tab-edit header, body.tab-edit .bar, body.tab-edit .pair, body.tab-edit .tabs, body.tab-edit .dock,
+  body.tab-edit #rollCtl .tgrp,
+  body.tab-edit #melOpts, body.tab-edit #melHint{display:none!important}
+  body.tab-edit #staffCtl .sttool{display:none!important}
+  body.tab-edit #staffCtl .stgrid{grid-template-columns:repeat(9,1fr)}
+  body.tab-edit #panelMelody .panel{flex-direction:row; flex-wrap:wrap; align-items:center; gap:6px; padding:4px 6px; margin-top:4px; border-radius:10px}
+  body.tab-edit #rollCtl, body.tab-edit #staffCtl{flex:1; min-width:0}
+  body.tab-edit #rollCtl .opts{gap:6px; flex-wrap:nowrap}
+  body.tab-edit #rollCtl select, body.tab-edit #staffCtl select{height:28px}
+  body.tab-edit .kbd{bottom:0; left:calc(48px + env(safe-area-inset-left,0px))}
+  body.tab-edit .sheet{bottom:0; left:calc(48px + env(safe-area-inset-left,0px))}
+}
 #drumBtn svg{width:25px; height:25px}
 .plist{max-height:60vh; overflow:auto; display:flex; flex-direction:column; gap:2px; margin:0 -4px}
 .plist .gh{font-size:10px; letter-spacing:.06em; text-transform:uppercase; color:var(--mint); padding:8px 6px 2px}
@@ -186,8 +226,6 @@ select{font:inherit; font-size:13px; height:32px; border:1px solid var(--line); 
 #staffCtl .opts+.slide.open+.opts{margin-top:0}
 .slide.open{margin-top:0}
 #staffCtl .seg.big button{height:36px}
-#stEdit .ns button{height:34px}
-#stEdit .delb{height:36px}
 #panelMelody .qbox{margin-top:6px}
 .pill{height:26px; padding:0 10px; border-radius:999px; border:1px solid var(--line); background:var(--panel-2); font-size:12px; color:var(--dim)}
 .pill[aria-pressed="true"]{background:var(--blue); border-color:var(--blue); color:var(--on-blue); font-weight:700}
@@ -610,6 +648,20 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 .roll:not([data-tool="pan"]) .nt::after{content:""; position:absolute; right:0; top:0; bottom:0; width:5px; border-radius:0 6px 6px 0; background:rgba(0,0,0,.2)}
 .nt.hot{outline:2px solid var(--text); outline-offset:1px}
 .nt.sl{outline:2px solid var(--text); outline-offset:1px; filter:brightness(1.15)}
+/* the backing (chords, bass, strings) under the melody, faint, so the melody can be written against it */
+.nt.bk{background:var(--chord); opacity:.28; box-shadow:none; pointer-events:none; border-radius:3px}
+.nt.bk::after{display:none}
+#rollCtl .tgrp{flex:none; display:flex; align-items:center}
+#stWrap{-webkit-user-select:none; user-select:none}
+.selpop{position:absolute; z-index:6; display:flex; flex-wrap:nowrap; gap:2px; padding:4px; border:1px solid var(--line); border-radius:14px; background:var(--panel); box-shadow:0 6px 18px rgba(0,0,0,.22); white-space:nowrap}
+.selpop[hidden]{display:none}
+.selpop button{height:42px; min-width:58px; padding:0 12px; border:0; border-radius:10px; background:transparent; color:var(--text); font-size:15px; font-weight:700}
+.selpop button + button{border-left:1px solid var(--line); border-radius:0}
+.selpop button:first-child{border-radius:10px 0 0 10px}
+.selpop button:last-child{border-radius:0 10px 10px 0}
+.selpop button:active{background:var(--panel-2)}
+.selpop button:disabled{opacity:.35}
+.selpop .sp-del{color:#ff5d50}
 .selbox{position:absolute; border:1.5px dashed var(--text); background:color-mix(in srgb,var(--text) 10%,transparent); pointer-events:none; z-index:3}
 .selbar{display:grid; grid-template-columns:repeat(5,1fr); gap:5px; margin-top:6px}
 .selbar[hidden]{display:none}
@@ -635,37 +687,29 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 #toolSeg2 button{display:flex; align-items:center; justify-content:center}
 #toolSeg2{display:flex; width:100%}
 #toolSeg2 button{flex:1; padding:0}
-.stgrid{flex:1; min-width:0; display:grid; grid-template-columns:repeat(3,1fr); gap:5px; padding:6px; border:1.5px solid var(--line); border-radius:14px; background:var(--panel)}
+.stgrid{flex:1; min-width:0; display:grid; grid-template-columns:repeat(6,1fr); gap:5px; padding:6px; border:1.5px solid var(--line); border-radius:14px; background:var(--panel)}
 .stgrid .seg{display:contents}
 /* tablets and desktops: the tool box takes half the row in Roll and Staff; the device list does not stretch */
 @media (min-width:480px){
   #rollCtl .opts.flush{display:grid; grid-template-columns:calc(50% - 7px) 1fr 1fr; gap:8px 14px}
   #rollCtl .field{justify-content:flex-end}
   #rollCtl .field select{flex:1; max-width:110px}
-  .stbox{display:grid; grid-template-columns:calc(50% - 7px) 1fr; gap:14px; align-items:end}
-  .stl{width:auto; margin-bottom:6px}
   #toolSeg2 button{height:32px}
   #recDev{flex:0 0 calc(50% - 12px)}  /* Calibrate lines up with the Pickup switch above */
 }
-#staffCtl .stgrid button{height:32px; padding:0; border:1px solid var(--line); border-radius:10px; background:var(--panel-2); color:var(--text); font-size:18px; display:grid; place-items:center}
-#staffCtl .stgrid button.on{background:var(--blue); border-color:var(--blue); color:var(--on-blue)}
+#staffCtl .stgrid button:not(.tg){height:32px; padding:0; border:1px solid var(--line); border-radius:10px; background:var(--panel-2); color:var(--text); font-size:18px; display:grid; place-items:center}
+#staffCtl .stgrid .sttool{grid-column:span 3; justify-self:start; align-self:center}
+/* Smart tool switch: a dark outlined chip so it stands out (Roll and Staff) */
+.smchip{display:inline-flex; align-items:center; gap:8px; height:32px; padding:0 5px 0 11px; border:1.5px solid color-mix(in srgb,var(--panel-2) 72%,var(--text)); border-radius:999px; background:var(--panel-2); cursor:pointer; -webkit-tap-highlight-color:transparent; box-sizing:border-box}
+.smchip .lbl,#staffCtl .smchip .lbl{font-size:10px; letter-spacing:0; white-space:nowrap; color:var(--dim); margin:0}
+.smchip .tg,#staffCtl .stgrid .smchip .tg{margin:0; flex:none; width:40px; height:22px; min-width:0; border-color:color-mix(in srgb,var(--text) 25%,transparent)}
+#staffCtl .stgrid button.on:not(.tg){background:var(--blue); border-color:var(--blue); color:var(--on-blue)}
 #staffCtl .stgrid button svg{width:16px; height:24px}
 .slide{display:grid; grid-template-rows:0fr; opacity:0; transition:grid-template-rows .26s ease, opacity .2s ease, margin .26s ease; margin-top:0}
 .slide>div{overflow:hidden; min-height:0}
 .slide.open{grid-template-rows:1fr; opacity:1; margin-top:12px}
 #staffCtl .opts+.slide.open+.opts{margin-top:8px}
-#stEdit{flex-direction:row; align-items:center; flex-wrap:nowrap; gap:8px; position:relative; margin:8px 0 0; padding:7px; border:1.5px solid var(--nudge); border-radius:14px; background:color-mix(in srgb,var(--nudge) 13%,var(--panel))}
-#stEdit::before{content:''; position:absolute; top:-8px; left:58px; width:14px; height:8px; background:var(--nudge); clip-path:polygon(50% 0,0 100%,100% 100%)}
-#stEdit .ns{border-color:color-mix(in srgb,var(--nudge) 55%,var(--line)); background:color-mix(in srgb,var(--nudge) 8%,var(--panel-2))}
-#stEdit .delb{border-color:color-mix(in srgb,var(--nudge) 55%,var(--line))}
-#stEdit .ns{flex:1; display:flex}
-#stEdit .ns button{flex:1; height:32px; padding:0; font-size:17px; color:var(--text); background:transparent; border:0; position:relative}
-#stEdit .ns button + button{border-left:1px solid var(--line)}
-#stEdit .delb{flex:none; width:54px; height:32px; border-radius:999px; border:1px solid var(--line); background:var(--panel-2); color:var(--text); font-size:14px}
-#stEdit button:disabled{opacity:.35}
-#stEdit button.nl{animation:nlit 1.1s ease-out}
 @keyframes nlit{0%{background:var(--nudge); color:var(--nudge-ink)}}
-@media (prefers-reduced-motion: reduce){#stEdit button.nl{animation:none}}
 .qbox{display:flex; flex-direction:column; gap:0; border-top:2px solid var(--mel); padding-top:6px}
 .qhead{display:flex; align-items:center; justify-content:space-between; width:100%; height:34px; padding:0 2px; border:0; background:transparent; color:var(--mel)}
 .qhead svg{transition:transform .25s ease}
@@ -869,6 +913,24 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 })();
 </script>
 
+<nav class="lrail" id="lrail" aria-label="Edit tools">
+  <button type="button" class="lr lrplay" data-lr="play" aria-label="Play"></button>
+  <button type="button" class="lr" data-lr="rew" aria-label="Back to the start"></button>
+  <button type="button" class="lr" data-lr="drum" aria-label="Drums" aria-pressed="false"></button>
+  <span class="lrsep"></span>
+  <button type="button" class="lr" data-lr="smart" aria-label="Smart tool (off: view only)" aria-pressed="true"></button>
+  <span class="lrsep"></span>
+  <button type="button" class="lr" data-lr="undo" aria-label="Undo"></button>
+  <button type="button" class="lr" data-lr="redo" aria-label="Redo"></button>
+  <button type="button" class="lr" data-lr="keys" aria-label="Keys" aria-pressed="false"></button>
+  <button type="button" class="lr" data-lr="mix" aria-label="Mixer"></button>
+  <button type="button" class="lr" data-lr="more" aria-label="More" aria-expanded="false">⋯</button>
+</nav>
+<div class="lrmenu" id="lrMenu" hidden>
+  <button type="button" data-lm="chord">Chord Track</button>
+  <button type="button" data-lm="view">Staff view</button>
+  <button type="button" data-lm="setup">Setup</button>
+</div>
 <div class="wrap">
   <header><h1>PhraseNote</h1></header>
 
@@ -987,7 +1049,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 
   <section id="panelMelody" role="tabpanel" aria-labelledby="tabMelody" hidden>
     <div class="panel">
-      <div class="ctl">
+      <div class="ctl" id="melOpts">
         <div class="mrow">
           <div class="mcol" style="flex:none"><span class="lbl">Mode</span><div class="seg mode3" id="viewSeg" role="group" aria-label="Mode"></div></div>
           <div class="mcol"><span class="lbl">Pickup</span><button type="button" class="tg" id="togPick" role="switch" aria-checked="false" aria-label="Pickup measure"></button></div>
@@ -996,7 +1058,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
         </div>
         <div id="rollCtl" class="ctl">
           <div class="opts flush">
-            <div class="grp tgrp"><div class="seg ic big" id="toolSeg"></div></div>
+            <div class="grp tgrp"><label class="smchip"><span class="lbl">Smart tool</span><button type="button" class="tg" id="toolSeg" role="switch" aria-checked="true" aria-label="Smart tool (off: view only)"></button></label></div>
             <label class="field"><span class="lbl">Len</span><select id="lenSel" aria-label="Length"></select></label>
             <label class="field"><span class="lbl">Snap</span><select id="snapSel" aria-label="Snap"></select></label>
           </div>
@@ -1008,18 +1070,8 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
         </div>
         <div id="staffCtl" class="ctl" hidden>
           <div class="stbox">
-            <div class="stl">
-              <div class="seg ic" id="toolSeg2"></div>
-            </div>
-            <div class="stgrid"><div class="seg" id="nvSeg"></div><div class="seg" id="dotSeg"></div><div class="seg" id="accSeg"></div></div>
+            <div class="stgrid"><div class="seg" id="nvSeg"></div><div class="seg" id="dotSeg"></div><label class="sttool smchip"><span class="lbl">Smart tool</span><button type="button" class="tg" id="toolSeg2" role="switch" aria-checked="true" aria-label="Smart tool (off: view only)"></button></label><div class="seg" id="accSeg"></div></div>
           </div>
-          <div class="slide" id="stSlide" inert><div>
-                <div class="opts flush" id="stEdit">
-                  <div class="seg ns"><button type="button" data-ed="semi+" aria-label="Raise a semitone">▲</button><button type="button" data-ed="semi-" aria-label="Lower a semitone">▼</button></div>
-                  <div class="seg ns"><button type="button" data-ed="left" aria-label="Move earlier by a 16th">◀</button><button type="button" data-ed="right" aria-label="Move later by a 16th">▶</button></div>
-                  <button class="delb" type="button" data-ed="del" aria-label="Delete selected note">Del</button>
-                </div>
-              </div></div>
         </div>
         <div id="recCtl" class="ctl" hidden>
           <div class="rrow"><select id="recDev" aria-label="Input"></select><button type="button" class="pill" id="recCal">Calibrate</button><span class="rlat" id="recLat"></span></div>
@@ -1037,11 +1089,12 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
         </div>
       </div>
       <div class="zwrap">
-      <div class="roll" id="roll" data-tool="pen" aria-label="Piano roll">
+      <div class="roll" id="roll" data-tool="smart" aria-label="Piano roll">
+        <div class="selpop" id="selPop" hidden><button type="button" data-sa="copy">Copy</button><button type="button" class="sp-paste" data-sa="paste">Paste</button><button type="button" data-sa="dup">Dup</button><button type="button" class="sp-del" data-sa="del">Del</button></div>
         <div class="rlane"><div class="rcorner"><span>BAR</span><span>CHORD</span></div><div class="rlp" id="rLaneP"></div></div>
         <div class="rbody"><div class="rkeys" id="rKeys"></div><div class="rplane" id="rPlane"></div></div>
       </div>
-      <div class="stwrap" id="stWrap" data-tool="pen" aria-label="Staff" hidden>
+      <div class="stwrap" id="stWrap" data-tool="smart" aria-label="Staff" hidden>
         <div class="stfix" id="stFix"></div>
         <div class="stmain" id="stMain"></div>
       </div>
@@ -1138,7 +1191,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.30.8</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.31.0</p>
   </div>
 </section>
 
@@ -2317,6 +2370,18 @@ const Core=(function(){
   /* a channel's starting fader: 0 dB, except Strings at -6 dB (75*(1-0.12^(2/3)) = 56.75) */
   const MIXDEF={m:75,a:75,c:75,b:75,d:75,s:56.75};
   function faderDb(v){if(v<=0)return -Infinity;if(v>=75)return (v-75)*12/25;return -50*Math.pow(1-v/75,1.5);}
+  /* the backing (keys or guitar, bass, strings) as notes in song ticks, for drawing under the melody: [{s,l,p,k}] */
+  function backNotes(p){
+    if(!p.form)p=normalize(p);
+    const M=meter(p), sps=M.bar/240, bars=Math.round(formTicks(p)/M.bar), out=[];
+    for(let s=0;s<bars*sps;s++){
+      const a=songAt(p,s);if(!a)continue;
+      eventsAt(a.view,a.local).forEach(function(e){
+        const t0=s*240+Math.round((e.off||0)*480);out.push({s:t0,l:Math.max(30,Math.round(e.dur*480)),p:e.midi,k:e.k});
+      });
+    }
+    return out;
+  }
   function buildMidi(p,dpat,o){
     o=o||{};const prog=Object.assign({c:4,b:33,m:80},o.prog||{});
     if(!p.form)p=normalize(p);
@@ -2809,7 +2874,7 @@ const Core=(function(){
   }
   return {SCALES:SCALES,SCALE_NAMES:SCALE_NAMES,KEY_NAMES:KEY_NAMES,chordInfo:chordInfo,voicing:voicing,
     noteName:noteName,bassNote:bassNote,notesFor:notesFor,
-    DTYPES:DTYPES,DKITS:DKITS,TKITS:TKITS,dtypeOf:dtypeOf,kitOf:kitOf,COMPS:COMPS,MIXDEF:MIXDEF,GSHARED:GSHARED,instP:instP,compsFor:compsFor,recipeOf:recipeOf,recipeDiff:recipeDiff,BASS_BY_KIND:BASS_BY_KIND,STRS:STRS,strPatch:strPatch,strVoicing:strVoicing,BASSES:BASSES,bassKind:bassKind,bassPatch:bassPatch,GUITAR:GUITAR,instOf:instOf,compPatch:compPatch,gtrVoicing:gtrVoicing,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,mkMap:mkMap,tempoMap:tempoMap,secAt:secAt,tickAt:tickAt,bpmAt:bpmAt,mapPairs:mapPairs,takeMap:takeMap,takeLen:takeLen,nextSection:nextSection,NEXT_ROLE:NEXT_ROLE,slotStats:slotStats,
+    DTYPES:DTYPES,DKITS:DKITS,TKITS:TKITS,dtypeOf:dtypeOf,kitOf:kitOf,COMPS:COMPS,backNotes:backNotes,MIXDEF:MIXDEF,GSHARED:GSHARED,instP:instP,compsFor:compsFor,recipeOf:recipeOf,recipeDiff:recipeDiff,BASS_BY_KIND:BASS_BY_KIND,STRS:STRS,strPatch:strPatch,strVoicing:strVoicing,BASSES:BASSES,bassKind:bassKind,bassPatch:bassPatch,GUITAR:GUITAR,instOf:instOf,compPatch:compPatch,gtrVoicing:gtrVoicing,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,mkMap:mkMap,tempoMap:tempoMap,secAt:secAt,tickAt:tickAt,bpmAt:bpmAt,mapPairs:mapPairs,takeMap:takeMap,takeLen:takeLen,nextSection:nextSection,NEXT_ROLE:NEXT_ROLE,slotStats:slotStats,
     POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM,suggestChords:suggestChords,guessKey:guessKey,rekey:rekey,recode:recode,SEC_IDS:SEC_IDS,ROLES:ROLES,SECF:SECF,normSec:normSec,copySec:copySec,secOf:secOf,curId:curId,storeCur:storeCur,loadCur:loadCur,layout:layout,formTicks:formTicks,secView:secView,secDrums:secDrums,songAt:songAt,melInsert:melInsert,melDelete:melDelete,melSlice:melSlice,melPaste:melPaste,resizeSec:resizeSec,xcode:xcode,isX:isX,xWith:xWith,extraPalette:extraPalette};
 })();
 
@@ -4135,6 +4200,7 @@ function doRandom(mode){
 
 function showTab(which){
   const chord=which==='chord';
+  setTimeout(landClass,0);
   $('#panelChord').style.display=chord?'flex':'none';
   $('#panelMelody').hidden=chord;
   if(!chord&&!rollInit){rollInit=true;fitRoll();centerRoll();}
@@ -4153,6 +4219,7 @@ let LOW=60, HIGH=76;
 const U={tool:'pen',snap:240,len:240,kbd:false,zoom:48,qGrid:120,qStr:100,qLen:true,view:'roll',nv:4,dot:false,acc:0,drum:false,dpat:'rock8',clk:60};
 try{const r=localStorage.getItem('phrasenote-ui');if(r)Object.assign(U,JSON.parse(r));}catch(e){}
 if(['pen','move','sel','pan'].indexOf(U.tool)<0)U.tool='pen';
+if(U.rtool!=='pan')U.rtool='smart';
 if([120,240,480,80,160,320].indexOf(U.snap)<0)U.snap=120;
 if([120,240,480,80,160,320].indexOf(U.len)<0)U.len=240;
 U.zoom=Math.max(ZMIN,Math.min(ZMAX,Math.round(+U.zoom||48)));
@@ -4170,6 +4237,10 @@ try{if(!localStorage.getItem('phrasenote-init-1')){U.view='roll';U.snap=240;U.le
 try{if(!localStorage.getItem('phrasenote-kst-g3')){U.kst=25;localStorage.setItem('phrasenote-kst-g3','1');}}catch(e){}
 U.kst=Math.max(7,Math.min(42,Math.round(+U.kst||25)));U.krq=[0,120,240,480].indexOf(+U.krq)<0?120:+U.krq;U.kmode=U.kmode==='step'?'step':'live';U.kcount=U.kcount!==false;U.lat=Math.max(0,Math.min(400,Math.round(+U.lat||0)));U.kbd=!!U.kbd;U.qopen=!!U.qopen;
 function saveU(){try{localStorage.setItem('phrasenote-ui',JSON.stringify(U));}catch(e){}}
+/* landscape editing: a phone on its side, on the Melody track in Roll or Staff (not Audio) */
+var LAND_MQ=window.matchMedia('(orientation:landscape) and (max-height:520px)');
+function landClass(){const mp=document.getElementById('panelMelody');document.body.classList.toggle('tab-edit',!!mp&&!mp.hidden&&U.view!=='rec');}
+function isLandEdit(){return LAND_MQ.matches&&document.body.classList.contains('tab-edit');}
 /* drums on/off and the pattern belong to the project; U keeps the last choice for projects saved before that */
 function setDrums(on,pat){U.drum=!!on;if(pat)U.dpat=pat;P.drum=U.drum;P.dpat=U.dpat;saveU();persist();}
 function drumsFromP(){
@@ -4181,6 +4252,7 @@ let rd=null, phEl=null, rollInit=false, holdFollow=0;
 const plane=$('#rPlane'), roll=$('#roll');
 const SV='<svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">';
 const ICO={
+  smart:'<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3l5.5 15 2.2-6.3L19 9.5z"/><path d="M17 15.5v5M14.5 18h5"/></svg>',
   pen:SV+'<path d="M21.2 6.8a1 1 0 0 0-4-4L3.8 16.2a2 2 0 0 0-.5.8L2 21.4a.5.5 0 0 0 .6.6l4.4-1.3a2 2 0 0 0 .8-.5z"/><path d="m15 5 4 4"/></svg>',
   move:SV+'<path d="M12 2v20M15 19l-3 3-3-3M19 9l3 3-3 3M2 12h20M5 9l-3 3 3 3M9 5l3-3 3 3"/></svg>',
   sel:SV+'<rect x="3.5" y="3.5" width="17" height="17" rx="2" stroke-dasharray="3 2.6"/><path d="M9 9h6v6H9z" fill="currentColor" stroke="none"/></svg>',
@@ -4218,16 +4290,11 @@ function noteIco(v){
   return g+'</svg>';
 }
 function renderMelOpts(){
-  /* Roll: Select also moves and resizes. Staff: Move (tap, drag, nudge buttons). */
-  if(U.view==='staff'&&U.tool==='sel'){U.tool='move';saveU();}
-  if(U.view!=='staff'&&U.tool==='move'){U.tool='sel';saveU();}
-  const rlTools=[['pen','Pen',ICO.pen],['sel','Select and move',ICO.sel],['pan','Pan (scroll)',ICO.hand]];
-  const stTools=[['pen','Pen',ICO.pen],['move','Select and move',ICO.sel],['pan','Pan (scroll)',ICO.hand]];
-  $('#selBar').hidden=!(U.view==='roll'&&U.tool==='sel');renderSelBar();
-  roll.dataset.tool=U.tool;$('#stWrap').dataset.tool=U.tool;
-  const setTool=function(v){U.tool=v;saveU();renderMelOpts();};
-  mkSeg($('#toolSeg'),rlTools,function(){return U.tool;},setTool);
-  mkSeg($('#toolSeg2'),stTools,function(){return U.tool;},setTool);
+  $('#selBar').hidden=true;
+  roll.dataset.tool=U.rtool;$('#stWrap').dataset.tool=U.rtool;
+  /* one tool for Roll and Staff: Smart edits, View only scrolls */
+  ['#toolSeg','#toolSeg2'].forEach(function(q){$(q).setAttribute('aria-checked',U.rtool==='smart'?'true':'false');});
+  landClass();
   mkSeg($('#viewSeg'),[['roll','Roll'],['staff','Staff'],['rec','Audio']],function(){return U.view;},function(v){if(v===U.view)return;if(REC.run)stopPlay();U.view=v;saveU();renderMelody();recView();});
   const isRec=U.view==='rec';
   $('#rollCtl').hidden=U.view!=='roll';$('#staffCtl').hidden=U.view!=='staff';$('#recCtl').hidden=!isRec;
@@ -4237,8 +4304,6 @@ function renderMelOpts(){
   mkSeg($('#dotSeg'),[[true,'Dotted','<b style="font-size:16px;line-height:1">•</b>']],function(){return U.dot;},function(){if(U.nv>1){U.dot=!U.dot;saveU();}renderMelOpts();});
   mkSeg($('#accSeg'),[[1,'Sharp','♯'],[-1,'Flat','♭'],[2,'Natural','♮']],function(){return U.acc;},function(v){U.acc=U.acc===v?0:v;saveU();renderMelOpts();});
   const hasSel=!!selNote();
-  Array.prototype.forEach.call(document.querySelectorAll('#stEdit button'),function(b){b.disabled=!hasSel;});
-  const sl=$('#stSlide'),op=U.tool==='move';sl.classList.toggle('open',op);if(op)sl.removeAttribute('inert');else sl.setAttribute('inert','');
   $('#zOut').disabled=U.zoom<=ZMIN;$('#zIn').disabled=U.zoom>=ZMAX;
   const ls=$('#lenSel');
   const TRI=[[120,'16'],[240,'8'],[480,'4'],[80,'16T'],[160,'8T'],[320,'4T']];
@@ -4255,13 +4320,10 @@ function renderMelOpts(){
   $('#melAmt').value=P.melAmt;$('#melAmtLbl').textContent='Auto-Velocity '+P.melAmt+'%';
   const pk=$('#togPick');pk.setAttribute('aria-checked',P.pick?'true':'false');
   $('#melHint').textContent=U.view==='staff'
-    ?(U.tool==='pen'?'Hold to hear the pitch · drag up or down to change it · release to place · tap a note to delete'
-      :U.tool==='move'?'Tap a note or drag a box to select · drag a note to move · use the buttons to nudge'
-      :'Drag to scroll · switch back to Pen or Move to edit')
-    :(U.tool==='pen'?'Tap to add · drag to stretch or change pitch · tap a note to delete'
-      :U.tool==='move'?'Drag a note to move it · drag its right end to resize'
-      :U.tool==='sel'?'Tap notes or drag a box to select · drag a note to move · drag its end to resize'
-      :'Drag to scroll · switch back to Pen or Move to edit');
+    ?(U.rtool==='smart'?'Tap or drag up/down to place · tap a note: select · double-tap: delete · drag a note: move · hold empty: box select · hold a note: copy · two fingers: scroll and zoom'
+      :'View: drag to scroll · turn Smart tool on to edit')
+    :(U.rtool==='smart'?'Tap: add or select · drag: draw, move, or resize at the right end · double-tap: delete · hold empty: box select · hold a note: copy · two fingers: scroll and zoom'
+      :'View: drag to scroll · turn Smart tool on to edit');
 }
 function renderRoll(){
   calcRange();
@@ -4317,11 +4379,21 @@ function renderNotes(){
   let h='';
   if(CONT)CONT.notes.forEach(function(n){if(n.p<LOW||n.p>HIGH)return;h+='<div class="nt sug" style="left:'+tickX(n.s)+'px;top:'+((HIGH-n.p)*ROW_H+1)+'px;width:'+Math.max(4,lenX(n.l)-1)+'px"></div>';});
   if(CONT)h+='<div class="contsrc" style="left:'+tickX(CONT.a-CONT.len)+'px;width:'+lenX(CONT.len)+'px"></div><div class="contseam" style="left:'+tickX(CONT.a)+'px"></div>';
+  backGhost().forEach(function(n){if(n.p<LOW||n.p>HIGH)return;
+    h+='<div class="nt bk" style="left:'+tickX(n.s)+'px;top:'+((HIGH-n.p)*ROW_H+1)+'px;width:'+Math.max(4,lenX(n.l)-1)+'px"></div>';});
   P.mel.forEach(function(n){
     if(n.p<LOW||n.p>HIGH||!vis(n))return;
     h+='<div class="nt'+(rd&&rd.n===n?' hot':'')+(selKeys.has(n.s+'|'+n.p)?' sl':'')+'" style="left:'+tickX(n.s)+'px;top:'+((HIGH-n.p)*ROW_H+1)+'px;width:'+Math.max(4,lenX(n.l)-1)+'px"></div>';
   });
   const host=$('#rNotes'); if(host)host.innerHTML=h;
+  smPlacePop();
+}
+/* the backing's notes for the roll, worked out again only when the song (not the melody) changes */
+let BKG={k:null,n:[]};
+function backGhost(){
+  const k=JSON.stringify([P.secs,P.form,P.key,P.scale,P.ts,P.bpm,P.bass,P.str]);
+  if(BKG.k!==k){let n=[];try{n=Core.backNotes(P);}catch(e){}BKG={k:k,n:n};}
+  return BKG.n;
 }
 function renderQopen(){const o=!!U.qopen,sl=$('#qSlide');$('#qHead').setAttribute('aria-expanded',o?'true':'false');sl.classList.toggle('open',o);if(o)sl.removeAttribute('inert');else sl.setAttribute('inert','');}
 $('#qHead').addEventListener('click',function(){U.qopen=!U.qopen;saveU();renderQopen();});
@@ -4422,73 +4494,194 @@ function local(e){const r=plane.getBoundingClientRect();return {x:e.clientX-r.le
 function pitchAt(y){return Math.max(LOW,Math.min(HIGH,HIGH-Math.floor(y/ROW_H)));}
 function hitNote(t,m){for(let i=P.mel.length-1;i>=0;i--){const n=P.mel[i];if(n.p===m&&vis(n)&&t>=n.s&&t<n.s+n.l)return n;}return null;}
 roll.addEventListener('pointerdown',function(){holdFollow=Date.now()+2500;});
+/* ---------- roll: smart tool ----------
+   One finger edits, two fingers move the view. Empty space: tap adds a note (or only clears the selection), drag draws
+   a note, hold then drag draws a selection box. A note: tap selects, double-tap deletes (the whole selection if the
+   note is in it), drag moves (the selection if the note is in it), drag near its right end resizes, hold then drag
+   moves a copy. Two fingers: scroll, and spread or pinch to zoom in time. Mouse: Shift+drag = box, Alt/Ctrl+drag =
+   copy, wheel = scroll, Ctrl+wheel = zoom, Delete = delete the selection, Esc = clear it.
+   View lock (smart tool off): dragging only scrolls. */
+const SM={ptrs:new Map(), g:null, two:null, last:null};
+const SM_LONG=450, SM_DBL=330, SM_SLOP=7;
+const nkey=function(n){return n.s+'|'+n.p;}, ncopy=function(n){return {s:n.s,l:n.l,p:n.p};};
+function smT(q){return q.x/U.zoom*PPQ-pkT();}
+function smEdge(n,t){const h=Math.min(18,n.l/PPQ*U.zoom*0.4)/U.zoom*PPQ;return n.l/PPQ*U.zoom>=14&&t>=n.s+n.l-h;}
+function smCommit(snap){P.mel=Core.tidy(P.mel);P.sample=false;if(snap!==serialize())pushUndo(snap);}
+function smRevert(g){
+  if(!g)return;clearTimeout(g.timer);
+  if(g.kind==='draw'){const i=P.mel.indexOf(g.n);if(i>=0)P.mel.splice(i,1);}
+  else if(g.kind==='copy'){g.notes.forEach(function(n){const i=P.mel.indexOf(n);if(i>=0)P.mel.splice(i,1);});}
+  else if(g.kind==='move'||g.kind==='resize'){g.notes.forEach(function(n,i){n.s=g.orig[i].s;n.l=g.orig[i].l;n.p=g.orig[i].p;});}
+  if(g.box)g.box.remove();
+  renderNotes();
+}
+function smStartCopy(g){
+  const grp=selKeys.has(nkey(g.hit))?selNotes():[g.hit];
+  g.kind='copy';g.notes=grp.map(ncopy);g.orig=g.notes.map(ncopy);
+  g.notes.forEach(function(n){P.mel.push(n);});
+  g.lead=g.notes[grp.indexOf(g.hit)];
+  try{navigator.vibrate&&navigator.vibrate(12);}catch(x){}
+  smHidePop();selKeys=new Set(g.notes.map(nkey));renderNotes();
+}
+function smStartBox(g){
+  g.kind='box';g.box=document.createElement('div');g.box.className='selbox';plane.appendChild(g.box);
+  try{navigator.vibrate&&navigator.vibrate(12);}catch(x){}
+  smHidePop();smBox(g,g.q0);
+}
+function smBox(g,q){g.q1=q;const l=Math.min(g.q0.x,q.x), t=Math.min(g.q0.y,q.y);
+  g.box.style.left=l+'px';g.box.style.top=t+'px';g.box.style.width=Math.abs(q.x-g.q0.x)+'px';g.box.style.height=Math.abs(q.y-g.q0.y)+'px';}
+function smTwo(){const a=Array.from(SM.ptrs.values());return {x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2,d:Math.max(30,Math.abs(a[0].x-a[1].x))};}
 plane.addEventListener('pointerdown',function(e){
-  if(U.tool==='pan')return;
-  if(U.tool==='sel'){selDown(e);return;}
-  const q=local(e), t=q.x/U.zoom*PPQ-pkT(), m=pitchAt(q.y), tot=totalTicks();
+  if(U.view!=='roll')return;
+  if(U.rtool==='pan'){
+    /* view lock: touch scrolls natively; a mouse drags the view */
+    if(e.pointerType==='mouse'){SM.g={kind:'pan',cx:e.clientX,cy:e.clientY,sl:roll.scrollLeft,st:roll.scrollTop};try{plane.setPointerCapture(e.pointerId);}catch(x){}e.preventDefault();}
+    return;
+  }
+  if(e.isPrimary){SM.ptrs.clear();SM.two=null;} /* a new gesture: forget pointers that never reported their end */
+  SM.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  try{plane.setPointerCapture(e.pointerId);}catch(x){}
+  e.preventDefault();
+  if(SM.ptrs.size>=2){
+    /* a second finger: undo what the first one started and move the view instead */
+    smRevert(SM.g);SM.g=null;const c=smTwo();SM.two={x:c.x,y:c.y,d:c.d,z:U.zoom};return;
+  }
+  const q=local(e), t=smT(q), m=pitchAt(q.y), tot=totalTicks();
   if(t<-pkT()||t>=tot)return;
   Aud.ensure();
   const hit=hitNote(t,m);
-  rd={snap:serialize(),changed:false,mode:null,n:null,cx:e.clientX,cy:e.clientY,sy:roll.scrollTop,scroll:false};
-  if(U.tool==='pen'){
-    if(hit){P.mel.splice(P.mel.indexOf(hit),1);rd.mode='del';rd.hit=hit;rd.changed=true;}
-    else{
-      const s=Math.floor(t/U.snap)*U.snap, n={s:s,l:Math.min(U.len,tot-s),p:m};
-      P.mel.push(n);rd.n=n;rd.mode='add';rd.changed=true;Aud.tone(m,95,0.4);
-    }
+  const g=SM.g={kind:'pending',hit:hit,q0:q,t0:t,m0:m,cx:e.clientX,cy:e.clientY,snap:serialize(),edge:hit&&smEdge(hit,t),timer:null};
+  if(hit){
+    Aud.tone(hit.p,90,0.3);
+    if(e.altKey||e.ctrlKey||e.metaKey)smStartCopy(g);
+    else g.timer=setTimeout(function(){if(SM.g===g&&g.kind==='pending')smStartCopy(g);},SM_LONG);
   }else{
-    if(!hit){rd=null;return;}
-    const handle=Math.min(18,hit.l/PPQ*U.zoom*0.4)/U.zoom*PPQ;
-    rd.n=hit;rd.mode=(t>=hit.s+hit.l-handle)?'resize':'move';rd.grab=t-hit.s;rd.dp=m-hit.p;
-    Aud.tone(hit.p,95,0.4);
+    if(e.shiftKey)smStartBox(g);
+    else g.timer=setTimeout(function(){if(SM.g===g&&g.kind==='pending')smStartBox(g);},SM_LONG);
   }
-  try{plane.setPointerCapture(e.pointerId);}catch(x){}
-  e.preventDefault();renderNotes();
 });
 plane.addEventListener('pointermove',function(e){
-  if(sb||rs){selMove(e);return;}
-  if(!rd)return;
-  /* pen tool: a mostly-vertical drag scrolls the roll instead of drawing (the tentative note is undone) */
-  if(rd.scroll){roll.scrollTop=rd.sy-(e.clientY-rd.cy);return;}
-  if(U.tool==='pen'&&(rd.mode==='add'||rd.mode==='del')){
-    const dy=e.clientY-rd.cy, dx=e.clientX-rd.cx;
-    if(Math.abs(dy)>8&&Math.abs(dy)>Math.abs(dx)){
-      if(rd.mode==='add'){const i=P.mel.indexOf(rd.n);if(i>=0)P.mel.splice(i,1);}else if(rd.hit)P.mel.push(rd.hit);
-      rd.scroll=true;rd.changed=false;rd.mode=null;rd.n=null;rd.hit=null;
-      roll.scrollTop=rd.sy-dy;renderNotes();return;
+  if(SM.ptrs.has(e.pointerId))SM.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  if(SM.two&&SM.ptrs.size>=2){
+    const c=smTwo(), T=SM.two, z=Math.round(T.z*c.d/T.d);
+    if(Math.abs(z-U.zoom)>=2&&z>=ZMIN&&z<=ZMAX){const r=plane.getBoundingClientRect(), mid=(c.x-r.left)/U.zoom;setZoom(z);
+      roll.scrollLeft=Math.max(0,mid*U.zoom-(c.x-roll.getBoundingClientRect().left-KEYS_W));}
+    /* move by the fingers' travel; what the roll cannot take vertically scrolls the page (the roll may be taller than the screen) */
+    const dx=c.x-T.x, dy=c.y-T.y;T.x=c.x;T.y=c.y;
+    roll.scrollLeft-=dx;const st=roll.scrollTop;roll.scrollTop=st-dy;const left=-dy-(roll.scrollTop-st);if(Math.abs(left)>=1)window.scrollBy(0,left);
+    return;
+  }
+  const g=SM.g;if(!g)return;
+  if(g.kind==='pan'){roll.scrollLeft=g.sl-(e.clientX-g.cx);roll.scrollTop=g.st-(e.clientY-g.cy);return;}
+  const q=local(e), t=smT(q), m=pitchAt(q.y), tot=totalTicks(), sn=U.snap;
+  if(g.kind==='pending'){
+    if(Math.hypot(e.clientX-g.cx,e.clientY-g.cy)<SM_SLOP)return;
+    clearTimeout(g.timer);smHidePop();
+    if(g.hit){
+      if(g.edge){g.kind='resize';g.notes=[g.hit];}
+      else{g.kind='move';g.notes=selKeys.has(nkey(g.hit))&&selKeys.size>1?selNotes():[g.hit];}
+      g.orig=g.notes.map(ncopy);g.lead=g.hit;
+    }else{
+      const s0=Math.floor(g.t0/sn)*sn, n={s:s0,l:Math.min(U.len,tot-s0),p:g.m0};
+      P.mel.push(n);g.kind='draw';g.n=n;selKeys=new Set();Aud.tone(g.m0,95,0.4);
     }
   }
-  if(!rd.n)return;
-  const q=local(e), t=q.x/U.zoom*PPQ-pkT(), m=pitchAt(q.y), n=rd.n, tot=totalTicks(), sn=U.snap;
-  let ch=false;
-  if(rd.mode==='add'){
-    const l=Math.min(Math.max(U.len,Math.ceil((t-n.s)/sn)*sn),tot-n.s);
-    if(l!==n.l){n.l=l;ch=true;}
-  }else if(rd.mode==='move'){
-    const s=Math.max(-pkT(),Math.min(tot-n.l,Math.round((t-rd.grab)/sn)*sn));
-    const np=Math.max(LOW,Math.min(HIGH,m-rd.dp));
-    if(s!==n.s){n.s=s;ch=true;}
-    if(np!==n.p){n.p=np;ch=true;Aud.tone(np,95,0.3);}
-  }else{
-    const end=Math.min(tot,Math.round(t/sn)*sn), l=Math.max(sn,end-n.s), l2=Math.min(l,tot-n.s);
-    if(l2!==n.l){n.l=l2;ch=true;}
+  if(g.kind==='box'){smBox(g,q);return;}
+  if(g.kind==='draw'){const n=g.n, l=Math.min(Math.max(U.len,Math.ceil((t-n.s)/sn)*sn),tot-n.s);if(l!==n.l){n.l=l;renderNotes();}return;}
+  if(g.kind==='resize'){const n=g.hit, end=Math.min(tot,Math.round(t/sn)*sn), l=Math.max(sn,Math.min(end-n.s,tot-n.s));if(l!==n.l){n.l=l;renderNotes();}return;}
+  if(g.kind==='move'||g.kind==='copy'){
+    let dt=Math.round((t-g.t0)/sn)*sn, dp=m-g.m0;
+    const lo=Math.min.apply(null,g.orig.map(function(o){return o.s;})), hi=Math.max.apply(null,g.orig.map(function(o){return o.s+o.l;}));
+    const pl=Math.min.apply(null,g.orig.map(function(o){return o.p;})), ph=Math.max.apply(null,g.orig.map(function(o){return o.p;}));
+    dt=Math.max(-pkT()-lo,Math.min(tot-hi,dt));dp=Math.max(LOW-pl,Math.min(HIGH-ph,dp));
+    if(g.dp!=null&&dp!==g.dp)Aud.tone(g.lead.p+dp-(g.lead.p-g.orig[g.notes.indexOf(g.lead)].p),90,0.25);
+    g.dp=dp;
+    g.notes.forEach(function(n,i){n.s=g.orig[i].s+dt;n.p=g.orig[i].p+dp;});
+    selKeys=new Set(g.notes.map(nkey));renderNotes();
   }
-  if(ch){rd.changed=true;renderNotes();}
 });
-function endRoll(){
-  if(sb||rs){selUp();return;}
-  if(!rd)return;
-  const d=rd;rd=null;
-  if(d.changed){P.mel=Core.tidy(P.mel);P.sample=false;pushUndo(d.snap);}
-  renderNotes();
+function smUp(e,cancel){
+  if(SM.ptrs.has(e.pointerId))SM.ptrs.delete(e.pointerId);
+  if(SM.two){if(!SM.ptrs.size)SM.two=null;return;}
+  const g=SM.g;if(!g)return;SM.g=null;clearTimeout(g.timer);
+  if(g.kind==='pan')return;
+  if(cancel){smRevert(g);return;}
+  if(g.kind==='pending'){
+    if(g.hit){
+      const now=Date.now(), k=nkey(g.hit);
+      if(SM.last&&SM.last.k===k&&now-SM.last.t<SM_DBL){
+        /* double-tap: delete the note, or the whole selection when the note is part of it */
+        const del=selKeys.has(k)&&selKeys.size>1?new Set(selKeys):new Set([k]);
+        P.mel=P.mel.filter(function(n){return !del.has(nkey(n));});selKeys=new Set();SM.last=null;smHidePop();smCommit(g.snap);renderNotes();return;
+      }
+      SM.last={k:k,t:now};
+      if(!(selKeys.has(k)&&selKeys.size>1)){setSel([g.hit]);smHidePop();}
+      return;
+    }
+    if(selKeys.size){setSel([]);smHidePop();return;}
+    const sn=U.snap, tot=totalTicks(), s0=Math.floor(g.t0/sn)*sn;
+    P.mel.push({s:s0,l:Math.min(U.len,tot-s0),p:g.m0});Aud.tone(g.m0,95,0.4);smCommit(g.snap);renderNotes();return;
+  }
+  if(g.kind==='box'){
+    g.box.remove();const q=g.q1||g.q0;
+    const x0=Math.min(g.q0.x,q.x), x1=Math.max(g.q0.x,q.x), y0=Math.min(g.q0.y,q.y), y1=Math.max(g.q0.y,q.y);
+    const t0=x0/U.zoom*PPQ-pkT(), t1=x1/U.zoom*PPQ-pkT(), hi=pitchAt(y0), lo=pitchAt(y1);
+    const sel=P.mel.filter(function(n){return vis(n)&&n.p>=lo&&n.p<=hi&&n.s<t1&&n.s+n.l>t0;});
+    setSel(sel);if(sel.length)smShowPop();else smHidePop();return;
+  }
+  const kept=(g.kind==='draw'?[g.n]:g.notes).map(ncopy);
+  smCommit(g.snap);
+  if(g.kind==='draw'){setSel([]);renderNotes();return;}
+  setSel(kept);if(kept.length>1)smShowPop();else smHidePop();
 }
-plane.addEventListener('pointerup',endRoll);
-plane.addEventListener('pointercancel',endRoll);
+plane.addEventListener('pointerup',function(e){smUp(e,false);});
+plane.addEventListener('pointercancel',function(e){smUp(e,true);});
+/* mouse wheel: scroll (native); Ctrl+wheel: zoom in time */
+roll.addEventListener('wheel',function(e){if(!(e.ctrlKey||e.metaKey)||U.view!=='roll')return;e.preventDefault();stepZoom(e.deltaY<0?1:-1);},{passive:false});
+document.addEventListener('keydown',function(e){
+  if($('#panelMelody').hidden||U.view!=='roll'||e.target.closest('input,select,textarea'))return;
+  if((e.key==='Delete'||e.key==='Backspace')&&selKeys.size){e.preventDefault();selAction('del');smHidePop();}
+  else if(e.key==='Escape'&&selKeys.size){setSel([]);smHidePop();}
+});
+/* pop-up menu beside a selection of several notes; tapping empty space closes it */
+function smShowPop(){const p=$('#selPop');p.hidden=false;smPlacePop();}
+function smHidePop(){const p=$('#selPop');if(p)p.hidden=true;}
+function smPlacePop(){
+  const p=$('#selPop');if(!p||p.hidden)return;const S=selNotes();if(!S.length){p.hidden=true;return;}
+  const pv=$('#selPop .sp-paste');if(pv)pv.disabled=!clip;
+  if(U.view==='staff'){stPlacePop(p);return;}
+  if(p.parentNode!==roll)roll.insertBefore(p,roll.firstChild);
+  const s0=Math.min.apply(null,S.map(function(n){return n.s;})), hiP=Math.max.apply(null,S.map(function(n){return n.p;})), loP=Math.min.apply(null,S.map(function(n){return n.p;}));
+  p.style.maxWidth=Math.max(160,roll.clientWidth-KEYS_W-8)+'px';
+  const ox=plane.offsetLeft, oy=plane.offsetTop, w=p.offsetWidth, h=p.offsetHeight;
+  let x=ox+tickX(s0), y=oy+(HIGH-hiP)*ROW_H-h-6;
+  if(y<roll.scrollTop+oy)y=oy+(HIGH-loP+1)*ROW_H+6;
+  x=Math.max(roll.scrollLeft+KEYS_W+4,Math.min(roll.scrollLeft+roll.clientWidth-w-4,x));
+  p.style.left=x+'px';p.style.top=y+'px';
+}
+/* staff: the same pop-up, held by the wrapper around the staff so it is not clipped, placed above the selected heads */
+function stPlacePop(p){
+  const sw=$('#stWrap'), zw=sw.parentNode;if(p.parentNode!==zw)zw.appendChild(p);
+  const pts=stNotes.filter(function(sn){return selKeys.has(sn.n.s+'|'+sn.n.p);});
+  if(!pts.length||sw.hidden){p.hidden=true;return;}
+  p.style.maxWidth=Math.max(160,sw.clientWidth-8)+'px';
+  const w=p.offsetWidth, h=p.offsetHeight;
+  const x0=Math.min.apply(null,pts.map(function(q){return q.x;})), y0=Math.min.apply(null,pts.map(function(q){return q.y;})), y1=Math.max.apply(null,pts.map(function(q){return q.y;}));
+  const bx=sw.offsetLeft+stMain.offsetLeft-sw.scrollLeft, by=sw.offsetTop+stMain.offsetTop;
+  let x=bx+x0-16, y=by+y0-h-16;
+  if(y<sw.offsetTop-h/2)y=by+y1+16;
+  x=Math.max(sw.offsetLeft+4,Math.min(sw.offsetLeft+sw.clientWidth-w-4,x));
+  p.style.left=x+'px';p.style.top=y+'px';
+}
+$('#stWrap').addEventListener('scroll',function(){if(U.view==='staff')smPlacePop();},{passive:true});
+$('#selPop').addEventListener('pointerdown',function(e){e.stopPropagation();});
+$('#selPop').addEventListener('click',function(e){const b=e.target.closest('[data-sa]');if(!b||b.disabled)return;selAction(b.dataset.sa);if(b.dataset.sa==='del'||!selKeys.size)smHidePop();else smPlacePop();});
 $('#rKeys').addEventListener('pointerdown',function(e){
   const k=e.target.closest?e.target.closest('.k'):null;if(!k)return;
   const idx=Array.prototype.indexOf.call(k.parentNode.children,k);
   Aud.tone(HIGH-idx,90,0.5);
 });
+['#toolSeg','#toolSeg2'].forEach(function(q){$(q).addEventListener('click',function(){U.rtool=U.rtool==='smart'?'pan':'smart';saveU();smHidePop();renderMelOpts();});});
 $('#togPick').addEventListener('click',function(){if(playing)stopPlay();const home=K.cur<=loTick();edit(function(){P.pick=!P.pick;});if(home){K.cur=loTick();showCursor();}});
 $('#melAmt').addEventListener('input',function(e){beginLive();P.melAmt=+e.target.value;$('#melAmtLbl').textContent='Auto-Velocity '+P.melAmt+'%';});
 $('#melAmt').addEventListener('change',commitLive);
@@ -4748,7 +4941,8 @@ function stModel(){
   return {ou:ou,pcs:pcs};
 }
 
-function renderStaff(){
+function renderStaff(){stRender();if(U.view==='staff')smPlacePop();}
+function stRender(){
   const ux=stUx(), bw=stBw(), mb=mBars(), nb=mb+(P.pick?1:0), W=nb*bw+6, sf=Core.keySig(P.key,P.scale);
   const TM=stMt(), UB=TM.ub, UBE=TM.ube;
   const mdl=stModel(), sig=sigAccs(), STEP=ST.step;
@@ -4981,122 +5175,128 @@ function stHit(x,y){
 }
 function noteTicks(){return U.nv*120*(U.dot&&U.nv>1?1.5:1);}
 let sd=null;
+/* Staff smart tool (as in the roll): empty space: tap or drag up/down to place a note (a tap with notes selected only
+   clears the selection), hold still to draw a box. A note: tap selects, double-tap deletes (the selection if the note
+   is in it), drag moves (the selection if the note is in it), hold then drag moves a copy. Two fingers scroll and zoom.
+   View: dragging only scrolls. */
+const STS={ptrs:new Map(), two:null, last:null};
+function stTwo(){const a=Array.from(STS.ptrs.values());return {x:(a[0].x+a[1].x)/2,y:(a[0].y+a[1].y)/2,d:Math.max(30,Math.abs(a[0].x-a[1].x))};}
+function stCancel(){const d=sd;sd=null;if(!d)return;clearTimeout(d.timer);try{d.rel();}catch(x){}
+  if(d.el)d.el.remove();stG=null;if((d.mode==='move'||d.mode==='copy')&&d.started)applySnap(d.snap);else renderStaff();}
+function stStartBox(d,q){try{d.rel();}catch(x){}d.rel=function(){};stG=null;d.mode='box';d.x0=d.x1=q.x;d.y0=d.y1=q.y;d.el=document.createElement('div');d.el.className='selbox';stMain.appendChild(d.el);
+  try{navigator.vibrate&&navigator.vibrate(12);}catch(x){}renderStaff();}
+function stStartGroup(d,copy){
+  const inSel=selKeys.has(d.hit.s+'|'+d.hit.p);
+  let grp=inSel&&selKeys.size>1?selNotes():[d.hit];
+  if(copy){grp=grp.map(function(n){const c={s:n.s,l:n.l,p:n.p};P.mel.push(c);return c;});try{navigator.vibrate&&navigator.vibrate(12);}catch(x){}}
+  d.mode=copy?'copy':'move';d.notes=grp;d.orig=grp.map(function(n){return {s:n.s,l:n.l,p:n.p};});
+  d.lead=grp[inSel&&selKeys.size>1?selNotes().indexOf(d.hit):0]||grp[0];d.lo=d.orig[d.notes.indexOf(d.lead)];d.started=true;
+  selKeys=new Set(grp.map(function(n){return n.s+'|'+n.p;}));selKey={s:d.lead.s,p:d.lead.p};
+}
 stMain.addEventListener('pointerdown',function(e){
-  if(U.tool==='pan')return;
+  if(U.rtool==='pan')return;
+  if(e.isPrimary){STS.ptrs.clear();STS.two=null;}
+  STS.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  try{stMain.setPointerCapture(e.pointerId);}catch(x){}
+  e.preventDefault();
+  if(STS.ptrs.size>=2){stCancel();smHidePop();const c=stTwo();STS.two={x:c.x,y:c.y,d:c.d,z:U.zoom};return;}
   const q=stLocal(e), hit=stHit(q.x,q.y);
   Aud.ensure();
-  if(U.tool==='pen'){
-    if(hit){
-      const s=serialize();P.mel.splice(P.mel.indexOf(hit),1);P.sample=false;pushUndo(s);renderMelOpts();renderStaff();return;
-    }
-    const ps=stPosAt(q.x), dp=stDpAt(q.y), k=keyAt(ps.abs*120), m=pitchFromDp(dp,U.acc,k);
-    sd={mode:'add',snap:serialize(),abs:ps.abs,dp:dp,rel:Aud.hold(m,95)};
-    stG={x:ps.x,dp:dp,m:m,k:k};
-  }else{
-    if(!hit){
-      /* drag a box over several notes; a plain tap clears the selection */
-      sd={mode:'box',x0:q.x,y0:q.y,x1:q.x,y1:q.y,el:document.createElement('div'),rel:function(){}};
-      sd.el.className='selbox';stMain.appendChild(sd.el);
-      try{stMain.setPointerCapture(e.pointerId);}catch(x){}
-      e.preventDefault();return;
-    }
-    selKey={s:hit.s,p:hit.p};selKeys=new Set([hit.s+'|'+hit.p]);
-    sd={mode:'move',snap:serialize(),n:hit,dp:spell(hit.p,keyAt(hit.s)).dp,abs:Math.round(hit.s/120),moved:false,rel:Aud.hold(hit.p,95),grab:null};
-    renderMelOpts();
+  if(hit){
+    const d=sd={mode:'pending',hit:hit,q0:q,cx:e.clientX,cy:e.clientY,snap:serialize(),rel:Aud.hold(hit.p,95),started:false};
+    if(e.altKey||e.ctrlKey||e.metaKey)stStartGroup(d,true);
+    else d.timer=setTimeout(function(){if(sd===d&&d.mode==='pending'){stStartGroup(d,true);renderStaff();}},SM_LONG);
+    return;
   }
-  try{stMain.setPointerCapture(e.pointerId);}catch(x){}
-  e.preventDefault();renderStaff();
+  const ps=stPosAt(q.x), dp=stDpAt(q.y), k=keyAt(ps.abs*120), m=pitchFromDp(dp,U.acc,k);
+  const d=sd={mode:'add',snap:serialize(),abs:ps.abs,dp:dp,rel:Aud.hold(m,95),cx:e.clientX,cy:e.clientY,moved:false};
+  stG={x:ps.x,dp:dp,m:m,k:k};
+  if(e.shiftKey)stStartBox(d,q);
+  else d.timer=setTimeout(function(){if(sd===d&&d.mode==='add'&&!d.moved)stStartBox(d,q);},SM_LONG);
+  renderStaff();
 });
 stMain.addEventListener('pointermove',function(e){
+  if(STS.ptrs.has(e.pointerId))STS.ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  const sw=$('#stWrap');
+  if(STS.two&&STS.ptrs.size>=2){
+    const c=stTwo(), T=STS.two, z=Math.round(T.z*c.d/T.d);
+    if(Math.abs(z-U.zoom)>=2&&z>=ZMIN&&z<=ZMAX)setZoom(z);
+    const dx=c.x-T.x, dy=c.y-T.y;T.x=c.x;T.y=c.y;sw.scrollLeft-=dx;if(Math.abs(dy)>=1)window.scrollBy(0,-dy);return;
+  }
   if(!sd)return;
   if(sd.mode==='box'){
     const q=stLocal(e);sd.x1=q.x;sd.y1=q.y;
     sd.el.style.left=Math.min(sd.x0,sd.x1)+'px';sd.el.style.top=Math.min(sd.y0,sd.y1)+'px';sd.el.style.width=Math.abs(sd.x1-sd.x0)+'px';sd.el.style.height=Math.abs(sd.y1-sd.y0)+'px';
     return;
   }
+  const far=Math.hypot(e.clientX-sd.cx,e.clientY-sd.cy)>=SM_SLOP;
+  if(sd.mode==='pending'){if(!far)return;clearTimeout(sd.timer);stStartGroup(sd,false);}
   const q=stLocal(e), ps=stPosAt(q.x), dp=stDpAt(q.y);
   if(sd.mode==='add'){
     const k=keyAt(ps.abs*120), m=pitchFromDp(dp,U.acc,k);
     if(dp!==stG.dp||ps.x!==stG.x){
+      if(far){sd.moved=true;clearTimeout(sd.timer);}
       if(dp!==stG.dp){sd.rel();sd.rel=Aud.hold(m,95);}
       stG={x:ps.x,dp:dp,m:m,k:k};sd.abs=ps.abs;sd.dp=dp;renderStaff();
     }
-  }else{
-    const n=sd.n, ns0=Math.max(-pkT(),Math.min(totalTicks()-n.l,ps.abs*120)), k=keyAt(ns0), m=(dp===spell(n.p,k).dp)?n.p:pitchFromDp(dp,U.acc,k);
-    const ns=Math.max(-pkT(),Math.min(totalTicks()-n.l,ps.abs*120));
-    if(m!==n.p||ns!==n.s){
-      if(m!==n.p){sd.rel();sd.rel=Aud.hold(m,95);}
-      n.p=m;n.s=ns;sd.moved=true;selKey={s:n.s,p:n.p};renderStaff();
-    }
+    return;
   }
+  /* move or copy: the held note follows the finger, the rest of the group keeps its distance */
+  const L=sd.lo, tot=totalTicks();
+  const ns0=Math.max(-pkT(),Math.min(tot-L.l,ps.abs*120)), k=keyAt(ns0), m=(dp===spell(L.p,k).dp)?L.p:pitchFromDp(dp,U.acc,k);
+  let dt=ns0-L.s, dpp=m-L.p;
+  const lo=Math.min.apply(null,sd.orig.map(function(o){return o.s;})), hi=Math.max.apply(null,sd.orig.map(function(o){return o.s+o.l;}));
+  dt=Math.max(-pkT()-lo,Math.min(tot-hi,dt));
+  if(sd.orig.some(function(o){return o.p+dpp<0||o.p+dpp>127;}))dpp=sd.lead.p-L.p;
+  if(sd.lead.p!==L.p+dpp){sd.rel();sd.rel=Aud.hold(L.p+dpp,95);}
+  sd.notes.forEach(function(n,i){n.s=sd.orig[i].s+dt;n.p=sd.orig[i].p+dpp;});
+  sd.moved=true;selKeys=new Set(sd.notes.map(function(n){return n.s+'|'+n.p;}));selKey={s:sd.lead.s,p:sd.lead.p};renderStaff();
 });
-function endStaff(){
+function endStaff(e){
+  if(e&&STS.ptrs.has(e.pointerId))STS.ptrs.delete(e.pointerId);
+  if(STS.two){if(!STS.ptrs.size)STS.two=null;return;}
   if(!sd)return;
-  const d=sd;sd=null;try{d.rel();}catch(x){}
+  const d=sd;sd=null;clearTimeout(d.timer);try{d.rel();}catch(x){}
   if(d.mode==='box'){
     d.el.remove();
     const x0=Math.min(d.x0,d.x1), x1=Math.max(d.x0,d.x1), y0=Math.min(d.y0,d.y1), y1=Math.max(d.y0,d.y1);
-    if(x1-x0<4&&y1-y0<4){selKey=null;selKeys=new Set();}
-    else{
-      const hits=[];stNotes.forEach(function(sn){if(sn.x>=x0-6&&sn.x<=x1+6&&sn.y>=y0-6&&sn.y<=y1+6&&hits.indexOf(sn.n)<0)hits.push(sn.n);});
-      selKeys=new Set(hits.map(function(n){return n.s+'|'+n.p;}));
-      selKey=hits.length?{s:hits[0].s,p:hits[0].p}:null;
+    const hits=[];stNotes.forEach(function(sn){if(sn.x>=x0-6&&sn.x<=x1+6&&sn.y>=y0-6&&sn.y<=y1+6&&hits.indexOf(sn.n)<0)hits.push(sn.n);});
+    selKeys=new Set(hits.map(function(n){return n.s+'|'+n.p;}));selKey=hits.length?{s:hits[0].s,p:hits[0].p}:null;
+    renderMelOpts();renderStaff();if(hits.length>1)smShowPop();else smHidePop();return;
+  }
+  if(d.mode==='pending'){
+    /* a tap on a note: select it; a second tap soon after deletes it (or the selection it belongs to) */
+    const k=d.hit.s+'|'+d.hit.p, now=Date.now();
+    if(STS.last&&STS.last.k===k&&now-STS.last.t<SM_DBL){
+      const del=selKeys.has(k)&&selKeys.size>1?new Set(selKeys):new Set([k]);
+      P.mel=P.mel.filter(function(n){return !del.has(n.s+'|'+n.p);});selKey=null;selKeys=new Set();STS.last=null;
+      P.sample=false;pushUndo(d.snap);smHidePop();renderMelOpts();renderStaff();return;
     }
+    STS.last={k:k,t:now};
+    if(!(selKeys.has(k)&&selKeys.size>1)){selKey={s:d.hit.s,p:d.hit.p};selKeys=new Set([k]);smHidePop();}
     renderMelOpts();renderStaff();return;
   }
-  if(d.mode==='add'&&stG){
-    const s=d.abs*120, tot=totalTicks();
-    if(s>=-pkT()&&s<tot){
-      P.mel=Core.insertMono(P.mel,{s:s,l:Math.min(noteTicks(),tot-s),p:stG.m});
-      P.sample=false;pushUndo(d.snap);
-      if(U.acc){U.acc=0;saveU();}
+  if(d.mode==='add'){
+    if(!d.moved&&selKeys.size){selKey=null;selKeys=new Set();stG=null;smHidePop();renderMelOpts();renderStaff();return;}
+    if(stG){
+      const s=d.abs*120, tot=totalTicks();
+      if(s>=-pkT()&&s<tot){
+        P.mel=Core.insertMono(P.mel,{s:s,l:Math.min(noteTicks(),tot-s),p:stG.m});
+        P.sample=false;pushUndo(d.snap);
+        if(U.acc){U.acc=0;saveU();}
+      }
     }
-    stG=null;
-  }else if(d.mode==='move'&&d.moved){
-    const n=d.n;
-    P.mel=Core.insertMono(P.mel.filter(function(x){return x!==n;}),{s:n.s,l:n.l,p:n.p});
-    selKey={s:n.s,p:n.p};selKeys=new Set([n.s+'|'+n.p]);
-    P.sample=false;pushUndo(d.snap);
+    stG=null;renderMelOpts();renderStaff();return;
   }
-  stG=null;renderMelOpts();renderStaff();
+  /* move or copy */
+  if(d.notes.length===1&&d.mode==='move'){const n=d.notes[0];P.mel=Core.insertMono(P.mel.filter(function(x){return x!==n;}),{s:n.s,l:n.l,p:n.p});}
+  else P.mel=Core.tidy(P.mel);
+  selKeys=new Set(d.notes.map(function(n){return n.s+'|'+n.p;}));selKey={s:d.lead.s,p:d.lead.p};
+  P.sample=false;if(d.snap!==serialize())pushUndo(d.snap);
+  stG=null;renderMelOpts();renderStaff();if(selKeys.size>1)smShowPop();else smHidePop();
 }
 stMain.addEventListener('pointerup',endStaff);
-stMain.addEventListener('pointercancel',function(){
-  if(!sd)return;
-  const d=sd;sd=null;try{d.rel();}catch(x){}
-  if(d.mode==='box'){d.el.remove();return;}
-  stG=null;if(d.mode==='move'){applySnap(d.snap);}else renderStaff();
-});
-$('#stEdit').addEventListener('click',function(e){
-  const b=e.target.closest?e.target.closest('[data-ed]'):null;if(!b||b.disabled)return;
-  b.classList.remove('nl');void b.offsetWidth;b.classList.add('nl');
-  const n=selNote();if(!n)return;
-  const a=b.dataset.ed, s=serialize();
-  /* several notes selected (box): the buttons move or delete all of them */
-  const many=selNotes().length>1?selNotes():null;
-  if(many){
-    if(a==='del'){const k=new Set(many);P.mel=P.mel.filter(function(x){return !k.has(x);});selKey=null;selKeys=new Set();}
-    else{
-      const ds=a==='right'?120:a==='left'?-120:0, dpp=a==='semi+'?1:a==='semi-'?-1:0, lo=P.pick?-barTk():0;
-      if(many.some(function(x){return x.s+ds<lo||x.s+ds+x.l>128*barTk()||x.p+dpp<0||x.p+dpp>127;}))return;
-      many.forEach(function(x){x.s+=ds;x.p+=dpp;});
-      P.mel=Core.tidy(P.mel);selKeys=new Set(many.map(function(x){return x.s+'|'+x.p;}));selKey={s:many[0].s,p:many[0].p};
-      Aud.tone(many[0].p,95,0.4);
-    }
-    P.sample=false;pushUndo(s);renderMelOpts();renderStaff();return;
-  }
-  if(a==='del'){P.mel.splice(P.mel.indexOf(n),1);selKey=null;selKeys=new Set();}
-  else{
-    if(a==='left'||a==='right'){
-      const ds=a==='right'?120:-120, ns=n.s+ds, lo=P.pick?-barTk():0;
-      if(ns<lo||ns+n.l>128*barTk())return;
-      n.s=ns;
-    }else n.p=Math.max(0,Math.min(127,n.p+(a==='semi+'?1:-1)));
-    P.mel=Core.tidy(P.mel);selKey={s:n.s,p:n.p};selKeys=new Set([n.s+'|'+n.p]);
-    Aud.tone(n.p,95,0.4);
-  }
-  P.sample=false;pushUndo(s);renderMelOpts();renderStaff();
-});
+stMain.addEventListener('pointercancel',function(e){if(e&&STS.ptrs.has(e.pointerId))STS.ptrs.delete(e.pointerId);if(STS.two){if(!STS.ptrs.size)STS.two=null;return;}stCancel();});
 
 /* ---------- live keyboard: two-row keys, recording, step input, latency ---------- */
 const WSEMI=[0,2,4,5,7,9,11], WNAME=['C','D','E','F','G','A','B'];
@@ -5451,7 +5651,8 @@ function fitRoll(){
   if($('#panelMelody').hidden||U.view!=='roll')return;
   calcRange();
   const kb=$('#kbd').hidden?0:$('#kbd').offsetHeight, safe=0;
-  const avail=window.innerHeight-62-kb-($('#melHint').offsetHeight+12)-12;
+  let avail=window.innerHeight-62-kb-($('#melHint').offsetHeight+12)-12;
+  if(isLandEdit())avail=window.innerHeight-$('#panelMelody .panel').offsetHeight-kb-14;
   roll.style.height=Math.max(160,Math.min(44+(HIGH-LOW+1)*ROW_H+2,Math.round(avail)))+'px';
 }
 window.addEventListener('resize',fitRoll);
@@ -6518,6 +6719,41 @@ function importFrom(o){
   closeForm();K.cur=slotRange().t0;
   toast('Imported as section '+id+(n>1?' ('+n+' slots)':'')+(src.scale!==P.scale?'. Chords follow this song\'s scale.':'.'));
 }
+
+/* ---------- landscape editing rail: buttons stand in for the ones hidden in landscape ---------- */
+(function(){
+  const rail=$('#lrail'), menu=$('#lrMenu'), B=function(k){return rail.querySelector('[data-lr="'+k+'"]');};
+  const src={rew:'#rewBtn',drum:'#drumBtn',undo:'#undoBtn',redo:'#redoBtn',mix:'#dockMix',keys:'#dockKeys'};
+  Object.keys(src).forEach(function(k){const el=$(src[k]).querySelector('svg');if(el)B(k).innerHTML=el.outerHTML;});
+  function sync(){
+    const pb=$('#playBtn');B('play').innerHTML=pb.innerHTML;B('play').classList.toggle('on',pb.classList.contains('on'));B('play').setAttribute('aria-label',pb.getAttribute('aria-label')||'Play');
+    B('drum').setAttribute('aria-pressed',$('#drumBtn').getAttribute('aria-pressed')||'false');
+    B('smart').setAttribute('aria-pressed',U.rtool==='smart'?'true':'false');B('smart').textContent=U.rtool==='smart'?'Smart':'View';
+    B('keys').hidden=$('#dockKeys').hidden;B('keys').setAttribute('aria-pressed',$('#dockKeys').getAttribute('aria-expanded')==='true'?'true':'false');
+    B('undo').disabled=$('#undoBtn').disabled;B('redo').disabled=$('#redoBtn').disabled;
+    menu.querySelector('[data-lm="view"]').textContent=U.view==='staff'?'Roll view':'Staff view';
+  }
+  const mo=new MutationObserver(sync);
+  ['#playBtn','#drumBtn','#undoBtn','#redoBtn','#toolSeg','#viewSeg','#dockKeys','#toolSeg2'].forEach(function(q){mo.observe($(q),{attributes:true,childList:true,subtree:true});});
+  rail.addEventListener('click',function(e){
+    const b=e.target.closest('.lr');if(!b)return;const k=b.dataset.lr;
+    if(k==='more'){const open=menu.hidden;menu.hidden=!open;b.setAttribute('aria-expanded',open?'true':'false');if(open)sync();return;}
+    menu.hidden=true;
+    if(k==='play')$('#playBtn').click();
+    else if(k==='smart'){U.rtool=U.rtool==='smart'?'pan':'smart';saveU();smHidePop();renderMelOpts();sync();}
+    else $(src[k]).click();
+  });
+  menu.addEventListener('click',function(e){
+    const b=e.target.closest('[data-lm]');if(!b)return;const k=b.dataset.lm;menu.hidden=true;
+    if(k==='chord')$('#tabChord').click();
+    else if(k==='view'){const want=U.view==='staff'?0:1;const v=$('#viewSeg').querySelectorAll('button')[want];if(v)v.click();setTimeout(fitRoll,0);}
+    else if(k==='setup')$('#dockFile').click();
+  });
+  document.addEventListener('click',function(e){if(!menu.hidden&&!e.target.closest('#lrMenu')&&!e.target.closest('[data-lr="more"]'))menu.hidden=true;});
+  const onTurn=function(){menu.hidden=true;fitRoll();if(isLandEdit())window.scrollTo(0,0);};
+  if(LAND_MQ.addEventListener)LAND_MQ.addEventListener('change',onTurn);else LAND_MQ.addListener(onTurn);
+  setTimeout(function(){landClass();sync();},0);
+})();
 
 /* ---------- key from the melody (Key menu: Guess from melody…) ---------- */
 function keyName(k,sc){return Core.KEY_NAMES[k]+' '+(sc==='major'?'major':sc==='harm'?'harm. minor':'minor');}
