@@ -723,7 +723,9 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 .qhead{display:flex; align-items:center; justify-content:space-between; width:100%; height:34px; padding:0 2px; border:0; background:transparent; color:var(--mel)}
 .qhead svg{transition:transform .25s ease}
 .qhead[aria-expanded="true"] svg{transform:rotate(180deg)}
-.qbody{display:flex; flex-direction:column; gap:14px; padding:8px 0 4px}
+.qbody{display:flex; flex-direction:column; gap:14px; padding:0 0 4px}
+#qSlide.open{margin-top:2px}
+.qbody>.opts:first-child{margin-top:0}
 .qbox .qhead .lbl{color:var(--mel)}
 .qbox[hidden]{display:none}
 .qrow{display:flex; align-items:center; gap:8px 10px; flex-wrap:nowrap}
@@ -938,6 +940,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 <div class="lrmenu" id="lrMenu" hidden>
   <button type="button" data-lm="chord">Chord Track</button>
   <button type="button" data-lm="view">Staff view</button>
+  <button type="button" data-lm="audio">Audio recording</button>
   <button type="button" data-lm="setup">Setup</button>
 </div>
 <div class="wrap">
@@ -1200,7 +1203,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.31.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.31.1</p>
   </div>
 </section>
 
@@ -6756,6 +6759,7 @@ function importFrom(o){
     const b=e.target.closest('[data-lm]');if(!b)return;const k=b.dataset.lm;menu.hidden=true;
     if(k==='chord')$('#tabChord').click();
     else if(k==='view'){const want=U.view==='staff'?0:1;const v=$('#viewSeg').querySelectorAll('button')[want];if(v)v.click();setTimeout(fitRoll,0);}
+    else if(k==='audio'){const v=$('#viewSeg').querySelectorAll('button')[2];if(v)v.click();window.scrollTo(0,0);}
     else if(k==='setup')$('#dockFile').click();
   });
   document.addEventListener('click',function(e){if(!menu.hidden&&!e.target.closest('#lrMenu')&&!e.target.closest('[data-lr="more"]'))menu.hidden=true;});
