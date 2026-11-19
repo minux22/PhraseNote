@@ -469,6 +469,21 @@ body.kbd-open{padding-bottom:calc(92px + var(--kbdh,150px) + env(safe-area-inset
 .dbtn[hidden]{display:none}
 .dbtn[aria-expanded="true"]{background:var(--amber); border-color:var(--amber); color:var(--on-amber)}
 .mixer .mx-in{max-width:560px; margin:0 auto; display:flex; gap:3px; align-items:stretch}
+.mixer .mx-top{max-width:560px; margin:0 auto 6px; display:flex; align-items:center; gap:6px; padding:0 2px}
+.mixer .mx-top .lbl{margin-right:auto}
+.mxallw{display:inline-flex; align-items:center; gap:3px}
+.mxallw small{font-size:10px; font-weight:700; color:var(--dim); margin-right:4px}
+.mxall{width:22px; height:22px; padding:0; border-radius:5px; border:1px solid var(--line); background:var(--panel-2); color:var(--dim); font:800 10px var(--mono)}
+.mxall.m[aria-pressed="true"]{background:#e8a33b; border-color:#e8a33b; color:#1b1203}
+.mxall.s[aria-pressed="true"]{background:#4d8ff5; border-color:#4d8ff5; color:#fff}
+.rvk{display:inline-flex; align-items:center; gap:5px; margin-right:12px; touch-action:none; cursor:ns-resize; user-select:none; -webkit-user-select:none}
+.rvk small{font-size:10px; font-weight:700; color:var(--dim)}
+.rvk b{font:700 10px var(--mono); color:var(--dim); min-width:28px}
+.rvk .rvbody{fill:var(--panel-2); stroke:var(--line); stroke-width:1.5}
+.rvk .rvptr{stroke:var(--text); stroke-width:2.2; stroke-linecap:round}
+.rvk .rvleds circle{fill:color-mix(in srgb,var(--line) 70%,transparent)}
+.rvk .rvleds circle.on{fill:#3fd18b; filter:drop-shadow(0 0 1.6px #3fd18b)}
+.rvk:focus-visible{outline:2px solid var(--mel); outline-offset:3px; border-radius:8px}
 .mx{flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; gap:3px; padding:4px 0 2px; border-radius:8px; background:#101114}
 .mx.sep{margin-left:5px}
 .mx .mn{font-size:10px; font-weight:800; letter-spacing:.02em; color:var(--dim); white-space:nowrap; text-transform:uppercase; text-align:center}
@@ -1197,7 +1212,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.32.0</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.32.1</p>
   </div>
 </section>
 
@@ -1209,6 +1224,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
   </div>
 </nav>
 <div class="kbd mixer" id="mixer" hidden aria-label="Mixer">
+  <div class="mx-top"><span class="lbl">Mixer</span><span class="rvk" id="rvKnob" role="slider" tabindex="0" aria-label="Reverb" aria-valuemin="0" aria-valuemax="100" aria-valuenow="35" title="Reverb: drag up or down, double-tap to reset"><small>Reverb</small><svg viewBox="0 0 40 40" width="30" height="30" aria-hidden="true"><g class="rvleds"></g><circle cx="20" cy="20" r="11" class="rvbody"/><line x1="20" y1="20" x2="20" y2="11" class="rvptr"/></svg><b id="rvVal">35%</b></span><span class="mxallw"><small>All tracks</small><button type="button" class="mxall m" id="mxAllM" aria-pressed="false" aria-label="Mute all tracks" title="Mute or unmute every track">M</button><button type="button" class="mxall s" id="mxAllS" aria-pressed="false" aria-label="Solo all tracks" title="Solo every track, or clear all solos">S</button></span></div>
   <div class="mx-in" id="mxIn"></div>
 </div>
 <div class="kbd" id="kbd" hidden>
@@ -7058,8 +7074,33 @@ function applyMix(){
   Aud.setMix(g);Aud.setReverb(mx.rev/100*0.6);
   const dm=Core.faderDb(mx.mst);Aud.setMaster(dm===-Infinity?0:Math.pow(10,dm/20));
 }
+function mixAllUI(){
+  const mx=P.mix, ks=MXCH.map(function(c){return c[0];});
+  $('#mxAllM').setAttribute('aria-pressed',ks.every(function(k){return mx[k].mu;})?'true':'false');
+  $('#mxAllS').setAttribute('aria-pressed',ks.every(function(k){return mx[k].so;})?'true':'false');
+}
+$('#mxAllM').addEventListener('click',function(){const ks=MXCH.map(function(c){return c[0];}), on=!ks.every(function(k){return P.mix[k].mu;});ks.forEach(function(k){P.mix[k].mu=on;});applyMix();mixRender();mixSave();});
+$('#mxAllS').addEventListener('click',function(){const ks=MXCH.map(function(c){return c[0];}), on=!ks.every(function(k){return P.mix[k].so;});ks.forEach(function(k){P.mix[k].so=on;});applyMix();mixRender();mixSave();});
+/* reverb: a knob with a ring of LEDs on the mixer's top line; drag up or down, double-tap back to 35% */
+function rvUI(){
+  const k=$('#rvKnob');if(!k)return;const v=P.mix.rev, N=13, g=k.querySelector('.rvleds');
+  if(!g.children.length){for(let i=0;i<N;i++){const a=(-135+270*i/(N-1))*Math.PI/180, c=document.createElementNS('http://www.w3.org/2000/svg','circle');c.setAttribute('cx',(20+16.5*Math.sin(a)).toFixed(2));c.setAttribute('cy',(20-16.5*Math.cos(a)).toFixed(2));c.setAttribute('r','1.9');g.appendChild(c);}}
+  const lit=Math.round(v/100*(N-1));Array.prototype.forEach.call(g.children,function(c,i){c.classList.toggle('on',v>0&&i<=lit);});
+  k.querySelector('.rvptr').setAttribute('transform','rotate('+(-135+270*v/100)+' 20 20)');
+  $('#rvVal').textContent=v+'%';k.setAttribute('aria-valuenow',v);
+}
+(function(){
+  const k=$('#rvKnob');let drag=null, lastTap=0;
+  const set=function(v){v=Math.max(0,Math.min(100,Math.round(v)));if(v===P.mix.rev)return;P.mix.rev=v;rvUI();applyMix();mixSave();};
+  k.addEventListener('pointerdown',function(e){
+    const now=Date.now();if(now-lastTap<350){lastTap=0;set(35);return;}lastTap=now;
+    drag={y:e.clientY,v:P.mix.rev};try{k.setPointerCapture(e.pointerId);}catch(x){}e.preventDefault();});
+  k.addEventListener('pointermove',function(e){if(drag)set(drag.v+(drag.y-e.clientY)*0.8);});
+  const end=function(){drag=null;};k.addEventListener('pointerup',end);k.addEventListener('pointercancel',end);
+  k.addEventListener('keydown',function(e){const d=e.key==='ArrowUp'||e.key==='ArrowRight'?5:e.key==='ArrowDown'||e.key==='ArrowLeft'?-5:0;if(d){e.preventDefault();set(P.mix.rev+d);}});
+})();
 function mixRender(){
-  const host=$('#mxIn');if(!host)return;host.innerHTML='';
+  const host=$('#mxIn');if(!host)return;host.innerHTML='';mixAllUI();
   const mx=P.mix, anySolo=MXCH.some(function(c){return mx[c[0]].so;});
   const strip=function(k,name,grp,v,val,ms,off,sep){
     const d=document.createElement('div');d.className='mx'+(off?' off':'')+(sep?' sep':'');d.dataset.k=k;
@@ -7070,8 +7111,8 @@ function mixRender(){
   };
   /* the Chords strip is named after the instrument of the current slot (Keys or Guitar) */
   MXCH.forEach(function(c){const ch=mx[c[0]], nm=c[0]==='c'?(Core.instP(P)==='guitar'?'Guitar':'Keys'):c[1];strip(c[0],nm,c[2]||'',ch.v,mixDbText(ch.v),true,ch.mu||(anySolo&&!ch.so),false);});
-  strip('rev','Reverb','',mx.rev,mx.rev+'%',false,false,true);
-  strip('mst','Master','',mx.mst,mixDbText(mx.mst),false,false,false);
+  rvUI();
+  strip('mst','Master','',mx.mst,mixDbText(mx.mst),false,false,true);
   const ms=host.querySelector('.mx[data-k=mst]');ms.classList.add('mst');
     /* names share one size: the largest at which the widest still fits its strip */
   requestAnimationFrame(function(){const ns=host.querySelectorAll('.mx .mn');let f=10;
@@ -7117,8 +7158,26 @@ $('#mxIn').addEventListener('pointerdown',function(e){
   mxTap={k:k,t:now,y:e.clientY};
 },true);
 $('#mxIn').addEventListener('dblclick',function(e){const st=e.target.closest('.mx');if(st&&e.target.tagName==='INPUT')mixReset(st.dataset.k);});
+/* M / S: tap toggles the channel; hold (0.5 s) sets every channel the opposite way of this button
+   (a lit M held: all M off; an unlit M held: all M on; the same for S) */
+let mxHold=null;
+$('#mxIn').addEventListener('pointerdown',function(e){
+  const b=e.target.closest('.ms button');if(!b)return;
+  const k=b.closest('.mx').dataset.k, f=b.classList.contains('m')?'mu':'so';
+  clearTimeout(mxHold&&mxHold.t);
+  mxHold={b:b,done:false,t:setTimeout(function(){
+    const on=!P.mix[k][f];MXCH.forEach(function(c){P.mix[c[0]][f]=on;});
+    mxHold.done=true;applyMix();mixRender();mixSave();
+    try{navigator.vibrate&&navigator.vibrate(25);}catch(x){}
+    toast((f==='mu'?'Mute':'Solo')+(on?' on':' off')+' for all channels.');
+  },500)};
+});
+['pointerup','pointercancel','pointerleave'].forEach(function(ev){$('#mxIn').addEventListener(ev,function(){if(mxHold&&!mxHold.done){clearTimeout(mxHold.t);}});});
+$('#mxIn').addEventListener('contextmenu',function(e){if(e.target.closest('.ms button'))e.preventDefault();});
 $('#mxIn').addEventListener('click',function(e){
-  const b=e.target.closest('button');if(!b)return;const k=b.closest('.mx').dataset.k;
+  const b=e.target.closest('button');if(!b)return;
+  if(mxHold&&mxHold.done){mxHold=null;return;}   /* the hold already did it */
+  const k=b.closest('.mx').dataset.k;
   if(b.classList.contains('m'))P.mix[k].mu=!P.mix[k].mu;else P.mix[k].so=!P.mix[k].so;
   applyMix();mixRender();mixSave();
 });
