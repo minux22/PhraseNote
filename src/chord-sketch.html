@@ -755,6 +755,9 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
 .rmenu button{display:flex; align-items:center; gap:10px; padding:9px; border-radius:8px; border:0; background:transparent; color:var(--text); font:inherit; font-size:13.5px; font-weight:700; text-align:left}
 .rmenu button small{display:block; font-size:11px; font-weight:600; color:var(--dim); margin-top:1px}
 .rmenu button.on{background:var(--rnd-on,rgba(229,183,101,.22))}
+.rgen{display:flex; align-items:center; gap:8px; padding:6px 8px 8px; margin-bottom:3px; border-bottom:1px solid var(--line)}
+.rgen span{font-size:10.5px; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--dim)}
+.rgen select{flex:1; min-width:0; height:32px; font-size:13.5px}
 .rmenu i{font-style:normal; width:24px; height:24px; border-radius:6px; background:var(--panel-2); display:grid; place-items:center; font-size:10.5px; color:var(--dim); flex:none}
 #feelBox{margin-top:10px}
 .feelh{display:flex; align-items:baseline; justify-content:space-between}
@@ -1194,7 +1197,7 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
       </div>
       <p class="note">Applies to every track. The melody follows it by the Auto-Velocity amount set in the Melody tab (0% = flat, 100% = full). The drums always follow it. Humanize only shuffles playback; exported MIDI keeps the values above.</p>
     </div>
-    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.31.1</p>
+    <p class="note" style="text-align:center;font-size:10px;opacity:.6;margin:10px 0 2px">PhraseNote v0.32.0</p>
   </div>
 </section>
 
@@ -1264,10 +1267,11 @@ input[type=range]::-moz-range-thumb{width:12px; height:22px; border-radius:3px; 
   </div>
 </div>
 <div class="rmenu" id="randMenu" role="menu" hidden>
-  <button type="button" role="menuitem" data-rm="all"><i>All</i><span>Everything<small>Chords, style and rhythm</small></span></button>
+  <label class="rgen"><span>Genre</span><select id="genreSel" aria-label="Genre for Random"></select></label>
+  <button type="button" role="menuitem" data-rm="all"><i>All</i><span>Everything<small>Chords, style, rhythm and bass</small></span></button>
   <button type="button" role="menuitem" data-rm="chords"><i>Ch</i><span>Chords only<small>Style and rhythm stay</small></span></button>
-  <button type="button" role="menuitem" data-rm="style"><i>St</i><span>Style only<small>The keys or guitar style</small></span></button>
-  <button type="button" role="menuitem" data-rm="rhythm"><i>Rh</i><span>Rhythm only<small>Another pattern of the same type</small></span></button>
+  <button type="button" role="menuitem" data-rm="style"><i>St</i><span>Style only<small>A keys or guitar style of the genre</small></span></button>
+  <button type="button" role="menuitem" data-rm="rhythm"><i>Rh</i><span>Rhythm only<small>A drum pattern of the genre</small></span></button>
 </div>
 <div class="dlgback" id="formDlg" hidden>
   <div class="dlg" role="dialog" aria-labelledby="formTitle">
@@ -1983,6 +1987,244 @@ const Core=(function(){
       else{const f=Math.ceil(bpb/2);for(let k=0;k<bpb;k++)ch.push(add(k<f?bar[0]:bar[1]));}
     }
     return {i:i,chords:ch,names:names.join(' – ')};
+  }
+
+  /* ---- genres: chord progressions made from a genre's own progression patterns plus variations ----
+     Each genre has 4-bar patterns for major and minor keys (Roman numerals; bars split by |, two chords in a bar by a
+     space) and how often each variation is laid on top: sec = a secondary dominant before a chord, tri = a dominant 7th
+     replaced by the one a tritone away, bor = a chord borrowed from the parallel minor (iv, bVI, bVII), pdim = a passing
+     diminished 7th between chords a step apart, slash = a passing chord over the bass note between two chords a third
+     apart (a falling bass line), turn = a ii-V (or V) turnaround at the end of a loop that starts on I.
+     mw: how often a fresh sketch is minor; hw: how much of that minor is harmonic minor. cad: 8 bars end on V.
+     comp, drums, bass: the accompaniment, rhythm and bass that suit it (for Random > Everything).
+     These follow common practice for each style, summarised; they are starting points, not rules of the genre. */
+  const GENRES=[
+    {id:'pop',name:'Pop',g:'Pop',mw:.3,hw:.15,cad:1,
+      M:['I | V | vi | IV','vi | IV | I | V','I | vi | IV | V','I | IV | vi | V','IV | V | vi | I','I | V | IV | IV','I | iii | IV | V','vi | V | IV | V','IV | I | V | vi','I | IV | I | V','ii | IV | I | V','I V | vi IV | I V | IV'],
+      m:['i | VI | III | VII','i | VII | VI | VII','VI | VII | i | i','i | iv | VI | V','VI | III | VII | i','i | III | VII | VI','i | VI | VII | v'],
+      s:{sec:.25,bor:.2,slash:.2,pdim:.05,turn:.15},
+      comp:['pop','eighth','antic','beat','strum8','ballad'],drums:['pop16','syncpop','softpop','danceclap','rock8'],bass:[['root','electric'],['r8','electric'],['kick','electric'],['oct','electric']]},
+    {id:'hits',name:'Classic hits',g:'Pop',mw:.3,hw:.5,cad:1,pool:1,s:{},
+      comp:['beat','eighth','pop','ballad','strum'],drums:['rock8','pop16','softpop','ballad'],bass:[['root','electric'],['r8','electric']]},
+    {id:'kpop',name:'K-pop',g:'Pop',mw:.5,hw:.15,cad:0,
+      M:['IV | V | iii | vi','IV | V | vi | vi','ii | V | iii | vi','vi | IV | V | V','IV | V | I | vi','I | V | vi | IV','IV | III7 | vi | vi'],
+      m:['i | VI | VII | i','i | VI | III | VII','iv | v | i | i','VI | VII | v | i','i | VII | VI | V'],
+      s:{sec:.3,bor:.1,slash:.1,pdim:.05,turn:.1},
+      comp:['synth16','pluck16','antic','housep','pop'],drums:['danceclap','syncpop','house','trap','pop16'],bass:[['oct','synth'],['pulse','synth'],['r8','electric'],['kick','electric']]},
+    {id:'kballad',name:'K-ballad',g:'Pop',mw:.25,hw:.3,cad:1,
+      M:['I | V/7 | vi | I/5','IV | V | iii vi | ii V','I | iii | IV | V','IV | III7 | vi | I7','I V/7 | vi I/5 | IV I/3 | ii V','vi | IV | V | I','IV | V/4 | iii | vi','I | I7 | IV | iv','ii | V | I | VI7'],
+      m:['i | VI | iv | V','i | v | VI | III','iv | V | i | VI','VI | VII | III | VI'],
+      s:{sec:.35,bor:.2,slash:.45,pdim:.2,turn:.2},
+      comp:['kballad','ballad','rolled','balstrum','arpud'],drums:['ballad','softpop'],bass:[['aball','acoustic'],['root','electric'],['two','acoustic']]},
+    {id:'citypop',name:'City pop',g:'Pop',mw:.25,hw:0,cad:1,
+      M:['IVmaj7 | III7 | vi7 | I7','IVmaj7 | V7 | iii7 | vi7','ii7 V7 | Imaj7 | IVmaj7 | III7','vi7 | ii7 | V7 | Imaj7','IVmaj7 | V7/4 | iii7 | vi7','Imaj7 | vi7 | ii7 | V7'],
+      m:['i7 | iv7 | VII7 | IIImaj7','VImaj7 | v7 | i7 | IV7','iiø | V7 | i7 | VImaj7'],
+      s:{sec:.3,tri:.2,pdim:.1,turn:.2,slash:.1},
+      comp:['citypop','eighth','funk','rhodes','cleancut'],drums:['syncpop','disco','motown','pop16'],bass:[['oct','electric'],['f16','electric'],['r8','electric']]},
+    {id:'rock',name:'Rock',g:'Rock',mw:.4,hw:0,cad:0,
+      M:['I | bVII | IV | I','I | IV | V | IV','I | V | IV | IV','vi | IV | I | V','I | bIII | IV | I','I | bVI | bVII | I','I | IV | bVII | IV','IV | I | V | V','I | V | vi | IV'],
+      m:['i | VII | VI | VII','i | VI | VII | i','i | iv | VII | III','i | VI | III | VII','i | III | iv | VI','i | VII | iv | i'],
+      s:{bor:.3,sec:.1,slash:.05,turn:.05},
+      comp:['chug','powerhalf','strum8','eighth','cleancut'],drums:['rock8','driving','rock16','indie','hardrock'],bass:[['r8','electric'],['root','electric']]},
+    {id:'punk',name:'Punk / pop punk',g:'Rock',mw:.2,hw:0,cad:0,
+      M:['I | V | vi | IV','I | IV | V | IV','vi | IV | I | V','I | V | IV | V','I | IV | I | V'],
+      m:['i | VI | III | VII','i | VII | VI | VII'],
+      s:{bor:.1},
+      comp:['chug','eighth','strum8'],drums:['punk','driving'],bass:[['r8','electric']]},
+    {id:'metal',name:'Metal',g:'Rock',mw:1,hw:.4,cad:0,
+      M:['I | bVII | bVI | bVII','I | bIII | IV | I'],
+      m:['i | VI | VII | i','i | bII | i | VII','i | iv | v | i','i | VI | iv | V','i | i | VI | VII','i | bII | VII | i'],
+      s:{},
+      comp:['chug','powerhalf'],drums:['metal','hardrock'],bass:[['r8','electric']]},
+    {id:'blues',name:'Blues',g:'Rock',mw:.3,hw:0,cad:0,swing:60,
+      M:['I7 | IV7 | I7 | I7','IV7 | IV7 | I7 | I7','V7 | IV7 | I7 | V7','I7 | IV7 | I7 | V7','I7 IV7 | I7 | V7 IV7 | I7 V7'],
+      m:['i7 | iv7 | i7 | i7','iv7 | iv7 | i7 | i7','VI7 | V7 | i7 | V7'],
+      s:{},
+      comp:['boomchick','beat','charleston','cleancut'],drums:['shuffle'],bass:[['walk','electric'],['two','acoustic'],['r5','electric']]},
+    {id:'rnb',name:'R&B',g:'Soul / Urban',mw:.45,hw:0,cad:1,
+      M:['ii7 | V7 | Imaj7 | vi7','Imaj7 | iii7 | IVmaj7 | V7','vi7 | ii7 | IVmaj7 | V7','IVmaj7 | iii7 | ii7 | Imaj7','Imaj7 | IVmaj7 | iii7 | vi7','ii7 | iii7 | IVmaj7 | V7'],
+      m:['i7 | iv7 | VImaj7 | v7','i7 | VImaj7 | iv7 | v7','iv7 | v7 | i7 | i7','VImaj7 | v7 | i7 | IV7'],
+      s:{sec:.2,tri:.15,pdim:.1,turn:.15},
+      comp:['rnbstab','rhodes','neosoul','eighth'],drums:['rnb','syncpop','motown'],bass:[['f16','electric'],['kick','electric'],['root','electric']]},
+    {id:'neosoul',name:'Neo-soul',g:'Soul / Urban',mw:.5,hw:0,cad:0,
+      M:['IVmaj7 | iii7 | ii7 | Imaj7','ii7 | V7 | iii7 | vi7','Imaj7 | IV7 | iii7 VI7 | ii7 V7','IVmaj7 | V7/4 | iii7 | VI7','ii7 | bIImaj7 | Imaj7 | Imaj7'],
+      m:['i7 | IV7 | i7 | IV7','i7 | IV7 | VImaj7 | v7','iv7 | v7 | VImaj7 | VII7','i7 | iv7 | VII7 | IIImaj7'],
+      s:{tri:.3,sec:.25,pdim:.1},
+      comp:['neosoul','rhodes','shell','rnbstab'],drums:['rnb','boombap','lofi'],bass:[['f16','electric'],['kick','electric']]},
+    {id:'gospel',name:'Gospel',g:'Soul / Urban',mw:.15,hw:0,cad:1,
+      M:['I | IV #ivo7 | I/5 vi | ii7 V7','I I7 | IV iv | I/5 VI7 | ii7 V7','IV | V/4 | iii7 VI7 | ii7 V7','I | iii7 VI7 | ii7 V7 | I','IV | #ivo7 | I/5 | V7'],
+      m:['i | iv7 | VII7 | IIImaj7','iv7 | V7 | i | i'],
+      s:{sec:.4,pdim:.3,slash:.3,tri:.1,turn:.3},
+      comp:['gospel','rolled','beat'],drums:['motown','rnb','softpop'],bass:[['root','electric'],['kick','electric'],['oct','electric']]},
+    {id:'funk',name:'Funk',g:'Soul / Urban',mw:.55,hw:0,cad:0,
+      M:['I7 | I7 | IV7 | IV7','I7 | IV7 | I7 | IV7','ii7 | V7 | ii7 | V7','I7 | bVII | IV | I7'],
+      m:['i7 | IV7 | i7 | IV7','i7 | i7 | i7 | IV7','i7 | iv7 | i7 | VII7'],
+      s:{},
+      comp:['funk','funkmute','cleancut','rnbstab'],drums:['funk16','funk2','jazzfunk'],bass:[['slap','electric'],['f16','electric']]},
+    {id:'hiphop',name:'Hip-hop',g:'Hip-hop',mw:.7,hw:.1,cad:0,
+      M:['Imaj7 | IVmaj7 | Imaj7 | IVmaj7','vi7 | V | vi7 | V','ii7 | V7 | ii7 | V7','IVmaj7 | iii7 | vi7 | vi7'],
+      m:['i | i | iv | iv','i7 | VImaj7 | i7 | VImaj7','i | VII | VI | VII','i | iv | i | V','i7 | iv7 | i7 | v7','i | VI | i | VI'],
+      s:{bor:.05,sec:.05},
+      comp:['hiphop','rhodes','lofi','rnbstab'],drums:['boombap','trap','lofi'],bass:[['kick','electric'],['sub','synth'],['root','electric']]},
+    {id:'lofi',name:'Lo-fi',g:'Hip-hop',mw:.4,hw:0,cad:0,
+      M:['ii7 | V7 | Imaj7 | vi7','IVmaj7 | iii7 | ii7 | Imaj7','Imaj7 | vi7 | ii7 | V7','IVmaj7 | V7 | iii7 | vi7','Imaj7 | IVmaj7 | iii7 | VI7'],
+      m:['i7 | iv7 | VImaj7 | V7','iv7 | v7 | i7 | i7','VImaj7 | v7 | i7 | iv7'],
+      s:{tri:.2,sec:.2,pdim:.1},
+      comp:['lofi','rhodes','shell'],drums:['lofi','boombap'],bass:[['kick','electric'],['root','acoustic']]},
+    {id:'trap',name:'Trap',g:'Hip-hop',mw:.85,hw:.3,cad:0,
+      M:['vi | IV | I | V','I | iii | vi | IV'],
+      m:['i | VI | i | VI','i | iv | VI | V','i | i | VI | VII','i | III | VII | VI','i | bII | i | bII','i | VI | III | VII','iv | VI | i | i'],
+      s:{},
+      comp:['hiphop','pluck16','synth16','rolled'],drums:['trap'],bass:[['sub','synth']]},
+    {id:'house',name:'House',g:'Dance',mw:.5,hw:0,cad:0,
+      M:['ii7 | V7 | Imaj7 | IVmaj7','Imaj7 | vi7 | ii7 | V7','IVmaj7 | V7 | iii7 | vi7','vi7 | IVmaj7 | Imaj7 | V'],
+      m:['i7 | iv7 | i7 | iv7','i7 | VImaj7 | iv7 | v7','i7 | i7 | VImaj7 | VII7','iv7 | v7 | i7 | VImaj7'],
+      s:{sec:.1,tri:.05},
+      comp:['housep','stac8','offbeat','rhodes'],drums:['house','four','disco'],bass:[['oct','synth'],['pulse','synth'],['r8','electric']]},
+    {id:'trance',name:'Trance / EDM',g:'Dance',mw:.75,hw:.1,cad:0,
+      M:['vi | IV | I | V','IV | V | vi | vi','I | V | vi | IV'],
+      m:['i | VI | III | VII','VI | VII | i | i','i | VII | VI | VII','VI | III | VII | i','i | iv | VI | VII'],
+      s:{},
+      comp:['gate','arp16','synth16','pluck16'],drums:['four','techno'],bass:[['pulse','synth'],['oct','synth']]},
+    {id:'futurebass',name:'Future bass',g:'Dance',mw:.4,hw:0,cad:0,
+      M:['IVmaj7 | V7 | iii7 | vi7','vi7 | IVmaj7 | Imaj7 | V','IVmaj7 | Imaj7 | V | vi7','ii7 | IVmaj7 | V | vi7'],
+      m:['VImaj7 | VII | i7 | i7','i7 | VImaj7 | III | VII','iv7 | VImaj7 | i7 | v7'],
+      s:{sec:.15},
+      comp:['synth16','pluck16','rolled','gate'],drums:['trap','dubstep','electro'],bass:[['sub','synth'],['pulse','synth']]},
+    {id:'latin',name:'Reggaeton / Latin pop',g:'Dance',mw:.7,hw:.1,cad:0,
+      M:['vi | IV | I | V','I | V | vi | IV'],
+      m:['i | VI | III | VII','i | iv | VII | III','VI | VII | i | i','i | VII | VI | V'],
+      s:{},
+      comp:['offbeat','pluck16','strum16','antic'],drums:['dembow'],bass:[['kick','synth'],['sub','synth']]},
+    {id:'afro',name:'Afrobeats',g:'Dance',mw:.35,hw:0,cad:0,
+      M:['IVmaj7 | V | iii7 | vi7','ii7 | IV | I | I','I | vi7 | IVmaj7 | V','vi7 | IVmaj7 | Imaj7 | V'],
+      m:['i7 | iv7 | VImaj7 | VII','iv7 | v7 | i7 | i7'],
+      s:{sec:.1},
+      comp:['pluck16','cleancut','offbeat','garp'],drums:['afrobeats','afroperc'],bass:[['kick','electric'],['oct','electric']]},
+    {id:'jazz',name:'Jazz',g:'Jazz / World',mw:.35,hw:0,cad:1,swing:60,
+      M:['ii7 | V7 | Imaj7 | VI7','Imaj7 VI7 | ii7 V7 | iii7 VI7 | ii7 V7','iii7 | VI7 | ii7 | V7','Imaj7 | I7 | IVmaj7 | iv7','Imaj7 | vi7 | ii7 | V7','ii7 | V7 | iii7 VI7 | ii7 V7','IVmaj7 | #ivø VII7 | iii7 VI7 | ii7 V7'],
+      m:['iiø | V7 | i7 | i7','i7 | iv7 | VII7 | IIImaj7','i7 | VImaj7 | iiø | V7','iv7 | VII7 | IIImaj7 | VImaj7'],
+      s:{tri:.3,sec:.3,turn:.3,pdim:.05},
+      comp:['jazzcomp','shell','charleston','rhodes'],drums:['swing','brushes','swingfast'],bass:[['walk','acoustic'],['two','acoustic']]},
+    {id:'bossa',name:'Bossa nova',g:'Jazz / World',mw:.4,hw:0,cad:1,
+      M:['Imaj7 | II7 | ii7 | V7','ii7 | V7 | Imaj7 | Imaj7','Imaj7 | vi7 | ii7 | V7','IVmaj7 | iv7 | iii7 | VI7'],
+      m:['i7 | iv7 | V7 | i7','iiø V7 | i7 | iv7 | V7','i7 | VImaj7 | iiø | V7'],
+      s:{tri:.2,sec:.2},
+      comp:['bossa'],drums:['bossa','sonclave','clave'],bass:[['r5','acoustic'],['two','acoustic']]},
+    {id:'reggae',name:'Reggae',g:'Jazz / World',mw:.4,hw:0,cad:0,
+      M:['I | IV | I | V','I | V | vi | IV','ii | I | ii | I','I | IV | V | IV','I | vi | IV | V'],
+      m:['i | iv | i | iv','i | VII | i | VII','i | VI | VII | i'],
+      s:{},
+      comp:['offbeat'],drums:['onedrop','steppers','ska'],bass:[['root','electric'],['r8','electric']]},
+    {id:'folk',name:'Folk / country',g:'Acoustic / Film',mw:.2,hw:0,cad:1,
+      M:['I | IV | I | V','I | V | IV | I','I | IV | V | I','vi | IV | I | V','I | I/3 | IV | V','I | IV | I/3 | V','IV | I | V | I'],
+      m:['i | VII | VI | VII','i | III | VII | i','i | iv | i | VII'],
+      s:{slash:.2,sec:.15,turn:.1},
+      comp:['strum','boomchick','travis','finger','strum8'],drums:['shaker','softpop','cajonish'],bass:[['two','acoustic'],['r5','acoustic'],['root','acoustic']]},
+    {id:'cinematic',name:'Cinematic',g:'Acoustic / Film',mw:.7,hw:.2,cad:0,
+      M:['I | bVI | IV | I','I | III | IV | iv','I | bVI | bVII | I','I | V/7 | vi | III','IV | iv | I | I'],
+      m:['i | VI | III | VII','i | VI | iv | V','i | III | VII | IV','i | bII | i | V','i | iv | i | V7','i | VI | VII | i','i | III | iv | VI'],
+      s:{bor:.25,slash:.15,sec:.1},
+      comp:['rolled','arpup','ballad','hold','arpud'],drums:['ballad','brushes'],bass:[['aball','acoustic'],['root','acoustic']]},
+    {id:'classical',name:'Classical',g:'Acoustic / Film',mw:.3,hw:.6,cad:1,
+      M:['I | IV | V7 | I','I | vi | ii | V7','I | ii | V7 | I','I | IV | I/5 V7 | I','vi | ii | V7 | I','I | V/7 | I/3 | IV'],
+      m:['i | iv | V7 | i','i | VI | iiø | V7','i | iv | i/5 V7 | i','iv | V7 | i | VI'],
+      s:{sec:.25,slash:.2},
+      comp:['alberti','waltz','arpud','arpup','hold'],drums:['ballad'],bass:[['aball','acoustic'],['root','acoustic']]}
+  ];
+  const GENRE_BY={};GENRES.forEach(function(g){GENRE_BY[g.id]=g;});
+  /* a Roman numeral token -> {r: root in semitones above the tonic, q: quality, b: bass scale degree (1-7) or 0}.
+     Numerals count on the major scale (major patterns) or the natural minor (minor patterns); upper case = major,
+     lower = minor; 7 = dominant 7th (upper) or m7 (lower), maj7, ø = half-diminished, o = diminished, o7 = dim7. */
+  const GREF={M:[0,2,4,5,7,9,11],m:[0,2,3,5,7,8,10]};
+  function gTok(t,mode){
+    const m=/^([b#]?)(VII|VI|IV|V|III|II|I|vii|vi|iv|v|iii|ii|i)(maj7|7|ø|o7|o)?(?:\/([1-7]))?$/.exec(t);if(!m)throw new Error('chord token '+t);
+    const up=m[2]===m[2].toUpperCase(), n=['I','II','III','IV','V','VI','VII'].indexOf(m[2].toUpperCase());
+    const r=(GREF[mode][n]+(m[1]==='b'?-1:m[1]==='#'?1:0)+12)%12, x=m[3]||'';
+    const q=up?(x==='7'?'7':x==='maj7'?'maj7':'M'):(x==='7'?'m7':x==='ø'?'ø':x==='o'?'o':x==='o7'?'o7':'m');
+    return {r:r,q:q,b:m[4]?+m[4]:0};
+  }
+  const GQ={M:[4,7,null],m:[3,7,null],o:[3,6,null],'7':[4,7,10],maj7:[4,7,11],m7:[3,7,10],'ø':[3,6,10],o7:[3,6,9]};
+  /* to the app's chord code: a scale chord when it is one (so it keeps its numeral), otherwise a chromatic chord.
+     A triad's 7th follows the 7th switch; a written 7th is kept. Major chords on bII, bIII and bVI get maj7 when the
+     7th switch adds one, other chromatic major chords a dominant 7th. */
+  function gCode(o,scale){
+    const S=SCALES[scale], d=S.indexOf(o.r), Q=GQ[o.q], sev=Q[2]!=null;
+    const bd=o.b&&S[o.b-1]!==o.r?o.b:0;
+    if(d>=0){
+      const r0=S[d], t3=(S[(d+2)%7]-r0+12)%12, t5=(S[(d+4)%7]-r0+12)%12, t7=(S[(d+6)%7]-r0+12)%12;
+      if(t3===Q[0]&&t5===Q[1]&&(!sev||t7===Q[2]))return bd*14+d*2+(sev?1:0);
+    }
+    let qi;
+    if(o.q==='M')qi=[1,3,8].indexOf(o.r)>=0?3:0;else if(o.q==='7')qi=0;else if(o.q==='m'||o.q==='m7')qi=1;
+    else if(o.q==='o'||o.q==='ø')qi=2;else if(o.q==='maj7')qi=3;else qi=4;
+    return xcode(o.r,qi,sev,bd);
+  }
+  /* variations on a progression (bars of chord objects), at most two, each at its genre's rate */
+  function gVary(bars,G,mode,scale,rnd,startTonic){
+    const S=SCALES[scale];let n=0;const cap=2;
+    const one=function(b){return bars[b].length===1;};
+    const ops={
+      sec:function(){const c=[];for(let i=1;i<bars.length;i++){const t=bars[i][0];if(t.r!==0&&(t.q==='M'||t.q==='m'||t.q==='m7'||t.q==='maj7')&&one(i-1)&&bars[i-1][0].r!==(t.r+7)%12)c.push(i);}
+        if(!c.length)return false;const i=c[Math.floor(rnd()*c.length)];bars[i-1]=[bars[i-1][0],{r:(bars[i][0].r+7)%12,q:'7',b:0}];return true;},
+      tri:function(){const c=[];for(let i=0;i<bars.length;i++)for(let j=0;j<bars[i].length;j++){const x=bars[i][j];if(x.q!=='7')continue;
+          const nx=j+1<bars[i].length?bars[i][j+1]:bars[(i+1)%bars.length][0];if((nx.r-x.r+12)%12===5)c.push([i,j]);}
+        if(!c.length)return false;const k=c[Math.floor(rnd()*c.length)], x=bars[k[0]][k[1]];bars[k[0]][k[1]]={r:(x.r+6)%12,q:'7',b:0};return true;},
+      bor:function(){if(mode!=='M')return false;const c=[];
+        for(let i=0;i<bars.length;i++){const x=bars[i][0];if(!one(i))continue;
+          const nb=bars[(i+1)%bars.length][0];if(x.r===5&&x.q==='M'&&!(nb.r===5&&nb.q==='m'))c.push(function(){bars[i]=[x,{r:5,q:'m',b:0}];});
+          if(x.r===9&&(x.q==='m'||x.q==='m7'))c.push(function(){bars[i]=[{r:8,q:'M',b:0}];});
+          const nx=bars[(i+1)%bars.length][0];if(x.r===7&&x.q==='M'&&nx.r===0)c.push(function(){bars[i]=[{r:10,q:'M',b:0}];});}
+        if(!c.length)return false;c[Math.floor(rnd()*c.length)]();return true;},
+      pdim:function(){const c=[];for(let i=0;i<bars.length-1;i++){if(!one(i))continue;const x=bars[i][0], y=bars[i+1][0];if((y.r-x.r+12)%12===2&&(x.q==='M'||x.q==='maj7'||x.q==='7'))c.push(i);}
+        if(!c.length)return false;const i=c[Math.floor(rnd()*c.length)];bars[i]=[bars[i][0],{r:(bars[i][0].r+1)%12,q:'o7',b:0}];return true;},
+      slash:function(){const c=[];
+        for(let i=0;i<bars.length-1;i++){if(!one(i))continue;const x=bars[i][0], y=bars[i+1][0], dn=(x.r-y.r+12)%12;
+          if(x.b||(dn!==3&&dn!==4))continue;const dx=S.indexOf(x.r);if(dx<0)continue;
+          const pb=S[(dx+6)%7];
+          /* the scale chord with that note as its 3rd (preferred) or 5th, major first */
+          let pick=null;
+          for(let k=0;k<7&&!pick;k++){const r0=S[k],t3=S[(k+2)%7],t5=S[(k+4)%7], maj=(t3-r0+12)%12===4;if(maj&&t3===pb)pick={r:r0,q:'M',b:(dx+6)%7+1};}
+          for(let k=0;k<7&&!pick;k++){const r0=S[k],t3=S[(k+2)%7],t5=S[(k+4)%7], maj=(t3-r0+12)%12===4, dim=(t5-r0+12)%12===6;if(maj&&!dim&&t5===pb)pick={r:r0,q:'M',b:(dx+6)%7+1};}
+          if(pick&&pick.r!==x.r&&pick.r!==y.r)c.push([i,pick]);}
+        if(!c.length)return false;const k=c[Math.floor(rnd()*c.length)];bars[k[0]]=[bars[k[0]][0],k[1]];return true;},
+      turn:function(){const L=bars.length-1;if(!startTonic||!one(L)||bars[L][0].r===7)return false;
+        bars[L]=mode==='M'?[{r:2,q:'m7',b:0},{r:7,q:'7',b:0}]:[{r:2,q:'ø',b:0},{r:7,q:'7',b:0}];return true;}
+    };
+    const order=Object.keys(ops).sort(function(){return rnd()-0.5;});
+    order.forEach(function(k){if(n<cap&&G.s[k]&&rnd()<G.s[k]&&ops[k]())n++;});
+    return bars;
+  }
+  /* p: the project (key, scale, bars, meter, 7th switch); gid: genre id ('' = any); last: the previous result's sig.
+     Returns {genre, chords (one per beat), names, sig}, or the classic pool's result for 'hits'. */
+  function genreChords(p,rnd,gid,last){
+    let G=GENRE_BY[gid];
+    if(!G)G=GENRES[Math.floor(rnd()*GENRES.length)];
+    const mode=p.scale==='major'?'M':'m';
+    if(G.pool||!(G[mode]&&G[mode].length)){const r=randomChords(p,rnd,typeof last==='number'?last:-1);return {genre:G.id,chords:r.chords,names:r.names,sig:r.i};}
+    const pats=G[mode];let pi=Math.floor(rnd()*pats.length), out=null, tries=0;
+    while(tries++<6){
+      const pat=pats[pi];
+      const make=function(){return pat.split('|').map(function(bar){return bar.trim().split(/\s+/).map(function(t){return gTok(t,mode);});});};
+      const A=gVary(make(),G,mode,p.scale,rnd,make()[0][0].r===0);
+      const sig=G.id+':'+JSON.stringify(A);
+      if(sig!==last||tries>=6){out={A:A,make:make,sig:sig};break;}
+      pi=(pi+1)%pats.length;
+    }
+    const add=function(c){return c>=1000?xWith(c,p.sev,0):(p.sev?(c|1):c);};
+    const code=function(o){return add(gCode(o,p.scale));};
+    /* 8 bars or more: the second four are the same pattern with its own variations, and a cadence genre ends on V */
+    let B=null;
+    if(p.bars>4){B=gVary(out.make(),G,mode,p.scale,rnd,false);
+      if(G.cad){const L=B[3], lc=L[L.length-1];if(!(lc.r===7&&(lc.q==='M'||lc.q==='7')))B[3]=[{r:7,q:mode==='M'?'M':'7',b:0}];}}
+    const bpb=meter(p).bpb, ch=[];
+    for(let b=0;b<p.bars;b++){
+      const bar=(B&&(b%8)>=4?B:out.A)[b%4];
+      if(bar.length===1){const c=code(bar[0]);for(let k=0;k<bpb;k++)ch.push(c);}
+      else{const f=Math.ceil(bpb/2), c0=code(bar[0]), c1=code(bar[1]);for(let k=0;k<bpb;k++)ch.push(k<f?c0:c1);}
+    }
+    const names=[];out.A.forEach(function(bar){bar.forEach(function(o){names.push(chordInfo(code(o),p.key,p.scale).label);});});
+    return {genre:G.id,chords:ch,names:names.join(' – '),sig:out.sig};
   }
 
   /* ---- key from the melody ----
@@ -2877,7 +3119,7 @@ const Core=(function(){
   }
   return {SCALES:SCALES,SCALE_NAMES:SCALE_NAMES,KEY_NAMES:KEY_NAMES,chordInfo:chordInfo,voicing:voicing,
     noteName:noteName,bassNote:bassNote,notesFor:notesFor,
-    DTYPES:DTYPES,DKITS:DKITS,TKITS:TKITS,dtypeOf:dtypeOf,kitOf:kitOf,COMPS:COMPS,backNotes:backNotes,MIXDEF:MIXDEF,GSHARED:GSHARED,instP:instP,compsFor:compsFor,recipeOf:recipeOf,recipeDiff:recipeDiff,BASS_BY_KIND:BASS_BY_KIND,STRS:STRS,strPatch:strPatch,strVoicing:strVoicing,BASSES:BASSES,bassKind:bassKind,bassPatch:bassPatch,GUITAR:GUITAR,instOf:instOf,compPatch:compPatch,gtrVoicing:gtrVoicing,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,mkMap:mkMap,tempoMap:tempoMap,secAt:secAt,tickAt:tickAt,bpmAt:bpmAt,mapPairs:mapPairs,takeMap:takeMap,takeLen:takeLen,nextSection:nextSection,NEXT_ROLE:NEXT_ROLE,slotStats:slotStats,
+    DTYPES:DTYPES,DKITS:DKITS,TKITS:TKITS,dtypeOf:dtypeOf,kitOf:kitOf,COMPS:COMPS,GENRES:GENRES,genreChords:genreChords,gTok:gTok,gCode:gCode,backNotes:backNotes,MIXDEF:MIXDEF,GSHARED:GSHARED,instP:instP,compsFor:compsFor,recipeOf:recipeOf,recipeDiff:recipeDiff,BASS_BY_KIND:BASS_BY_KIND,STRS:STRS,strPatch:strPatch,strVoicing:strVoicing,BASSES:BASSES,bassKind:bassKind,bassPatch:bassPatch,GUITAR:GUITAR,instOf:instOf,compPatch:compPatch,gtrVoicing:gtrVoicing,compOk:compOk,applyStyle:applyStyle,NEUTRAL:NEUTRAL,eventsAt:eventsAt,swingOff:swingOff,fitMel:fitMel,tidy:tidy,keySig:keySig,insertMono:insertMono,meter:meter,unitsFor:unitsFor,remapChords:remapChords,melBars:melBars,TS_LIST:TS_LIST,quantize:quantize,shiftMelKey:shiftMelKey,mapMelScale:mapMelScale,remapMelMeter:remapMelMeter,melVel:melVel,posVel:posVel,drumsAt:drumsAt,dpFromPreset:dpFromPreset,DLANES:DLANES,DNOTE:DNOTE,DPATS:DPATS,melAt:melAt,randomChords:randomChords,buildMidi:buildMidi,faderDb:faderDb,zipMany:zipMany,unzip:unzip,zip:zip,crc32:crc32,defaults:defaults,fresh:fresh,normalize:normalize,fileStem:fileStem,mkMap:mkMap,tempoMap:tempoMap,secAt:secAt,tickAt:tickAt,bpmAt:bpmAt,mapPairs:mapPairs,takeMap:takeMap,takeLen:takeLen,nextSection:nextSection,NEXT_ROLE:NEXT_ROLE,slotStats:slotStats,
     POOL_MAJOR:POOL_MAJOR,POOL_MINOR:POOL_MINOR,POOL_HARM:POOL_HARM,suggestChords:suggestChords,guessKey:guessKey,rekey:rekey,recode:recode,SEC_IDS:SEC_IDS,ROLES:ROLES,SECF:SECF,normSec:normSec,copySec:copySec,secOf:secOf,curId:curId,storeCur:storeCur,loadCur:loadCur,layout:layout,formTicks:formTicks,secView:secView,secDrums:secDrums,songAt:songAt,melInsert:melInsert,melDelete:melDelete,melSlice:melSlice,melPaste:melPaste,resizeSec:resizeSec,xcode:xcode,isX:isX,xWith:xWith,extraPalette:extraPalette};
 })();
 
@@ -4150,10 +4392,16 @@ function suggestNow(){
   if(playing)stopPlay();
 }
 /* the dice opens a menu: everything, or only the chords, the style or the rhythm (the last choice is highlighted) */
+(function(){const sel=$('#genreSel');const any=document.createElement('option');any.value='';any.textContent='Any genre';sel.appendChild(any);
+  let og=null,gn=null;Core.GENRES.forEach(function(g){if(g.g!==gn){gn=g.g;og=document.createElement('optgroup');og.label=gn;sel.appendChild(og);}
+    const o=document.createElement('option');o.value=g.id;o.textContent=g.name;og.appendChild(o);});
+  sel.addEventListener('change',function(){U.genre=sel.value;saveU();lastRand=-1;});
+  sel.addEventListener('click',function(e){e.stopPropagation();});})();
 function randMenu(open){
   const m=$('#randMenu');
   if(!open){m.hidden=true;return;}
   m.querySelectorAll('button').forEach(function(x){x.classList.toggle('on',x.dataset.rm===U.rmode);});
+  $('#genreSel').value=U.genre||'';
   m.hidden=false;
   const r=$('#btnRand').getBoundingClientRect(), w=m.offsetWidth;
   m.style.left=Math.max(8,Math.min(window.innerWidth-w-8,r.right-w))+'px';m.style.top=(r.bottom+6)+'px';
@@ -4172,25 +4420,38 @@ function doRandom(mode){
   const s=serialize();
   /* a fresh sketch (one slot, no melody): major or minor at random too; once the song has grown, key and scale stay */
   let scTag='';const said=[];
-  /* major 70%, natural minor 15%, harmonic minor 15%; C major or A minor, so it stays on the white keys as much as possible */
-  if(doC&&P.form.length===1&&!P.mel.length){const q=Math.random(), sc=q<0.7?'major':q<0.85?'minor':'harm';if(sc!==P.scale)lastRand=-1;P.scale=sc;P.key=sc==='major'?0:9;
+  /* the genre: the one chosen in the menu, or (Any) one at random for this roll; Style only and Rhythm only with
+     Any keep to all styles and patterns as before */
+  const G=U.genre?Core.GENRES.filter(function(g){return g.id===U.genre;})[0]:(doC?Core.GENRES[Math.floor(Math.random()*Core.GENRES.length)]:null);
+  const pick=function(a){return a[Math.floor(Math.random()*a.length)];};
+  /* a fresh sketch (one slot, no melody): major or minor as the genre leans; C major or A minor, on the white keys */
+  if(doC&&P.form.length===1&&!P.mel.length){const q=Math.random(), mw=G?G.mw:0.3, hw=G?G.hw:0.5;
+    const sc=q>=mw?'major':Math.random()<hw?'harm':'minor';if(sc!==P.scale)lastRand=-1;P.scale=sc;P.key=sc==='major'?0:9;
     scTag=(sc==='major'?'C major':sc==='minor'?'A minor':'A harm. minor')+' · ';}
-  if(doC){const r=Core.randomChords(P,Math.random,lastRand);
-  lastRand=r.i;P.chords=r.chords;P.sample=false;said.push(scTag+r.names);}
-  /* a random accompaniment style too (one that fits the meter, not the one in use); Color starts off */
+  if(doC){const r=Core.genreChords(P,Math.random,G?G.id:'',lastRand);
+    lastRand=r.sig;P.chords=r.chords;P.sample=false;said.push(scTag+r.names);}
+  /* the accompaniment style: from the genre's styles (or any style that fits the meter); Color stays as it is */
   if(doS){
-  /* Style only stays on the instrument in use; Everything picks from all styles */
-  const pool=mode==='style'?Core.compsFor(Core.instP(P)):Core.COMPS;
-  const ids=pool.map(function(c){return c[0];}).filter(function(id){return Core.compOk(P,id)&&id!==P.comp;});
-  const cid=ids[Math.floor(Math.random()*ids.length)]||P.comp;
-  Core.applyStyle(P,cid,U.styAsk==='style');lastComp[Core.instP(P)]=cid;said.push(compName(cid));}
-  /* and a random drum pattern (not My pattern, not the extreme metal ones); the drum button stays as it is */
+    let ids;
+    if(G){const inst=Core.instP(P), own=G.comp.filter(function(id){return Core.compOk(P,id)&&(mode!=='style'||Core.compsFor(inst).some(function(c){return c[0]===id;}));});
+      ids=(own.length?own:G.comp.filter(function(id){return Core.compOk(P,id);})).filter(function(id){return id!==P.comp;});
+      if(!ids.length)ids=G.comp.filter(function(id){return Core.compOk(P,id);});}
+    else{const pool=mode==='style'?Core.compsFor(Core.instP(P)):Core.COMPS;ids=pool.map(function(c){return c[0];}).filter(function(id){return Core.compOk(P,id)&&id!==P.comp;});}
+    const cid=pick(ids)||P.comp;
+    Core.applyStyle(P,cid,U.styAsk==='style');lastComp[Core.instP(P)]=cid;said.push(compName(cid));
+    /* Everything also brings the genre's bass, and its swing (blues, jazz) */
+    if(G&&mode==='all'){const bs=pick(G.bass);P.bpat=bs[0];P.bkind=bs[1];lastBass[bs[1]]=bs[0];
+      if(U.styAsk!=='style'){if(G.swing){P.swing=G.swing;P.swu='8';}else if(P.swing===60&&P.swu==='8')P.swing=0;}}
+  }
+  /* the drum pattern: from the genre's patterns, or (no genre) any but My pattern and the extreme metal ones;
+     Rhythm only without a genre keeps the rhythm type. The drum button stays as it is. */
   if(doR){
-  /* Rhythm only keeps the rhythm type (and its kit); Everything picks from all patterns */
-  const ty=Core.dtypeOf(U.dpat);
-  const dps=Core.DPATS.filter(function(d){return ['custom','blast','metal'].indexOf(d[0])<0&&d[0]!==U.dpat&&(mode!=='rhythm'||U.dpat==='custom'||d[3]===ty);});
-  const dpk=dps[Math.floor(Math.random()*dps.length)];
-  if(dpk){if(mode!=='rhythm')P.dkit=null;setDrums(U.drum,dpk[0]);const ds=$('#dPat');if(ds)ds.value=dpk[0];said.push(dpk[1]+(U.drum?'':' (drums off)'));}}
+    let dps;
+    if(G){dps=Core.DPATS.filter(function(d){return G.drums.indexOf(d[0])>=0&&d[0]!==U.dpat;});if(!dps.length)dps=Core.DPATS.filter(function(d){return G.drums.indexOf(d[0])>=0;});}
+    else{const ty=Core.dtypeOf(U.dpat);dps=Core.DPATS.filter(function(d){return ['custom','blast','metal'].indexOf(d[0])<0&&d[0]!==U.dpat&&(mode!=='rhythm'||U.dpat==='custom'||d[3]===ty);});}
+    const dpk=pick(dps);
+    if(dpk){if(mode!=='rhythm'||G)P.dkit=null;setDrums(U.drum,dpk[0]);const ds=$('#dPat');if(ds)ds.value=dpk[0];said.push(dpk[1]+(U.drum?'':' (drums off)'));}}
+  if(G)said.unshift(G.name);
   pushUndo(s);renderAll();
   toast('Random: '+said.join(' · '));
   /* always from the beginning (of the slot) */
@@ -4232,7 +4493,8 @@ if([16,8,4,2,1].indexOf(U.nv)<0)U.nv=4;
 U.dot=!!U.dot&&U.nv>1;if([0,1,-1,2].indexOf(U.acc)<0)U.acc=0;
 U.drum=!!U.drum;U.abuf=['interactive','balanced','playback'].indexOf(U.abuf)<0?'balanced':U.abuf;if(!Core.DPATS.some(function(d){return d[0]===U.dpat;}))U.dpat='rock8';U.clk=Math.max(0,Math.min(100,Math.round(+U.clk||0)));
 try{if(!localStorage.getItem('phrasenote-styask-apply')){U.styAsk='all';localStorage.setItem('phrasenote-styask-apply','1');}}catch(e){}
-U.styAsk=['ask','all','style'].indexOf(U.styAsk)<0?'all':U.styAsk;U.rmode=['all','chords','style','rhythm'].indexOf(U.rmode)<0?'all':U.rmode;
+U.styAsk=['ask','all','style'].indexOf(U.styAsk)<0?'all':U.styAsk;
+if(typeof U.genre!=='string')U.genre='';U.rmode=['all','chords','style','rhythm'].indexOf(U.rmode)<0?'all':U.rmode;
 U.qStr=Math.max(0,Math.min(100,Math.round(+U.qStr||0)));U.qLen=U.qLen!==false;U.melc=U.melc!==false;U.more=!!U.more;U.cmode=U.cmode==='song'?'song':'loop';
 /* new starting setup (applied once to settings saved earlier): Roll view, Len 8, Snap 8, keyboard on, pickup off, auto-velocity on */
 try{if(!localStorage.getItem('phrasenote-init-1')){U.view='roll';U.snap=240;U.len=240;U.kbd=false;P.pick=false;localStorage.setItem('phrasenote-init-1','1');persist();saveU();}}catch(e){}
